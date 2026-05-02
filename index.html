@@ -1072,7 +1072,7 @@ async function showApp() {
         })));
         const imgs=fc.map(f=>({type:'image',source:{type:'base64',media_type:f.mime||'image/jpeg',data:f.data}}));
         const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1000,
+          body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:2000,
             system:buildSystemPrompt(),
             messages:[{role:'user',content:[...imgs,{type:'text',text:`Primo accesso. Ho caricato ${files.join(' e ')}. Analizzale, presentati e dimmi cosa ne pensi rispetto al mio profilo.`}]}]
           })
@@ -1141,9 +1141,9 @@ async function callAPI(messages, retries=2) {
       const res = await fetch(API_URL, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
-          model:'claude-sonnet-4-5', max_tokens:1000,
+          model:'claude-sonnet-4-5', max_tokens:2000,
           system: buildSystemPrompt(),
-          messages: messages
+          messages: messages.filter(m => m.content && m.content.trim && m.content.trim() !== '')
         })
       });
       if(!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1248,7 +1248,7 @@ async function analyzeImports() {
     })));
     const imgs=fc.map(f=>({type:'image',source:{type:'base64',media_type:f.mime||'image/jpeg',data:f.data}}));
     const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1000,
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:2000,
         system:buildSystemPrompt(),
         messages:[{role:'user',content:[...imgs,{type:'text',text:`Analizza: ${labels}`}]}]
       })
