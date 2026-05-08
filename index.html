@@ -2,255 +2,298 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>FitMind AI</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:#0a0a0a;--surface:#111111;--surface2:#1a1a1a;--border:#222222;
-    --accent:#c8f135;--accent2:#ff6b35;--text:#f0f0f0;--text-muted:#666;
-    --text-dim:#999;--red:#ff3b3b;--blue:#3b82f6;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
-  .screen{display:none;flex-direction:column;height:100dvh;overflow:hidden}
-  .screen.active{display:flex}
+/* ── VARIABILI ── */
+:root{
+  --bg:#0a0a0a; --s1:#111111; --s2:#1a1a1a; --bd:#222222;
+  --ac:#c8f135; --ac2:#ff6b35; --tx:#f0f0f0;
+  --mt:#666666; --dm:#999999; --rd:#ff3b3b; --bl:#3b82f6;
+}
+/* ── RESET ── */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);
+  display:flex;flex-direction:column;max-width:480px;margin:0 auto;height:100dvh}
 
-  #splash{background:var(--bg);align-items:center;justify-content:center;gap:16px}
-  .logo-mark{width:80px;height:80px;background:var(--accent);border-radius:20px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:36px;color:#000;animation:pulse 2s infinite}
-  @keyframes pulse{0%,100%{box-shadow:0 0 40px rgba(200,241,53,0.2)}50%{box-shadow:0 0 80px rgba(200,241,53,0.5)}}
-  .logo-title{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px}
-  .logo-sub{font-size:13px;color:var(--text-muted);letter-spacing:3px;text-transform:uppercase}
-  .splash-loading{margin-top:60px;display:flex;gap:8px}
-  .dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:bounce 1.2s infinite}
-  .dot:nth-child(2){animation-delay:0.2s}.dot:nth-child(3){animation-delay:0.4s}
-  @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:0.3}30%{transform:translateY(-10px);opacity:1}}
+/* ── SCREENS ── */
+.screen{display:none;flex-direction:column;height:100dvh;overflow:hidden}
+.screen.active{display:flex}
 
-  #onboarding{background:var(--bg)}
-  .onboard-header{padding:52px 24px 20px;flex-shrink:0}
-  .step-indicator{display:flex;gap:6px;margin-bottom:28px}
-  .step-dot{height:3px;border-radius:2px;background:var(--border);flex:1;transition:background 0.3s}
-  .step-dot.active{background:var(--accent)}.step-dot.done{background:var(--accent);opacity:0.5}
-  .onboard-title{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:2px;line-height:1;margin-bottom:6px}
-  .onboard-sub{font-size:13px;color:var(--text-muted)}
-  .onboard-body{flex:1;overflow-y:auto;padding:0 24px 24px;scrollbar-width:none}
-  .onboard-body::-webkit-scrollbar{display:none}
-  .field-group{margin-bottom:18px}
-  .field-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;display:block}
-  .field-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color 0.2s;-webkit-appearance:none}
-  .field-input:focus{border-color:var(--accent)}.field-input::placeholder{color:var(--text-muted)}
-  select.field-input{cursor:pointer}select.field-input option{background:var(--surface2)}
-  textarea.field-input{resize:none;height:80px}
-  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-  .chip-group{display:flex;flex-wrap:wrap;gap:8px}
-  .chip{padding:8px 16px;border-radius:100px;border:1px solid var(--border);font-size:13px;color:var(--text-dim);cursor:pointer;transition:all 0.2s;user-select:none}
-  .chip.selected{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600}
-  .optional-badge{display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:2px 10px;font-size:10px;color:var(--text-muted);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase}
-  .collapsible-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:12px 0;border-top:1px solid var(--border);margin-top:4px}
-  .collapsible-label{font-size:12px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase}
-  .collapsible-arrow{font-size:12px;color:var(--text-muted);transition:transform 0.2s}
-  .collapsible-arrow.open{transform:rotate(180deg)}
-  .collapsible-body{display:none;padding-top:12px}.collapsible-body.open{display:block}
-  .photo-upload{border:1px dashed var(--border);border-radius:16px;padding:24px;text-align:center;cursor:pointer;transition:all 0.2s}
-  .photo-upload:hover{border-color:var(--accent)}
-  .photo-upload-icon{font-size:28px;margin-bottom:10px}
-  .photo-upload-label{font-size:13px;color:var(--text-muted);line-height:1.6}
-  .onboard-footer{padding:12px 24px 28px;flex-shrink:0}
-  .btn-primary{width:100%;background:var(--accent);color:#000;border:none;border-radius:14px;padding:16px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;cursor:pointer;transition:all 0.2s;outline:none}
-  .btn-primary:active{transform:scale(0.98);opacity:0.9}
-  .btn-secondary{width:100%;background:transparent;color:var(--text-muted);border:1px solid var(--border);border-radius:14px;padding:14px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:10px;transition:all 0.2s}
-  .btn-secondary:active{opacity:0.7}
-  .coach-level-card{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 15px;cursor:pointer;transition:all 0.2s;margin-bottom:8px}
-  .coach-level-card.selected{border-color:var(--accent);background:rgba(200,241,53,0.08)}
+/* ── SPLASH ── */
+#splash{align-items:center;justify-content:center;gap:14px}
+.logo-box{width:76px;height:76px;background:var(--ac);border-radius:20px;display:flex;
+  align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;
+  font-size:34px;color:#000;animation:glow 2s infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 30px rgba(200,241,53,.2)}50%{box-shadow:0 0 70px rgba(200,241,53,.5)}}
+.logo-title{font-family:'Bebas Neue',sans-serif;font-size:46px;letter-spacing:4px}
+.logo-sub{font-size:12px;color:var(--mt);letter-spacing:3px;text-transform:uppercase}
+.dots{margin-top:52px;display:flex;gap:8px}
+.dot{width:6px;height:6px;background:var(--ac);border-radius:50%;animation:bnc 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes bnc{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-9px);opacity:1}}
 
-  #app{background:var(--bg)}
-  .app-header{padding:52px 20px 12px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
-  .header-logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:var(--accent)}
-  .header-right{display:flex;gap:10px;align-items:center}
-  .header-profile{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;color:var(--text-dim);font-family:'Bebas Neue',sans-serif;font-weight:600}
-  .header-icon-btn{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:all 0.2s}
-  .header-icon-btn:active{transform:scale(0.92);opacity:0.8}
+/* ── ONBOARDING ── */
+#onboarding{background:var(--bg)}
+.ob-hdr{padding:50px 22px 16px;flex-shrink:0}
+.ob-dots{display:flex;gap:5px;margin-bottom:22px}
+.ob-dot{height:3px;border-radius:2px;background:var(--bd);flex:1;transition:background .3s}
+.ob-dot.active{background:var(--ac)}.ob-dot.done{background:var(--ac);opacity:.5}
+.ob-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.ob-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:#fff}
+.ob-time{font-size:11px;color:var(--mt);letter-spacing:1px}
+.ob-sub{font-size:13px;color:#bbb}
+.ob-body{flex:1;overflow-y:auto;padding:0 22px 20px;scrollbar-width:none}
+.ob-body::-webkit-scrollbar{display:none}
+.ob-footer{padding:10px 22px 26px;flex-shrink:0}
 
-  .streak-bar{margin:0 20px 10px;display:flex;gap:10px;align-items:center}
-  .streak-item{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:5px 12px;font-size:12px;color:var(--text-dim)}
-  .streak-item span{color:var(--accent);font-weight:600;font-family:'JetBrains Mono',monospace}
+/* ── FORM ── */
+.fg{margin-bottom:15px}
+.fl{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin-bottom:7px;display:block}
+.fi{width:100%;background:var(--s1);border:1px solid var(--bd);border-radius:12px;
+  padding:13px 15px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:15px;
+  outline:none;transition:border-color .2s;-webkit-appearance:none}
+.fi:focus{border-color:var(--ac)}.fi::placeholder{color:var(--mt)}
+select.fi{cursor:pointer}select.fi option{background:var(--s2)}
+textarea.fi{resize:none;height:76px}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:9px 16px;border-radius:100px;border:1px solid var(--bd);
+  font-size:13px;color:var(--dm);cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none}
+.chip.sel{background:var(--ac);border-color:var(--ac);color:#000;font-weight:600}
+.coll-hdr{display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;padding:11px 0;border-top:1px solid var(--bd);margin-top:4px}
+.coll-lbl{font-size:11px;color:var(--mt);letter-spacing:1px;text-transform:uppercase}
+.coll-arr{font-size:11px;color:var(--mt);transition:transform .2s}
+.coll-arr.open{transform:rotate(180deg)}
+.coll-body{display:none;padding-top:10px}.coll-body.open{display:block}
+.info-box{background:var(--s1);border:1px solid var(--bd);border-radius:12px;
+  padding:11px 14px;font-size:12px;color:var(--dm);line-height:1.6;margin-bottom:14px}
+.info-box.ac{border-color:rgba(200,241,53,.2);background:rgba(200,241,53,.04)}
+.coach-card{display:flex;align-items:center;gap:12px;background:var(--s1);
+  border:1px solid var(--bd);border-radius:14px;padding:13px 15px;
+  cursor:pointer;transition:all .2s;margin-bottom:8px}
+.coach-card.sel{border-color:var(--ac);background:rgba(200,241,53,.07)}
 
-  .alert-banner{margin:0 20px 12px;background:linear-gradient(135deg,rgba(200,241,53,0.1),rgba(200,241,53,0.05));border:1px solid rgba(200,241,53,0.2);border-radius:14px;padding:12px 16px;display:flex;gap:12px;align-items:flex-start;flex-shrink:0;cursor:pointer}
-  .alert-icon{font-size:18px;flex-shrink:0;margin-top:1px}
-  .alert-text{font-size:13px;line-height:1.5;color:var(--text-dim)}
-  .alert-text strong{color:var(--accent)}
+/* ── BUTTONS ── */
+.btn{width:100%;border:none;border-radius:14px;padding:15px;cursor:pointer;
+  transition:all .2s;outline:none;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px}
+.btn:active{transform:scale(.98);opacity:.9}
+.btn-a{background:var(--ac);color:#000}
+.btn-b{background:transparent;color:var(--mt);border:1px solid var(--bd);
+  font-family:'DM Sans',sans-serif;font-size:14px;letter-spacing:0;margin-top:9px}
+.btn-b:active{opacity:.7}
+.btn-sm{padding:8px 16px;border-radius:100px;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}
+.btn-sm:active{opacity:.75}
+.btn-sm-a{background:var(--ac);color:#000}
+.btn-sm-b{background:var(--s2);border:1px solid var(--bd);color:#ccc}
+.btn-ghost{background:transparent;border:1.5px dashed rgba(200,241,53,.35);border-radius:14px;
+  padding:13px;color:var(--ac);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.btn-skip{background:transparent;border:none;color:var(--mt);font-size:13px;
+  cursor:pointer;margin-top:8px;padding:6px 0;width:100%;text-align:center}
 
-  .tabs{display:flex;padding:0 20px;margin-bottom:14px;flex-shrink:0;border-bottom:1px solid var(--border)}
-  .tab{flex:1;padding:10px 0;text-align:center;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.2s}
-  .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-  .tab-content{display:none;flex:1;overflow:hidden;flex-direction:column}
-  .tab-content.active{display:flex}
+/* ── APP HEADER ── */
+#app{background:var(--bg)}
+.app-hdr{padding:50px 18px 10px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.hdr-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--ac)}
+.hdr-right{display:flex;gap:9px;align-items:center}
+.hdr-btn{width:36px;height:36px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;
+  transition:all .2s;color:var(--dm);font-family:'Bebas Neue',sans-serif;font-weight:600}
+.hdr-btn:active{transform:scale(.92)}
+.streak-bar{margin:0 18px 9px;display:flex;gap:9px}
+.streak-pill{display:flex;align-items:center;gap:5px;background:var(--s1);border:1px solid var(--bd);
+  border-radius:100px;padding:5px 11px;font-size:11px;color:var(--dm)}
+.streak-pill span{color:var(--ac);font-weight:600;font-family:'JetBrains Mono',monospace}
+.alert-bar{margin:0 18px 10px;background:linear-gradient(135deg,rgba(200,241,53,.09),rgba(200,241,53,.04));
+  border:1px solid rgba(200,241,53,.18);border-radius:13px;padding:11px 14px;
+  display:flex;gap:11px;align-items:flex-start;cursor:pointer;flex-shrink:0}
+.alert-ico{font-size:17px;flex-shrink:0;margin-top:1px}
+.alert-txt{font-size:13px;line-height:1.5;color:var(--dm)}
+.alert-txt strong{color:var(--ac)}
 
-  .chat-messages{flex:1;overflow-y:auto;padding:14px 20px;display:flex;flex-direction:column;gap:14px;scrollbar-width:none}
-  .chat-messages::-webkit-scrollbar{display:none}
-  .msg{display:flex;gap:10px;max-width:100%;animation:msgIn 0.3s ease}
-  @keyframes msgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-  .msg.user{flex-direction:row-reverse}
-  .msg-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px}
-  .msg-avatar.ai{background:var(--accent);color:#000;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px}
-  .msg-avatar.user-av{background:var(--surface2);border:1px solid var(--border)}
-  .msg-bubble{max-width:calc(100% - 80px);padding:11px 14px;border-radius:18px;font-size:14px;line-height:1.6}
-  .msg.ai .msg-bubble{background:var(--surface);border:1px solid var(--border);border-top-left-radius:4px}
-  .msg.user .msg-bubble{background:var(--accent);color:#000;border-top-right-radius:4px;font-weight:500}
-  .msg-bubble strong{color:var(--accent)}.msg.user .msg-bubble strong{color:#000}
-  .msg-time{font-size:10px;color:var(--text-muted);margin-top:4px;text-align:right}
-  .msg.ai .msg-time{text-align:left}
-  .typing-indicator{display:flex;gap:4px;padding:4px 0}
-  .typing-dot{width:6px;height:6px;background:var(--text-muted);border-radius:50%;animation:typingBounce 1.2s infinite}
-  .typing-dot:nth-child(2){animation-delay:0.2s}.typing-dot:nth-child(3){animation-delay:0.4s}
-  @keyframes typingBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
-  .chat-input-area{padding:10px 20px 28px;flex-shrink:0;display:flex;gap:10px;align-items:flex-end;border-top:1px solid var(--border);background:var(--bg)}
-  .chat-textarea{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:12px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;resize:none;max-height:120px;line-height:1.5;transition:border-color 0.2s}
-  .chat-textarea:focus{border-color:rgba(200,241,53,0.4)}.chat-textarea::placeholder{color:var(--text-muted)}
-  .send-btn{width:44px;height:44px;border-radius:50%;background:var(--accent);border:none;color:#000;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;outline:none}
-  .send-btn:active{transform:scale(0.92)}
-  .quick-chips{padding:0 20px 10px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
-  .quick-chips::-webkit-scrollbar{display:none}
-  .quick-chip{padding:6px 14px;border-radius:100px;border:1px solid var(--border);font-size:12px;color:var(--text-dim);cursor:pointer;white-space:nowrap;transition:all 0.2s;background:var(--surface)}
-  .quick-chip:active{background:var(--accent);color:#000;border-color:var(--accent)}
+/* ── TABS ── */
+.tabs{display:flex;padding:0 18px;flex-shrink:0;border-bottom:1px solid var(--bd);margin-bottom:12px}
+.tab{flex:1;padding:10px 0;text-align:center;font-size:10px;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--mt);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.tab.active{color:var(--ac);border-bottom-color:var(--ac)}
+.tc{display:none;flex:1;overflow:hidden;flex-direction:column}
+.tc.active{display:flex}
 
-  /* SCHEDA */
-  .scheda-scroll{flex:1;overflow-y:auto;padding:0 20px 24px;scrollbar-width:none}
-  .scheda-scroll::-webkit-scrollbar{display:none}
-  .scheda-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-  .scheda-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--text-dim)}
-  .scheda-actions{display:flex;gap:8px}
-  .scheda-btn{padding:6px 14px;border-radius:100px;border:1px solid var(--border);font-size:12px;color:var(--text-dim);cursor:pointer;background:var(--surface);transition:all 0.2s;white-space:nowrap}
-  .scheda-btn:active{background:var(--accent);color:#000;border-color:var(--accent)}
-  .scheda-btn.primary{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
-  .scheda-day{margin-bottom:20px}
-  .scheda-day-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-  .day-badge{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;color:#000;background:var(--accent);padding:3px 10px;border-radius:6px}
-  .day-badge.rest{background:var(--surface2);color:var(--text-muted)}
-  .day-name{font-size:15px;font-weight:600}
-  .day-group{font-size:11px;color:var(--text-muted);margin-left:auto;letter-spacing:1px;text-transform:uppercase}
-  .exercise-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 15px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.2s}
-  .exercise-card:active{background:var(--surface2)}.exercise-card.has-alert{border-color:rgba(200,241,53,0.3)}
-  .ex-num{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent);width:26px;flex-shrink:0;line-height:1}
-  .ex-info{flex:1}.ex-name{font-size:14px;font-weight:600;margin-bottom:2px}
-  .ex-detail{font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace}
-  .ex-alert{font-size:11px;color:var(--accent);margin-top:3px;font-weight:500}
-  .ex-status{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
-  .ex-status.done{background:var(--accent);border-color:var(--accent);color:#000}
-  .scheda-empty{text-align:center;padding:40px 20px}
-  .scheda-empty-icon{font-size:48px;margin-bottom:16px}
-  .scheda-empty-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;margin-bottom:8px;color:var(--text-dim)}
-  .scheda-empty-sub{font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:24px}
+/* ── CHAT ── */
+.chat-msgs{flex:1;overflow-y:auto;padding:12px 18px;display:flex;flex-direction:column;gap:13px;scrollbar-width:none}
+.chat-msgs::-webkit-scrollbar{display:none}
+.msg{display:flex;gap:9px;animation:msgIn .3s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.u{flex-direction:row-reverse}
+.av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
+.av.ai{background:var(--ac);color:#000;font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:1px}
+.av.me{background:var(--s2);border:1px solid var(--bd)}
+.bubble{max-width:calc(100% - 76px);padding:10px 13px;border-radius:17px;font-size:14px;line-height:1.6}
+.msg:not(.u) .bubble{background:var(--s1);border:1px solid var(--bd);border-top-left-radius:4px}
+.msg.u .bubble{background:var(--ac);color:#000;border-top-right-radius:4px;font-weight:500}
+.bubble strong{color:var(--ac)}.msg.u .bubble strong{color:#000}
+.msg-time{font-size:9px;color:var(--mt);margin-top:3px}
+.msg:not(.u) .msg-time{text-align:left}.msg.u .msg-time{text-align:right}
+.typing-row{display:flex;gap:4px;padding:3px 0}
+.tdot{width:5px;height:5px;background:var(--mt);border-radius:50%;animation:tb 1.2s infinite}
+.tdot:nth-child(2){animation-delay:.2s}.tdot:nth-child(3){animation-delay:.4s}
+@keyframes tb{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+.quick-row{padding:0 18px 9px;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.quick-row::-webkit-scrollbar{display:none}
+.qchip{padding:6px 13px;border-radius:100px;border:1px solid var(--bd);font-size:12px;
+  color:var(--dm);cursor:pointer;white-space:nowrap;background:var(--s1);transition:all .2s}
+.qchip:active{background:var(--ac);color:#000;border-color:var(--ac)}
+.chat-bar{padding:9px 18px 24px;flex-shrink:0;display:flex;gap:9px;align-items:flex-end;
+  border-top:1px solid var(--bd);background:var(--bg)}
+.chat-input{flex:1;background:var(--s1);border:1px solid var(--bd);border-radius:20px;
+  padding:11px 15px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:14px;
+  outline:none;resize:none;max-height:110px;line-height:1.5;transition:border-color .2s}
+.chat-input:focus{border-color:rgba(200,241,53,.4)}.chat-input::placeholder{color:var(--mt)}
+.send-btn{width:42px;height:42px;border-radius:50%;background:var(--ac);border:none;
+  color:#000;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.send-btn:active{transform:scale(.9)}
 
-  /* DIETA */
-  .dieta-scroll{flex:1;overflow-y:auto;padding:0 20px 24px;scrollbar-width:none}
-  .dieta-scroll::-webkit-scrollbar{display:none}
-  .macro-ring{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:18px}
-  .macro-title{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px}
-  .macro-bar-header{display:flex;justify-content:space-between;margin-bottom:5px;font-size:13px}
-  .macro-bar-label{color:var(--text-dim)}.macro-bar-value{font-family:'JetBrains Mono',monospace;font-size:12px}
-  .macro-bar-track{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-bottom:11px}
-  .macro-bar-fill{height:100%;border-radius:3px;transition:width 1s ease}
-  .bar-protein{background:var(--accent)}.bar-carbs{background:var(--accent2)}.bar-fat{background:var(--blue)}
-  .meal-section{margin-bottom:18px}
-  .meal-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px}
-  .meal-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 15px;margin-bottom:8px}
-  .meal-name{font-size:14px;font-weight:600;margin-bottom:5px}
-  .meal-items{font-size:13px;color:var(--text-muted);line-height:1.7}
-  .meal-macros{display:flex;gap:12px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border)}
-  .meal-macro-item{font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace}
-  .meal-macro-item span{color:var(--text)}
+/* ── SCHEDA & DIETA TABS ── */
+.tab-scroll{flex:1;overflow-y:auto;padding:0 18px 24px;scrollbar-width:none}
+.tab-scroll::-webkit-scrollbar{display:none}
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--dm)}
+.sec-actions{display:flex;gap:7px}
+.empty-state{text-align:center;padding:40px 16px}
+.empty-ico{font-size:42px;margin-bottom:14px}
+.empty-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--dm);margin-bottom:8px}
+.empty-sub{font-size:13px;color:var(--mt);line-height:1.6;margin-bottom:20px}
+.day-badge{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;
+  color:#000;background:var(--ac);padding:3px 10px;border-radius:6px;display:inline-block;margin-bottom:8px}
+.es-card{background:var(--s1);border:1px solid var(--bd);border-radius:13px;
+  padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:11px}
+.es-num{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--ac);width:24px;flex-shrink:0}
+.es-info{flex:1}
+.es-name{font-size:14px;font-weight:600;margin-bottom:2px}
+.es-det{font-size:12px;color:var(--mt);font-family:'JetBrains Mono',monospace}
 
-  /* PROGRESSI */
-  .progressi-scroll{flex:1;overflow-y:auto;padding:0 20px 24px;scrollbar-width:none}
-  .progressi-scroll::-webkit-scrollbar{display:none}
-  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
-  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px}
-  .stat-card.highlight{background:linear-gradient(135deg,rgba(200,241,53,0.12),rgba(200,241,53,0.04));border-color:rgba(200,241,53,0.3)}
-  .stat-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:7px}
-  .stat-value{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:1px;line-height:1;color:var(--accent)}
-  .stat-unit{font-size:13px;color:var(--text-muted)}.stat-delta{font-size:12px;color:var(--accent);margin-top:4px}
-  .chart-section{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:14px}
-  .chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-  .chart-title{font-size:13px;font-weight:600}.chart-period{font-size:11px;color:var(--text-muted);letter-spacing:1px}
-  .mini-chart{display:flex;align-items:flex-end;gap:6px;height:60px}
-  .mini-bar{flex:1;border-radius:4px 4px 0 0;background:var(--surface2)}
-  .mini-bar.accent{background:var(--accent);opacity:0.8}.mini-bar.accent:last-child{opacity:1}
-  .chart-labels{display:flex;gap:6px;margin-top:6px}
-  .chart-label{flex:1;text-align:center;font-size:9px;color:var(--text-muted)}
-  .exercise-progress{margin-bottom:11px}
-  .ex-prog-header{display:flex;justify-content:space-between;margin-bottom:5px;font-size:13px}
-  .ex-prog-name{font-weight:600}.ex-prog-values{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted)}
-  .ex-prog-bar{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
-  .ex-prog-fill{height:100%;background:var(--accent);border-radius:2px}
+/* ── MACRO BARS ── */
+.macro-card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:16px;margin-bottom:14px}
+.macro-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mt);margin-bottom:13px}
+.mb-hdr{display:flex;justify-content:space-between;margin-bottom:5px;font-size:13px}
+.mb-lbl{color:var(--dm)}.mb-val{font-family:'JetBrains Mono',monospace;font-size:12px}
+.mb-track{height:5px;background:var(--s2);border-radius:3px;overflow:hidden;margin-bottom:10px}
+.mb-fill{height:100%;border-radius:3px;transition:width .8s ease}
+.fp{background:var(--ac)}.fc{background:var(--ac2)}.ff{background:var(--bl)}
 
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;align-items:flex-end;justify-content:center}
-  .modal-overlay.open{display:flex}
-  .modal-sheet{width:100%;max-width:480px;background:var(--surface);border-radius:24px 24px 0 0;padding:22px 24px 44px;animation:slideUp 0.3s ease}
-  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-  .modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 22px}
-  .modal-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:6px}
-  .modal-sub{font-size:13px;color:var(--text-muted);margin-bottom:22px;line-height:1.6}
-  .log-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;margin-bottom:16px;transition:border-color 0.2s}
-  .log-input:focus{border-color:var(--accent)}
+/* ── PROGRESSI ── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}
+.stat-card{background:var(--s1);border:1px solid var(--bd);border-radius:13px;padding:14px}
+.stat-card.hl{background:linear-gradient(135deg,rgba(200,241,53,.1),rgba(200,241,53,.03));border-color:rgba(200,241,53,.28)}
+.stat-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mt);margin-bottom:6px}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;line-height:1;color:var(--ac)}
+.stat-unit{font-size:12px;color:var(--mt)}.stat-delta{font-size:11px;color:var(--ac);margin-top:3px}
+.chart-box{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:15px;margin-bottom:13px}
+.chart-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.chart-title{font-size:13px;font-weight:600}.chart-period{font-size:10px;color:var(--mt);letter-spacing:1px}
 
-  .section-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;margin-bottom:12px;color:var(--text-dim)}
-  .info-note{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 15px;font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:18px}
+/* ── BUILDER SCHEDA ── */
+#builderScreen{background:var(--bg)}
+.builder-hdr{padding:50px 18px 12px;flex-shrink:0;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--bd)}
+.builder-body{flex:1;overflow-y:auto;padding:16px 18px 20px;scrollbar-width:none}
+.builder-body::-webkit-scrollbar{display:none}
+.builder-footer{padding:11px 18px 28px;flex-shrink:0;border-top:1px solid var(--bd)}
+.bsez{margin-bottom:22px}
+.bsez-hdr{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.bsez-name{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;color:var(--ac);flex:1}
+.bes-card{background:var(--s1);border:1px solid var(--bd);border-radius:13px;
+  padding:13px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
+.bes-info{flex:1}
+.bes-name{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px}
+.bes-det{font-size:13px;color:var(--ac);font-family:'JetBrains Mono',monospace;font-weight:600}
+.bes-rec{font-size:11px;color:var(--mt);margin-top:2px}
+.bes-actions{display:flex;gap:7px;flex-shrink:0;padding-top:1px}
+.bes-btn{background:var(--s2);border:1px solid var(--bd);border-radius:8px;
+  padding:7px 11px;font-size:12px;cursor:pointer;color:#ccc}
+.bes-btn:active{opacity:.7}
+.builder-empty{background:var(--s1);border:1px dashed var(--bd);border-radius:12px;
+  padding:15px;text-align:center;color:var(--mt);font-size:13px}
 
-  .analyzing-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px}
-  .analyzing-overlay.open{display:flex}
-  .analyzing-text{font-size:15px;color:var(--text-dim);letter-spacing:1px}
-  .analyzing-sub{font-size:12px;color:var(--text-muted)}
+/* ── MODALS ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:100;
+  align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.sheet{width:100%;max-width:480px;background:var(--s1);border-radius:22px 22px 0 0;
+  padding:20px 22px 40px;animation:up .3s ease;max-height:88vh;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none}
+.sheet::-webkit-scrollbar{display:none}
+@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.handle{width:38px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 20px}
+.sh-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;margin-bottom:5px}
+.sh-sub{font-size:13px;color:var(--mt);margin-bottom:18px;line-height:1.6}
+.choice-card{background:var(--s2);border-radius:15px;padding:16px;cursor:pointer;margin-bottom:11px}
+.choice-card.ac-bd{border:2px solid var(--ac)}
+.choice-card.dm-bd{border:1px solid var(--bd)}
+.choice-card:active{opacity:.85}
+.choice-ico{font-size:20px;margin-bottom:7px}
+.choice-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
+.choice-sub{font-size:13px;color:#aaa;line-height:1.5}
+
+/* ── ANALYZING ── */
+.analyzing{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:200;
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:13px}
+.analyzing.open{display:flex}
 </style>
 </head>
 <body>
 
+<!-- ══════════ SPLASH ══════════ -->
 <div id="splash" class="screen active">
-  <div class="logo-mark">FM</div>
+  <div class="logo-box">FM</div>
   <div class="logo-title">FITMIND</div>
   <div class="logo-sub">AI · Nutrition · Training</div>
-  <div class="splash-loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
 </div>
 
+<!-- ══════════ ONBOARDING ══════════ -->
 <div id="onboarding" class="screen">
-  <div class="onboard-header">
-    <div class="step-indicator" id="stepIndicator">
-      <div class="step-dot active"></div><div class="step-dot"></div>
-      <div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div>
+  <div class="ob-hdr">
+    <div class="ob-dots" id="obDots">
+      <div class="ob-dot active"></div><div class="ob-dot"></div>
+      <div class="ob-dot"></div><div class="ob-dot"></div>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <div class="onboard-title" id="onboardTitle">CHI SEI?</div>
-      <div id="onboardTime" style="font-size:11px;color:var(--text-muted);letter-spacing:1px">~2 min</div>
+    <div class="ob-row">
+      <div class="ob-title" id="obTitle">CHI SEI?</div>
+      <div class="ob-time" id="obTime">~2 min</div>
     </div>
-    <div class="onboard-sub" id="onboardSub">Iniziamo con i tuoi dati di base</div>
+    <div class="ob-sub" id="obSub">Dati anagrafici e fisici</div>
   </div>
-  <div class="onboard-body" id="onboardBody"></div>
-  <div class="onboard-footer">
-    <button class="btn-primary" id="onboardNext" onclick="nextStep()">CONTINUA</button>
-    <button class="btn-secondary" id="onboardBack" onclick="prevStep()" style="display:none">Indietro</button>
-    <button class="btn-secondary" id="onboardSkip" onclick="showApp()" style="display:none;border:none;color:var(--text-muted);font-size:13px;margin-top:4px">Salta questo step — carico dopo →</button>
+  <div class="ob-body" id="obBody"></div>
+  <div class="ob-footer">
+    <button class="btn btn-a" id="obNext" onclick="nextStep()">CONTINUA</button>
+    <button class="btn btn-b" id="obBack" onclick="prevStep()" style="display:none">← Indietro</button>
+    <button class="btn-skip" id="obSkip" onclick="launchApp()" style="display:none">Salta → carico dopo</button>
   </div>
 </div>
 
+<!-- ══════════ MAIN APP ══════════ -->
 <div id="app" class="screen">
-  <div class="app-header">
-    <div class="header-logo">FITMIND</div>
-    <div class="header-right">
-      <div class="header-icon-btn" onclick="showImportModal()" title="Carica documenti">📂</div>
-      <div class="header-icon-btn" onclick="confirmReset()" title="Reset" style="color:var(--red)">⚠️</div>
-      <div class="header-profile" id="profileBtn" onclick="showProfile()">👤</div>
+  <div class="app-hdr">
+    <div class="hdr-logo">FITMIND</div>
+    <div class="hdr-right">
+      <div class="hdr-btn" onclick="confirmReset()" style="color:var(--rd)" title="Reset">⚠️</div>
+      <div class="hdr-btn" id="profileBtn" onclick="showProfile()">👤</div>
     </div>
   </div>
 
   <div class="streak-bar">
-    <div class="streak-item">🔥 Streak <span id="streakCount">0</span> gg</div>
-    <div class="streak-item">⚖️ Peso <span id="lastWeightVal">—</span></div>
+    <div class="streak-pill">🔥 Streak <span id="streakCount">0</span> gg</div>
+    <div class="streak-pill">⚖️ <span id="lastWeightVal">—</span></div>
   </div>
 
-  <div class="alert-banner" id="alertBanner" onclick="goToChat()">
-    <div class="alert-icon">⚡</div>
-    <div class="alert-text" id="alertText"><strong>Bentornato!</strong> Tocca per parlare con il tuo coach AI.</div>
+  <div class="alert-bar" onclick="goToChat()">
+    <div class="alert-ico">⚡</div>
+    <div class="alert-txt" id="alertTxt"><strong>Bentornato!</strong> Tocca per parlare con il coach.</div>
   </div>
 
   <div class="tabs">
@@ -260,1053 +303,1643 @@
     <div class="tab" onclick="switchTab('progressi',this)">Progressi</div>
   </div>
 
-  <!-- CHAT -->
-  <div class="tab-content active" id="tab-chat">
-    <div class="chat-messages" id="chatMessages">
-      <div class="msg ai">
-        <div class="msg-avatar ai">FM</div>
-        <div><div class="msg-bubble">Ciao! Sono pronto. Scrivimi cosa hai fatto oggi 💪</div><div class="msg-time">Ora</div></div>
+  <!-- TAB CHAT -->
+  <div class="tc active" id="tc-chat">
+    <div class="chat-msgs" id="chatMsgs">
+      <div class="msg">
+        <div class="av ai">FM</div>
+        <div><div class="bubble">Ciao! Sono pronto. Scrivimi cosa hai fatto oggi 💪</div><div class="msg-time">Ora</div></div>
       </div>
     </div>
-    <div class="quick-chips">
-      <div class="quick-chip" onclick="quickSend('Ho finito l\'allenamento di oggi')">🏋️ Log allenamento</div>
-      <div class="quick-chip" onclick="quickSend('Ecco cosa ho mangiato oggi')">🍽️ Log pasti</div>
-      <div class="quick-chip" onclick="quickSend('Generami la mia scheda personalizzata')">📋 Genera scheda</div>
-      <div class="quick-chip" onclick="quickSend('Come sto progredendo?')">📈 Progressi</div>
-      <div class="quick-chip" onclick="quickSend('Oggi sono stanco')">😓 Sono stanco</div>
-      <div class="quick-chip" onclick="quickSend('Ho un dolore fisico')">🩹 Ho un dolore</div>
-      <div class="quick-chip" onclick="quickSend('Ho saltato diversi giorni')">⏸️ Ho saltato giorni</div>
+    <div class="quick-row">
+      <div class="qchip" onclick="qs('Ho finito l\'allenamento di oggi')">🏋️ Log allenamento</div>
+      <div class="qchip" onclick="qs('Ecco cosa ho mangiato oggi')">🍽️ Log pasti</div>
+      <div class="qchip" onclick="qs('Come sto progredendo?')">📈 Progressi</div>
+      <div class="qchip" onclick="qs('Oggi sono stanco')">😓 Stanco</div>
+      <div class="qchip" onclick="qs('Ho un dolore fisico')">🩹 Dolore</div>
+      <div class="qchip" onclick="qs('Ho saltato diversi giorni di allenamento')">⏸️ Ho saltato</div>
     </div>
-    <div class="chat-input-area">
-      <textarea class="chat-textarea" id="chatInput" placeholder="Scrivi liberamente..." rows="1"
+    <div class="chat-bar">
+      <textarea class="chat-input" id="chatIn" placeholder="Scrivi liberamente..." rows="1"
         onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-      <button class="send-btn" onclick="sendMessage()">➤</button>
+      <button class="send-btn" onclick="sendMsg()">➤</button>
     </div>
   </div>
 
-  <!-- SCHEDA -->
-  <div class="tab-content" id="tab-scheda">
-    <div class="scheda-scroll">
-      <div class="scheda-header">
-        <div class="scheda-title">LA MIA SCHEDA</div>
-        <div class="scheda-actions">
-          <div class="scheda-btn" onclick="mostraInserimentoScheda()">✏️ Modifica</div>
-          <div class="scheda-btn" onclick="cancellaSchedaAttiva()">🗑️ Cancella</div>
+  <!-- TAB SCHEDA -->
+  <div class="tc" id="tc-scheda">
+    <div class="tab-scroll">
+      <div class="sec-hdr">
+        <div class="sec-title">LA MIA SCHEDA</div>
+        <div class="sec-actions">
+          <button class="btn-sm btn-sm-b" onclick="openBuilder()">✏️ Modifica</button>
+          <button class="btn-sm btn-sm-b" onclick="deleteScheda()">🗑️</button>
         </div>
       </div>
-      <div id="schedaContent">
-        <div class="scheda-empty">
-          <div class="scheda-empty-icon">📋</div>
-          <div class="scheda-empty-title">NESSUNA SCHEDA</div>
-          <div class="scheda-empty-sub">Inserisci la tua scheda manualmente, caricala tramite foto, oppure chiedi all'AI di generartene una.</div>
-          <button class="btn-primary" style="margin-bottom:12px" onclick="mostraInserimentoScheda()">✍️ INSERISCI LA MIA SCHEDA</button>
-          <button class="btn-primary" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);margin-bottom:12px" onclick="quickSend('Generami la mia scheda di allenamento personalizzata basata sul mio profilo')">🤖 GENERA CON AI</button>
-          <div class="scheda-btn" style="display:inline-block;padding:10px 20px" onclick="showImportModal()">📸 Carica foto scheda</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- DIETA -->
-  <div class="tab-content" id="tab-dieta">
-    <div class="dieta-scroll">
-      <div class="macro-ring">
-        <div class="macro-title">MACRO OGGI — STIMATI</div>
-        <div class="macro-bar-header"><span class="macro-bar-label">Proteine</span><span class="macro-bar-value" style="color:var(--accent)" id="protVal">— / —g</span></div>
-        <div class="macro-bar-track"><div class="macro-bar-fill bar-protein" id="protBar" style="width:0%"></div></div>
-        <div class="macro-bar-header"><span class="macro-bar-label">Carboidrati</span><span class="macro-bar-value" style="color:var(--accent2)" id="carbVal">— / —g</span></div>
-        <div class="macro-bar-track"><div class="macro-bar-fill bar-carbs" id="carbBar" style="width:0%"></div></div>
-        <div class="macro-bar-header"><span class="macro-bar-label">Grassi</span><span class="macro-bar-value" style="color:var(--blue)" id="fatVal">— / —g</span></div>
-        <div class="macro-bar-track" style="margin-bottom:0"><div class="macro-bar-fill bar-fat" id="fatBar" style="width:0%"></div></div>
-      </div>
-      <div class="info-note">🍽️ Logga i tuoi pasti nel chatbot scrivendo liberamente. L'AI calcola i macro e aggiorna il tuo piano.</div>
-      <div id="dietaContent">
-        <div class="meal-section">
-          <div class="meal-label">PIANO GIORNALIERO</div>
-          <div class="meal-card">
-            <div class="meal-name">Nessun piano ancora</div>
-            <div class="meal-items">Scrivi nel chatbot cosa hai mangiato oggi — l'AI analizza e ti dice cosa manca o cosa cambiare.</div>
-          </div>
+      <div id="schedaView">
+        <!-- Renderizzato da JS -->
+        <div class="empty-state">
+          <div class="empty-ico">📋</div>
+          <div class="empty-title">NESSUNA SCHEDA</div>
+          <div class="empty-sub">Crea la tua scheda guidata oppure chiedi all'AI di generartene una.</div>
+          <button class="btn btn-a" style="margin-bottom:10px" onclick="openBuilder()">✍️ CREA SCHEDA GUIDATA</button>
+          <button class="btn btn-b" onclick="qs('Generami una scheda di allenamento personalizzata basata sul mio profilo completo')">🤖 GENERA CON AI</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- PROGRESSI -->
-  <div class="tab-content" id="tab-progressi">
-    <div class="progressi-scroll">
+  <!-- TAB DIETA -->
+  <div class="tc" id="tc-dieta">
+    <div class="tab-scroll">
+      <div class="macro-card">
+        <div class="macro-lbl">TARGET GIORNALIERO</div>
+        <div class="mb-hdr"><span class="mb-lbl">Proteine</span><span class="mb-val" id="mvProt" style="color:var(--ac)">— / —g</span></div>
+        <div class="mb-track"><div class="mb-fill fp" id="mfProt" style="width:0%"></div></div>
+        <div class="mb-hdr"><span class="mb-lbl">Carboidrati</span><span class="mb-val" id="mvCarb" style="color:var(--ac2)">— / —g</span></div>
+        <div class="mb-track"><div class="mb-fill fc" id="mfCarb" style="width:0%"></div></div>
+        <div class="mb-hdr"><span class="mb-lbl">Grassi</span><span class="mb-val" id="mvFat" style="color:var(--bl)">— / —g</span></div>
+        <div class="mb-track" style="margin-bottom:0"><div class="mb-fill ff" id="mfFat" style="width:0%"></div></div>
+      </div>
+      <div class="info-box" style="display:flex;align-items:center;justify-content:space-between">
+        <span>🍽️ Logga i pasti nel chatbot — l'AI ricorda tutto.</span>
+        <button class="btn-sm btn-sm-a" onclick="openDietaModal()" style="margin-left:10px;flex-shrink:0">⚙️ Target</button>
+      </div>
+      <div id="dietaLog">
+        <!-- Diario pasti di oggi, renderizzato da JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB PROGRESSI -->
+  <div class="tc" id="tc-progressi">
+    <div class="tab-scroll">
       <div class="stat-grid">
-        <div class="stat-card highlight">
-          <div class="stat-label">Peso</div>
-          <div class="stat-value" id="statPeso">—<span class="stat-unit">kg</span></div>
-          <div class="stat-delta" id="statPesoDelta" style="color:var(--text-muted)">dì il tuo peso in chat</div>
+        <div class="stat-card hl">
+          <div class="stat-lbl">Peso</div>
+          <div class="stat-val" id="spPeso">—<span class="stat-unit">kg</span></div>
+          <div class="stat-delta" id="spPesoDelta" style="color:var(--mt)">dì il peso in chat</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Sessioni</div>
-          <div class="stat-value" id="statSessioni">0</div>
-          <div class="stat-delta" style="color:var(--text-muted)">totale</div>
+          <div class="stat-lbl">Sessioni</div>
+          <div class="stat-val" id="spSess">0</div>
+          <div class="stat-delta" style="color:var(--mt)">totale</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Record</div>
-          <div class="stat-value" id="statRecord">—</div>
-          <div class="stat-delta" id="statRecordLabel" style="color:var(--text-muted)">nessun record ancora</div>
+          <div class="stat-lbl">Streak</div>
+          <div class="stat-val" id="spStreak">0<span class="stat-unit">gg</span></div>
+          <div class="stat-delta" id="spStreakLbl" style="color:var(--mt)">inizia oggi</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Streak</div>
-          <div class="stat-value" id="statStreak">0<span class="stat-unit">gg</span></div>
-          <div class="stat-delta" id="statStreakLabel" style="color:var(--text-muted)">inizia oggi</div>
+          <div class="stat-lbl">Obiettivo</div>
+          <div class="stat-val" id="spObj" style="font-size:15px;padding-top:6px;line-height:1.2">—</div>
+          <div class="stat-delta" id="spObjDelta" style="color:var(--mt)">—</div>
         </div>
       </div>
-      <div class="chart-section">
-        <div class="chart-header"><div class="chart-title">Peso corporeo</div><div class="chart-period">ANDAMENTO</div></div>
-        <div class="mini-chart" id="pesoChart">
-          <div style="width:100%;text-align:center;color:var(--text-muted);font-size:12px;align-self:center">Logga il peso nel chatbot per vedere il grafico</div>
-        </div>
-      </div>
-      <div class="chart-section">
-        <div class="chart-header"><div class="chart-title">Log allenamenti</div><div class="chart-period">ULTIMI 7 GG</div></div>
-        <div id="allenamentoLog" style="font-size:13px;color:var(--text-muted)">Nessun allenamento registrato ancora.</div>
+      <div class="chart-box">
+        <div class="chart-hdr"><div class="chart-title">Diario alimentare</div><div class="chart-period">OGGI</div></div>
+        <div id="dietaOggi" style="font-size:13px;color:var(--mt)">Nessun pasto registrato ancora.</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ANALYZING OVERLAY -->
-<div class="analyzing-overlay" id="analyzingOverlay">
-  <div class="logo-mark" style="width:60px;height:60px;font-size:24px">FM</div>
-  <div class="analyzing-text">Sto analizzando...</div>
-  <div class="analyzing-sub">L'AI sta elaborando il contenuto</div>
-  <div class="splash-loading" style="margin-top:12px"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-</div>
-
-<!-- RESET 1 -->
-<div class="modal-overlay" id="resetModal1">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title" style="color:var(--red)">⚠️ CANCELLA TUTTO</div>
-    <div class="modal-sub">Stai per cancellare tutti i dati: profilo, storico, pasti, progressi. Sei sicuro?</div>
-    <button class="btn-primary" style="background:var(--red);color:#fff" onclick="confirmReset2()">SÌ, CONTINUA</button>
-    <button class="btn-secondary" onclick="document.getElementById('resetModal1').classList.remove('open')">Annulla</button>
-  </div>
-</div>
-
-<!-- RESET 2 -->
-<div class="modal-overlay" id="resetModal2">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title" style="color:var(--red)">ULTIMA CONFERMA</div>
-    <div class="modal-sub">Azione irreversibile. Tutti i tuoi dati verranno eliminati definitivamente.</div>
-    <button class="btn-primary" style="background:var(--red);color:#fff" onclick="executeReset()">SÌ, CANCELLA TUTTO</button>
-    <button class="btn-secondary" onclick="document.getElementById('resetModal2').classList.remove('open')">No, torna indietro</button>
-  </div>
-</div>
-
-<!-- IMPORT MODAL -->
-<div class="modal-overlay" id="importModal">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">CARICA DOCUMENTI</div>
-    <div class="modal-sub">Carica la tua scheda o dieta attuale. L'AI la analizza e la integra nel tuo profilo.</div>
-    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
-      <div class="photo-upload" onclick="document.getElementById('inputScheda').click()" style="text-align:left;padding:16px 18px;display:flex;align-items:center;gap:14px">
-        <div style="font-size:26px;flex-shrink:0">🏋️</div>
-        <div><div style="font-size:14px;font-weight:600;margin-bottom:3px">Scheda allenamento</div>
-        <div style="font-size:12px;color:var(--text-muted)">Foto o PDF della scheda attuale</div>
-        <div id="schedaStatus" style="font-size:12px;color:var(--accent);margin-top:3px;display:none">✓ Caricata</div></div>
-      </div>
-      <input type="file" id="inputScheda" accept="image/*,application/pdf" style="display:none" onchange="handleFileUpload(this,'scheda')">
-      <div class="photo-upload" onclick="document.getElementById('inputDieta').click()" style="text-align:left;padding:16px 18px;display:flex;align-items:center;gap:14px">
-        <div style="font-size:26px;flex-shrink:0">🥗</div>
-        <div><div style="font-size:14px;font-weight:600;margin-bottom:3px">Piano alimentare</div>
-        <div style="font-size:12px;color:var(--text-muted)">Foto o PDF della dieta prescritta</div>
-        <div id="dietaStatus" style="font-size:12px;color:var(--accent);margin-top:3px;display:none">✓ Caricata</div></div>
-      </div>
-      <input type="file" id="inputDieta" accept="image/*,application/pdf" style="display:none" onchange="handleFileUpload(this,'dieta')">
+<!-- ══════════ BUILDER SCHEDA ══════════ -->
+<div id="builderScreen" class="screen">
+  <div class="builder-hdr">
+    <button onclick="closeBuilder()" style="width:38px;height:38px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);font-size:19px;cursor:pointer;flex-shrink:0;color:#ddd;outline:none">←</button>
+    <div style="flex:1;margin-left:4px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:2px;color:#fff">COSTRUISCI SCHEDA</div>
+      <div style="font-size:11px;color:#777;margin-top:1px">Aggiungi sezioni ed esercizi</div>
     </div>
-    <button class="btn-primary" id="importAnalyzeBtn" onclick="analyzeImports()" style="display:none">ANALIZZA CON AI</button>
-    <button class="btn-secondary" onclick="document.getElementById('importModal').classList.remove('open')">Chiudi</button>
+    <button onclick="saveBuilder()" style="background:var(--ac);color:#000;border:none;border-radius:12px;padding:10px 18px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;cursor:pointer;flex-shrink:0;outline:none">SALVA</button>
+  </div>
+  <div class="builder-body" id="builderBody"></div>
+  <div class="builder-footer">
+    <button class="btn-ghost" onclick="openAddSez()">
+      <span style="font-size:18px">+</span> Aggiungi sezione
+    </button>
   </div>
 </div>
 
-<!-- SCHEDA SCELTA MODAL -->
-<div class="modal-overlay" id="schedaSceltaModal">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">LA TUA SCHEDA</div>
-    <div class="modal-sub">Hai già una scheda di allenamento che segui?</div>
-    <button class="btn-primary" style="margin-bottom:12px" onclick="mostraInserimentoScheda()">✍️ SÌ, INSERISCO LA MIA</button>
-    <button class="btn-primary" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="chiudiSceltaScheda()">🤖 NO, DECIDO DOPO</button>
+<!-- ══════════ MODALS ══════════ -->
+
+<!-- Reset step 1 -->
+<div class="overlay" id="mReset1">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sh-title" style="color:var(--rd)">⚠️ CANCELLA TUTTO</div>
+    <div class="sh-sub">Stai per eliminare profilo, chat, scheda e progressi. Sei sicuro?</div>
+    <button class="btn btn-a" style="background:var(--rd);color:#fff" onclick="confirmReset2()">SÌ, CONTINUA</button>
+    <button class="btn btn-b" onclick="closeModal('mReset1')">Annulla</button>
   </div>
 </div>
 
-<!-- SCHEDA INSERIMENTO MANUALE MODAL -->
-<div class="modal-overlay" id="schedaInserimentoModal">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">INSERISCI LA TUA SCHEDA</div>
-    <div class="modal-sub">Scrivi ogni esercizio su una riga nel formato: Nome Esercizio 4x8<br><small style="color:var(--text-muted)">Es: Panca piana 4x8<br>Squat 4x6<br>Curl manubri 3x10</small></div>
-    <textarea id="schedaTestoInput" class="log-input" style="height:180px;resize:none;font-family:'JetBrains Mono',monospace;font-size:13px" placeholder="Panca piana 4x8&#10;Squat 4x6&#10;Curl manubri 3x10&#10;..."></textarea>
-    <button class="btn-primary" onclick="salvaSchedaManuale()">SALVA SCHEDA</button>
-    <button class="btn-secondary" onclick="document.getElementById('schedaInserimentoModal').classList.remove('open')">Annulla</button>
+<!-- Reset step 2 -->
+<div class="overlay" id="mReset2">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sh-title" style="color:var(--rd)">ULTIMA CONFERMA</div>
+    <div class="sh-sub">Azione irreversibile. Tutti i dati verranno eliminati definitivamente.</div>
+    <button class="btn btn-a" style="background:var(--rd);color:#fff" onclick="execReset()">SÌ, CANCELLA TUTTO</button>
+    <button class="btn btn-b" onclick="closeModal('mReset2')">No, torna indietro</button>
   </div>
 </div>
 
-<!-- LOG EXERCISE MODAL -->
-<div class="modal-overlay" id="logModal">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="modalExName">ESERCIZIO</div>
-    <div class="modal-sub" id="modalExDetail">Cosa hai fatto esattamente?</div>
-    <input class="log-input" id="logInput" placeholder="Es: 4x8 a 82.5kg, ottima sessione">
-    <button class="btn-primary" onclick="submitLog()">REGISTRA E INVIA ALL'AI</button>
-    <button class="btn-secondary" onclick="document.getElementById('logModal').classList.remove('open')">Annulla</button>
+<!-- Scheda scelta (post-onboarding, una sola volta) -->
+<div class="overlay" id="mSchedaChoice">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sh-title">LA TUA SCHEDA</div>
+    <div class="sh-sub">Come vuoi gestire la tua scheda di allenamento?</div>
+    <div class="choice-card ac-bd" onclick="closeModal('mSchedaChoice');openBuilder()">
+      <div class="choice-ico">✍️</div>
+      <div class="choice-title">Ho già una scheda personale</div>
+      <div class="choice-sub">Costruisci qui la tua scheda esistente, sezione per sezione.</div>
+    </div>
+    <div class="choice-card dm-bd" onclick="closeModal('mSchedaChoice');qs('Generami una scheda di allenamento personalizzata basata sul mio profilo')">
+      <div class="choice-ico">🤖</div>
+      <div class="choice-title">Crea la mia scheda con AI</div>
+      <div class="choice-sub">L'AI genera una scheda su misura in base ai tuoi obiettivi e limiti.</div>
+    </div>
+    <button class="btn btn-b" onclick="closeModal('mSchedaChoice')">Decido dopo</button>
   </div>
+</div>
+
+<!-- Dieta scelta -->
+<div class="overlay" id="mDietaChoice">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sh-title">🍽️ ALIMENTAZIONE</div>
+    <div class="sh-sub">Come vuoi gestire i tuoi target nutrizionali?</div>
+    <div class="choice-card ac-bd" onclick="closeModal('mDietaChoice');openDietaTarget()">
+      <div class="choice-ico">🟢</div>
+      <div class="choice-title">Ho già un piano alimentare</div>
+      <div class="choice-sub">Inserisci i tuoi target — anche solo kcal e proteine.</div>
+    </div>
+    <div class="choice-card dm-bd" onclick="closeModal('mDietaChoice')">
+      <div class="choice-ico">🔵</div>
+      <div class="choice-title">L'AI calcola i miei target</div>
+      <div class="choice-sub">In base al tuo profilo, l'app calcola automaticamente i valori consigliati.</div>
+    </div>
+    <button class="btn btn-b" onclick="closeModal('mDietaChoice')">Decido dopo</button>
+  </div>
+</div>
+
+<!-- Dieta target manuale -->
+<div class="overlay" id="mDietaTarget">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sh-title">I TUOI TARGET</div>
+    <div class="sh-sub">Inserisci i valori che conosci — puoi lasciarne alcuni vuoti.</div>
+    <div class="r2" style="margin-bottom:10px">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Kcal/giorno</label><input class="fi" id="dKcal" type="number" inputmode="numeric" placeholder="2500"></div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Proteine (g)</label><input class="fi" id="dProt" type="number" inputmode="numeric" placeholder="180"></div>
+    </div>
+    <div class="r2" style="margin-bottom:18px">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Carboidrati (g)</label><input class="fi" id="dCarb" type="number" inputmode="numeric" placeholder="300"></div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Grassi (g)</label><input class="fi" id="dFat" type="number" inputmode="numeric" placeholder="70"></div>
+    </div>
+    <button class="btn btn-a" onclick="saveDietaTarget()">SALVA TARGET</button>
+    <button class="btn btn-b" onclick="closeModal('mDietaTarget')">Annulla</button>
+  </div>
+</div>
+
+<!-- Builder: aggiungi sezione -->
+<div class="overlay" id="mAddSez">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sh-title">NUOVA SEZIONE</div>
+    <div class="sh-sub">Scegli un preset o scrivi un nome personalizzato.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px" id="sezPresets">
+      <!-- generato da JS -->
+    </div>
+    <input class="fi" id="sezNameIn" placeholder="Nome personalizzato..." style="margin-bottom:16px"
+      oninput="syncSezInput()">
+    <button class="btn btn-a" onclick="confirmAddSez()">CREA SEZIONE</button>
+    <button class="btn btn-b" onclick="closeModal('mAddSez')">Annulla</button>
+  </div>
+</div>
+
+<!-- Builder: aggiungi esercizio step 1 (gruppo) -->
+<div class="overlay" id="mAddEs1">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sh-title" id="addEs1Title">AGGIUNGI ESERCIZIO</div>
+    <div class="sh-sub" style="margin-bottom:16px">Scegli il gruppo muscolare</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="gruppoGrid">
+      <!-- generato da JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Builder: aggiungi esercizio step 2 (esercizio) -->
+<div class="overlay" id="mAddEs2">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px">
+      <button onclick="backToStep1()" style="width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);font-size:16px;cursor:pointer;flex-shrink:0;color:#ddd;outline:none">←</button>
+      <div class="sh-title" id="addEs2Title" style="margin-bottom:0">GRUPPO</div>
+    </div>
+    <div class="sh-sub" style="margin-bottom:14px">Scegli l'esercizio</div>
+    <div id="esLista" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
+<!-- Builder: aggiungi esercizio step 3 (dettagli) -->
+<div class="overlay" id="mAddEs3">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="backToStep2()" style="width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);font-size:16px;cursor:pointer;flex-shrink:0;color:#ddd;outline:none">←</button>
+      <div>
+        <div class="sh-title" id="addEs3Nome" style="margin-bottom:0;font-size:20px">Esercizio</div>
+        <div style="font-size:11px;color:#777;margin-top:2px" id="addEs3Gruppo"></div>
+      </div>
+    </div>
+    <div class="r2" style="margin-bottom:10px">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Serie</label>
+        <input class="fi" id="esS" type="number" inputmode="numeric" placeholder="4" style="font-size:18px;text-align:center;padding:14px"></div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Reps</label>
+        <input class="fi" id="esR" type="number" inputmode="numeric" placeholder="8" style="font-size:18px;text-align:center;padding:14px"></div>
+    </div>
+    <div class="r2" style="margin-bottom:20px">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Peso (kg)</label>
+        <input class="fi" id="esP" type="number" inputmode="decimal" placeholder="0" style="font-size:18px;text-align:center;padding:14px"></div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Rec. (sec)</label>
+        <input class="fi" id="esRec" type="number" inputmode="numeric" placeholder="90" style="font-size:18px;text-align:center;padding:14px"></div>
+    </div>
+    <button class="btn btn-a" onclick="confirmAddEs()">AGGIUNGI ESERCIZIO</button>
+    <button class="btn btn-b" onclick="backToStep2()">← Cambia esercizio</button>
+  </div>
+</div>
+
+<!-- Builder: modifica esercizio -->
+<div class="overlay" id="mEditEs">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sh-title">MODIFICA ESERCIZIO</div>
+    <div style="background:var(--s2);border-radius:10px;padding:10px 13px;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:600;color:#fff" id="editEsNome"></div>
+      <div style="font-size:11px;color:#777;margin-top:2px" id="editEsGruppo"></div>
+    </div>
+    <div class="r2" style="margin-bottom:10px">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Serie</label>
+        <input class="fi" id="editS" type="number" inputmode="numeric" style="font-size:18px;text-align:center;padding:14px"></div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Reps</label>
+        <input class="fi" id="editR" type="number" inputmode="numeric" style="font-size:18px;text-align:center;padding:14px"></div>
+    </div>
+    <div class="r2" style="margin-bottom:20px">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Peso (kg)</label>
+        <input class="fi" id="editP" type="number" inputmode="decimal" style="font-size:18px;text-align:center;padding:14px"></div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Rec. (sec)</label>
+        <input class="fi" id="editRec" type="number" inputmode="numeric" style="font-size:18px;text-align:center;padding:14px"></div>
+    </div>
+    <button class="btn btn-a" onclick="confirmEditEs()">SALVA MODIFICHE</button>
+    <button class="btn btn-b" onclick="closeModal('mEditEs')">Annulla</button>
+  </div>
+</div>
+
+<!-- Analyzing overlay -->
+<div class="analyzing" id="analyzing">
+  <div class="logo-box" style="width:56px;height:56px;font-size:22px">FM</div>
+  <div style="font-size:14px;color:var(--dm);letter-spacing:1px">Elaborazione in corso...</div>
+  <div style="font-size:12px;color:var(--mt)">L'AI sta analizzando i tuoi dati</div>
+  <div class="dots" style="margin-top:8px"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
 </div>
 
 <script>
-const API_URL = "https://fitmind-proxy.simo-simone.workers.dev/";
+'use strict';
+
+// ══════════════════════════════════════════════════════════════════
+// CONFIGURAZIONE
+// ══════════════════════════════════════════════════════════════════
+const PROXY_URL = 'https://fitmind-proxy.simo-simone.workers.dev/';
+const AI_MODEL  = 'claude-sonnet-4-5';
+
+// ══════════════════════════════════════════════════════════════════
+// STRUTTURE DATI — documentate per evoluzione futura
+// ══════════════════════════════════════════════════════════════════
+
+/*
+ * PROFILO UTENTE — dati anagrafici e obiettivi
+ * Campi principali: nome, eta, sesso, altezza, peso, pesobj,
+ *   grasso, vita, petto, braccia, cosce, fianchi, polpacci,
+ *   lavoro, sonno, acqua, stress, fumo, alcol, intolleranze,
+ *   integratori, patologie, infortuni, livello, giorni, durata,
+ *   dieta, escludiex, obiettivo, tempistica, motivazione, esigenza
+ */
 let userData = {};
+
+/*
+ * CHAT HISTORY — array di {role:'user'|'assistant', content:string}
+ * I messaggi utente includono timestamp per contesto temporale AI.
+ * Mantenuta completa per memoria AI.
+ */
 let chatHistory = [];
-let importedFiles = {};
-let currentStep = 0;
-let currentExercise = '';
-let appStats = { streak:0, sessions:0, lastActive:null, lastWeight:null, weightHistory:[], workoutHistory:[] };
 
-// ================================================================
-// SCHEDA ATTIVA — FASE 1
-// struttura isolata, non tocca nulla di esistente
-// ================================================================
-let scheda_attiva = null;
+/*
+ * APP STATS — metriche e progressi dell'utente
+ * streak: giorni consecutivi di apertura
+ * sessions: sessioni allenamento registrate
+ * lastActive: data ultima apertura (per calcolo streak)
+ * lastWeight: ultimo peso registrato
+ * weightHistory: [{date, val}] — per grafici futuri
+ */
+let appStats = {
+  streak: 0, sessions: 0,
+  lastActive: null, lastWeight: null,
+  weightHistory: []
+};
 
-function salvaScheda(scheda) {
-  try {
-    localStorage.setItem('fm_scheda_attiva', JSON.stringify(scheda));
-    scheda_attiva = scheda;
-  } catch(e) { console.warn('Errore salvataggio scheda:', e); }
-}
+/*
+ * SCHEDA ATTIVA — struttura a sezioni
+ * Questo è il formato canonico v2. Compatibile con migrazione dal vecchio formato.
+ * origine: 'utente' | 'ai'
+ * sezioni: [{
+ *   nome: string,
+ *   esercizi: [{
+ *     gruppo: string,      // gruppo muscolare
+ *     nome: string,        // nome esercizio
+ *     serie: number,
+ *     reps: number,
+ *     peso: number,
+ *     recupero: number,    // secondi
+ *     storico: []          // pronto per log futuri: [{data, peso, reps, note}]
+ *   }]
+ * }]
+ */
+let schedaAttiva = null;
 
-function caricaScheda() {
-  try {
-    const data = localStorage.getItem('fm_scheda_attiva');
-    return data ? JSON.parse(data) : null;
-  } catch(e) { return null; }
-}
+/*
+ * DIETA ATTIVA — target nutrizionali dell'utente
+ * origine: 'utente' | 'ai' | null
+ * target: { kcal, proteine, carbo, grassi } — valori null = non impostati
+ */
+let dietaAttiva = {
+  origine: null,
+  target: { kcal: null, proteine: null, carbo: null, grassi: null }
+};
 
-function parseSchedaTesto(testo) {
-  const righe = testo.split('\n').map(r => r.trim()).filter(r => r.length > 0);
-  return righe.map(riga => {
-    // formato: "Nome esercizio 4x8" oppure "Nome esercizio 4x8 60kg"
-    const match = riga.match(/^(.+?)\s+(\d+x\d+)(.*)$/i);
-    if (!match) return null;
-    return {
-      nome: match[1].trim(),
-      serie: match[2].trim(),
-      note: match[3].trim() || '',
-      storico: []
-    };
-  }).filter(Boolean);
-}
+/*
+ * ALIMENTAZIONE LOG — diario pasti giornaliero
+ * Struttura: { "2026-05-07": { colazione:[], pranzo:[], cena:[], spuntini:[] } }
+ * Ogni pasto è un array di stringhe (testo libero dell'utente).
+ * Persistente, base per memoria AI e tracking futuro.
+ */
+let alimentazioneLog = {};
 
-function mostraInserimentoScheda() {
-  document.getElementById('schedaSceltaModal').classList.remove('open');
-  // Pre-popola se c'è già una scheda manuale
-  if(scheda_attiva && scheda_attiva.origine === 'utente') {
-    const testo = scheda_attiva.esercizi.map(e => `${e.nome} ${e.serie}`).join('\n');
-    document.getElementById('schedaTestoInput').value = testo;
-  } else {
-    document.getElementById('schedaTestoInput').value = '';
-  }
-  document.getElementById('schedaInserimentoModal').classList.add('open');
-}
+// Builder temporaneo scheda (non salvato fino a conferma)
+let builderData   = { sezioni: [] };
+let builderSezIdx = null;   // indice sezione corrente per aggiunta es.
+let builderGruppo = '';
+let builderEsNome = '';
+let editSi = null;
+let editEi = null;
 
-function chiudiSceltaScheda() {
-  document.getElementById('schedaSceltaModal').classList.remove('open');
-}
+// Onboarding
+let obStep = 0;
 
-function salvaSchedaManuale() {
-  const testo = document.getElementById('schedaTestoInput').value.trim();
-  if (!testo) {
-    alert('Scrivi almeno un esercizio prima di salvare.');
-    return;
-  }
-  const esercizi = parseSchedaTesto(testo);
-  if (esercizi.length === 0) {
-    alert('Formato non riconosciuto. Usa il formato: Nome Esercizio 4x8');
-    return;
-  }
-  const scheda = { origine: 'utente', esercizi: esercizi };
-  salvaScheda(scheda);
-  document.getElementById('schedaInserimentoModal').classList.remove('open');
-  visualizzaSchedaAttiva();
-}
+// ══════════════════════════════════════════════════════════════════
+// STORAGE — chiavi e funzioni di persistenza
+// ══════════════════════════════════════════════════════════════════
+const LS = {
+  user:   'fm_user',
+  chat:   'fm_chat',
+  stats:  'fm_stats',
+  scheda: 'fm_scheda_v2',   // v2 = formato a sezioni
+  dieta:  'fm_dieta_v2',
+  alim:   'fm_alim_v2',
+  firstRun: 'fm_first_run'  // flag per mostrare choice scheda una sola volta
+};
 
-function visualizzaSchedaAttiva() {
-  const scheda = caricaScheda();
-  if (!scheda || !scheda.esercizi || scheda.esercizi.length === 0) return;
-
-  const origineLabel = scheda.origine === 'utente' ? '✍️ Scheda personale' : '🤖 Generata da AI';
-  const badgeColor = scheda.origine === 'utente' ? 'var(--accent2)' : 'var(--blue)';
-
-  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-    <div style="font-size:11px;letter-spacing:1px;padding:4px 12px;border-radius:100px;background:${badgeColor};color:#000;font-weight:600">${origineLabel}</div>
-    <div style="display:flex;gap:8px">
-      <div class="scheda-btn" onclick="mostraInserimentoScheda()">✏️ Modifica</div>
-      <div class="scheda-btn" onclick="cancellaSchedaAttiva()">🗑️ Cancella</div>
-    </div>
-  </div>`;
-
-  scheda.esercizi.forEach((es, i) => {
-    html += `<div class="exercise-card" style="cursor:default">
-      <div class="ex-num">${i+1}</div>
-      <div class="ex-info">
-        <div class="ex-name">${es.nome}</div>
-        <div class="ex-detail">${es.serie}${es.note?' · '+es.note:''}</div>
-      </div>
-    </div>`;
-  });
-
-  document.getElementById('schedaContent').innerHTML = html;
-}
-
-function cancellaSchedaAttiva() {
-  if(confirm('Cancellare la scheda attiva?')) {
-    localStorage.removeItem('fm_scheda_attiva');
-    scheda_attiva = null;
-    document.getElementById('schedaContent').innerHTML = `
-      <div class="scheda-empty">
-        <div class="scheda-empty-icon">📋</div>
-        <div class="scheda-empty-title">NESSUNA SCHEDA</div>
-        <div class="scheda-empty-sub">Inserisci la tua scheda manualmente, caricala tramite foto, oppure chiedi all'AI di generartene una.</div>
-        <button class="btn-primary" style="margin-bottom:12px" onclick="mostraInserimentoScheda()">✍️ INSERISCI LA MIA SCHEDA</button>
-        <button class="btn-primary" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);margin-bottom:12px" onclick="quickSend('Generami la mia scheda di allenamento personalizzata basata sul mio profilo')">🤖 GENERA CON AI</button>
-        <div class="scheda-btn" style="display:inline-block;padding:10px 20px" onclick="showImportModal()">📸 Carica foto scheda</div>
-      </div>`;
-  }
-}
-
-// ================================================================
-// TIMESTAMP — data e ora su ogni messaggio
-// ================================================================
-function getTimestamp() {
-  const now = new Date();
-  const days = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
-  const day = days[now.getDay()];
-  const date = now.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const time = now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
-  return `[${day} ${date} - ${time}]`;
-}
-
-// ================================================================
-// PERSISTENZA
-// ================================================================
 function saveAll() {
   try {
-    localStorage.setItem('fm_user', JSON.stringify(userData));
-    localStorage.setItem('fm_chat', JSON.stringify(chatHistory));
-    localStorage.setItem('fm_stats', JSON.stringify(appStats));
-  } catch(e) {}
+    localStorage.setItem(LS.user,   JSON.stringify(userData));
+    localStorage.setItem(LS.chat,   JSON.stringify(chatHistory));
+    localStorage.setItem(LS.stats,  JSON.stringify(appStats));
+    localStorage.setItem(LS.scheda, JSON.stringify(schedaAttiva));
+    localStorage.setItem(LS.dieta,  JSON.stringify(dietaAttiva));
+    localStorage.setItem(LS.alim,   JSON.stringify(alimentazioneLog));
+    console.log('[FM:Storage] Salvato', new Date().toLocaleTimeString());
+  } catch(e) {
+    console.error('[FM:Storage] Errore salvataggio:', e);
+    showToast('⚠️ Errore salvataggio dati');
+  }
 }
 
 function loadAll() {
   try {
-    const u = localStorage.getItem('fm_user');
-    const c = localStorage.getItem('fm_chat');
-    const s = localStorage.getItem('fm_stats');
-    if(u) userData = JSON.parse(u);
-    if(c) chatHistory = JSON.parse(c);
-    if(s) appStats = JSON.parse(s);
-    return !!(u && userData.nome);
-  } catch(e) { return false; }
-}
+    const u = localStorage.getItem(LS.user);
+    if (!u) return false; // primo accesso
 
-function updateStreak() {
-  const today = new Date().toDateString();
-  const yesterday = new Date(Date.now()-86400000).toDateString();
-  if(appStats.lastActive===today){refreshStats();return;}
-  appStats.streak = (appStats.lastActive===yesterday)?(appStats.streak||0)+1:1;
-  appStats.lastActive = today;
-  saveAll(); refreshStats();
-}
+    userData        = JSON.parse(u) || {};
+    chatHistory     = JSON.parse(localStorage.getItem(LS.chat)  || '[]');
+    appStats        = JSON.parse(localStorage.getItem(LS.stats) || '{}');
+    dietaAttiva     = JSON.parse(localStorage.getItem(LS.dieta) || '{"origine":null,"target":{}}');
+    alimentazioneLog= JSON.parse(localStorage.getItem(LS.alim)  || '{}');
 
-function refreshStats() {
-  const s = appStats.streak||0;
-  document.getElementById('streakCount').textContent = s;
-  document.getElementById('statStreak').innerHTML = `${s}<span class="stat-unit">gg</span>`;
-  document.getElementById('statStreakLabel').textContent = s>0?'🔥 in corso':'inizia oggi';
-  document.getElementById('statStreakLabel').style.color = s>0?'var(--accent)':'var(--text-muted)';
-  document.getElementById('statSessioni').textContent = appStats.sessions||0;
-  if(appStats.lastWeight) {
-    document.getElementById('lastWeightVal').textContent = appStats.lastWeight+'kg';
-    document.getElementById('statPeso').innerHTML = `${appStats.lastWeight}<span class="stat-unit">kg</span>`;
-    document.getElementById('statPesoDelta').textContent = 'ultimo aggiornamento';
-    document.getElementById('statPesoDelta').style.color = 'var(--accent)';
+    // Migrazione scheda: supporta vecchio formato e nuovo formato v2
+    const rawScheda = localStorage.getItem(LS.scheda) || localStorage.getItem('fm_scheda_attiva') || null;
+    if (rawScheda) {
+      const parsed = JSON.parse(rawScheda);
+      // Vecchio formato aveva esercizi piatti, nuovo formato ha sezioni
+      if (parsed && parsed.esercizi && !parsed.sezioni) {
+        // Migra a formato v2
+        schedaAttiva = {
+          origine: parsed.origine || 'utente',
+          sezioni: [{ nome: 'Scheda', esercizi: parsed.esercizi }]
+        };
+        console.log('[FM:Storage] Migrata scheda vecchio formato → v2');
+        saveAll(); // salva subito il formato nuovo
+      } else {
+        schedaAttiva = parsed;
+      }
+    }
+
+    // Normalizza appStats
+    if (!appStats.weightHistory) appStats.weightHistory = [];
+    if (!appStats.sessions) appStats.sessions = 0;
+
+    console.log('[FM:Storage] Caricato:', userData.nome || 'anonimo');
+    return true;
+  } catch(e) {
+    console.error('[FM:Storage] Errore caricamento:', e);
+    return false;
   }
-  // Aggiorna macro targets
-  updateMacroTargets();
 }
 
-function updateMacroTargets() {
-  const pesoN = parseFloat(userData.peso)||80;
-  const altN = parseFloat(userData.altezza)||175;
-  const etaN = parseFloat(userData.eta)||30;
-  const isMale = userData.sesso==='M';
-  const bmr = isMale ? 10*pesoN+6.25*altN-5*etaN+5 : 10*pesoN+6.25*altN-5*etaN-161;
-  const mult = {sedentario:1.2,leggero:1.375,moderato:1.55,fisico:1.725}[userData.lavoro]||1.375;
-  const alMult = {2:0.1,3:0.15,4:0.2,5:0.25,6:0.3}[userData.giorni]||0.15;
-  const tdee = Math.round(bmr*(mult+alMult));
-  const prot = Math.round(pesoN*(userData.livello==='avanzato'?2.2:userData.livello==='intermedio'?2.0:1.8));
-  const carb = Math.round((tdee*0.45)/4);
-  const fat = Math.round((tdee*0.25)/9);
-  document.getElementById('protVal').textContent = `— / ${prot}g`;
-  document.getElementById('carbVal').textContent = `— / ${carb}g`;
-  document.getElementById('fatVal').textContent = `— / ${fat}g`;
+// ══════════════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════════════
+function esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtMd(t){ return t.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'); }
+
+function todayStr(){ return new Date().toISOString().split('T')[0]; }
+function yesterdayStr(){ const d=new Date(); d.setDate(d.getDate()-1); return d.toISOString().split('T')[0]; }
+function nowTimeStr(){ return new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}); }
+
+// Timestamp leggibile per contesto AI
+function nowTimestamp(){
+  const n = new Date();
+  const days=['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+  return `[${days[n.getDay()]} ${n.toLocaleDateString('it-IT')} - ${nowTimeStr()}]`;
 }
 
-// ================================================================
-// ONBOARDING
-// ================================================================
-const steps = [
-  {title:'CHI SEI?',sub:'Dati anagrafici e fisici',time:'~2 min',
-   render:()=>`
-    <div class="row-2">
-      <div class="field-group"><label class="field-label">Nome</label><input class="field-input" id="f_nome" placeholder="Mario" value="${userData.nome||''}"></div>
-      <div class="field-group"><label class="field-label">Età</label><input class="field-input" id="f_eta" type="number" placeholder="28" value="${userData.eta||''}"></div>
-    </div>
-    <div class="field-group"><label class="field-label">Sesso biologico</label>
-      <div class="chip-group">
-        <div class="chip ${userData.sesso==='M'?'selected':''}" onclick="selectChip(this,'sesso','M')">Maschio</div>
-        <div class="chip ${userData.sesso==='F'?'selected':''}" onclick="selectChip(this,'sesso','F')">Femmina</div>
-      </div>
-    </div>
-    <div class="row-3">
-      <div class="field-group"><label class="field-label">Altezza (cm)</label><input class="field-input" id="f_altezza" type="number" placeholder="180" value="${userData.altezza||''}"></div>
-      <div class="field-group"><label class="field-label">Peso (kg)</label><input class="field-input" id="f_peso" type="number" placeholder="85" value="${userData.peso||''}"></div>
-      <div class="field-group"><label class="field-label">Obiettivo (kg)</label><input class="field-input" id="f_pesobj" type="number" placeholder="82" value="${userData.pesobj||''}"></div>
-    </div>
-    <div class="row-2">
-      <div class="field-group"><label class="field-label">% Grasso</label><input class="field-input" id="f_grasso" type="number" placeholder="15" value="${userData.grasso||''}"></div>
-      <div class="field-group"><label class="field-label">Vita (cm)</label><input class="field-input" id="f_vita" type="number" placeholder="82" value="${userData.vita||''}"></div>
-    </div>
-    <div class="collapsible-header" onclick="toggleCollapsible(this)">
-      <span class="collapsible-label">📏 Misure avanzate (opzionale)</span>
-      <span class="collapsible-arrow">▼</span>
-    </div>
-    <div class="collapsible-body">
-      <div class="row-3">
-        <div class="field-group"><label class="field-label">Petto (cm)</label><input class="field-input" id="f_petto" type="number" placeholder="105" value="${userData.petto||''}"></div>
-        <div class="field-group"><label class="field-label">Braccia (cm)</label><input class="field-input" id="f_braccia" type="number" placeholder="38" value="${userData.braccia||''}"></div>
-        <div class="field-group"><label class="field-label">Cosce (cm)</label><input class="field-input" id="f_cosce" type="number" placeholder="58" value="${userData.cosce||''}"></div>
-      </div>
-      <div class="row-2">
-        <div class="field-group"><label class="field-label">Fianchi (cm)</label><input class="field-input" id="f_fianchi" type="number" placeholder="96" value="${userData.fianchi||''}"></div>
-        <div class="field-group"><label class="field-label">Polpacci (cm)</label><input class="field-input" id="f_polpacci" type="number" placeholder="38" value="${userData.polpacci||''}"></div>
-      </div>
-    </div>
-    <div class="field-group" style="margin-top:16px">
-      <div class="optional-badge">Opzionale</div>
-      <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
-        <div class="photo-upload-icon">📸</div>
-        <div class="photo-upload-label">Foto corporea dal collo in giù<br><small>L'AI analizza composizione e sviluppo muscolare</small></div>
-        <div id="photoStatus" style="font-size:12px;color:var(--accent);margin-top:8px;display:none">✓ Foto caricata</div>
-      </div>
-      <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)">
-    </div>`
-  },
-  {title:'STILE DI VITA',sub:'Più dettagli = consigli più precisi',time:'~1 min',
-   render:()=>`
-    <div class="field-group"><label class="field-label">Tipo di lavoro</label>
-      <select class="field-input" id="f_lavoro">
-        <option value="">Seleziona...</option>
-        <option value="sedentario" ${userData.lavoro==='sedentario'?'selected':''}>Sedentario (ufficio)</option>
-        <option value="leggero" ${userData.lavoro==='leggero'?'selected':''}>Leggero</option>
-        <option value="moderato" ${userData.lavoro==='moderato'?'selected':''}>Moderatamente attivo</option>
-        <option value="fisico" ${userData.lavoro==='fisico'?'selected':''}>Fisicamente impegnativo</option>
-      </select>
-    </div>
-    <div class="row-2">
-      <div class="field-group"><label class="field-label">Ore sonno/notte</label><input class="field-input" id="f_sonno" type="number" placeholder="7" value="${userData.sonno||''}"></div>
-      <div class="field-group"><label class="field-label">Acqua (litri/die)</label><input class="field-input" id="f_acqua" type="number" step="0.5" placeholder="2.5" value="${userData.acqua||''}"></div>
-    </div>
-    <div class="field-group"><label class="field-label">Livello di stress</label>
-      <div class="chip-group">
-        <div class="chip ${userData.stress==='basso'?'selected':''}" onclick="selectChip(this,'stress','basso')">Basso</div>
-        <div class="chip ${userData.stress==='medio'?'selected':''}" onclick="selectChip(this,'stress','medio')">Medio</div>
-        <div class="chip ${userData.stress==='alto'?'selected':''}" onclick="selectChip(this,'stress','alto')">Alto</div>
-      </div>
-    </div>
-    <div class="field-group"><label class="field-label">Fumo</label>
-      <div class="chip-group">
-        <div class="chip ${userData.fumo==='no'?'selected':''}" onclick="selectChip(this,'fumo','no')">Non fumo</div>
-        <div class="chip ${userData.fumo==='ex'?'selected':''}" onclick="selectChip(this,'fumo','ex')">Ex fumatore</div>
-        <div class="chip ${userData.fumo==='si'?'selected':''}" onclick="selectChip(this,'fumo','si')">Fumo</div>
-      </div>
-    </div>
-    <div class="field-group"><label class="field-label">Alcolici</label>
-      <div class="chip-group">
-        <div class="chip ${userData.alcol==='mai'?'selected':''}" onclick="selectChip(this,'alcol','mai')">Mai</div>
-        <div class="chip ${userData.alcol==='occasionale'?'selected':''}" onclick="selectChip(this,'alcol','occasionale')">Occasionali</div>
-        <div class="chip ${userData.alcol==='frequente'?'selected':''}" onclick="selectChip(this,'alcol','frequente')">Frequenti</div>
-      </div>
-    </div>
-    <div class="field-group"><label class="field-label">Intolleranze / Allergie</label><input class="field-input" id="f_intolleranze" placeholder="Es: lattosio, nessuna..." value="${userData.intolleranze||''}"></div>
-    <div class="field-group"><label class="field-label">Integratori in uso</label><input class="field-input" id="f_integratori" placeholder="Es: creatina 5g, whey..." value="${userData.integratori||''}"></div>`
-  },
-  {title:'SALUTE & PALESTRA',sub:'Per personalizzare la tua scheda',time:'~1 min',
-   render:()=>`
-    <div class="field-group"><label class="field-label">Patologie o condizioni mediche</label><input class="field-input" id="f_patologie" placeholder="Es: ipertensione, nessuna..." value="${userData.patologie||''}"></div>
-    <div class="field-group"><label class="field-label">Infortuni o limitazioni fisiche</label><input class="field-input" id="f_infortuni" placeholder="Es: spalla destra, nessuno..." value="${userData.infortuni||''}"></div>
-    <div class="field-group"><label class="field-label">Livello di esperienza</label>
-      <div class="chip-group">
-        <div class="chip ${userData.livello==='principiante'?'selected':''}" onclick="selectChip(this,'livello','principiante')">Principiante &lt;1 anno</div>
-        <div class="chip ${userData.livello==='intermedio'?'selected':''}" onclick="selectChip(this,'livello','intermedio')">Intermedio 1-3 anni</div>
-        <div class="chip ${userData.livello==='avanzato'?'selected':''}" onclick="selectChip(this,'livello','avanzato')">Avanzato &gt;3 anni</div>
-      </div>
-    </div>
-    <div class="row-2">
-      <div class="field-group"><label class="field-label">Giorni/settimana</label>
-        <select class="field-input" id="f_giorni">
-          <option value="">--</option>
-          ${[2,3,4,5,6].map(n=>`<option value="${n}" ${userData.giorni==n?'selected':''}>${n} giorni</option>`).join('')}
-        </select>
-      </div>
-      <div class="field-group"><label class="field-label">Durata sessione</label>
-        <select class="field-input" id="f_durata">
-          <option value="">--</option>
-          <option value="45" ${userData.durata==='45'?'selected':''}>~45 min</option>
-          <option value="60" ${userData.durata==='60'?'selected':''}>~60 min</option>
-          <option value="90" ${userData.durata==='90'?'selected':''}>~90 min</option>
-          <option value="120" ${userData.durata==='120'?'selected':''}>~2 ore</option>
-        </select>
-      </div>
-    </div>
-    <div class="field-group"><label class="field-label">Preferenze alimentari</label>
-      <div class="chip-group">
-        <div class="chip ${userData.dieta==='onnivoro'?'selected':''}" onclick="selectChip(this,'dieta','onnivoro')">Onnivoro</div>
-        <div class="chip ${userData.dieta==='vegetariano'?'selected':''}" onclick="selectChip(this,'dieta','vegetariano')">Vegetariano</div>
-        <div class="chip ${userData.dieta==='vegano'?'selected':''}" onclick="selectChip(this,'dieta','vegano')">Vegano</div>
-      </div>
-    </div>
-    <div class="field-group"><label class="field-label">Esercizi da escludere</label><input class="field-input" id="f_escludiex" placeholder="Es: squat (ginocchia), nessuno..." value="${userData.escludiex||''}"></div>`
-  },
-  {title:'IL TUO OBIETTIVO',sub:"L'AI costruisce tutto su questo",time:'~1 min',
-   render:()=>`
-    <div class="field-group"><label class="field-label">Obiettivo principale</label>
-      <div class="chip-group">
-        <div class="chip ${userData.obiettivo==='massa'?'selected':''}" onclick="selectChip(this,'obiettivo','massa')">💪 Massa muscolare</div>
-        <div class="chip ${userData.obiettivo==='dimagrimento'?'selected':''}" onclick="selectChip(this,'obiettivo','dimagrimento')">🔥 Dimagrimento</div>
-        <div class="chip ${userData.obiettivo==='ricomposizione'?'selected':''}" onclick="selectChip(this,'obiettivo','ricomposizione')">⚖️ Ricomposizione</div>
-        <div class="chip ${userData.obiettivo==='forza'?'selected':''}" onclick="selectChip(this,'obiettivo','forza')">🏋️ Forza massimale</div>
-        <div class="chip ${userData.obiettivo==='mantenimento'?'selected':''}" onclick="selectChip(this,'obiettivo','mantenimento')">✅ Mantenimento</div>
-      </div>
-    </div>
-    <div class="field-group"><label class="field-label">Tempistica desiderata</label><input class="field-input" id="f_tempistica" placeholder="Es: perdere 5kg in 3 mesi..." value="${userData.tempistica||''}"></div>
-    <div class="field-group"><label class="field-label">Motivazione personale</label><textarea class="field-input" id="f_motivazione" placeholder="Perché vuoi raggiungere questo obiettivo?">${userData.motivazione||''}</textarea></div>
-    <div class="field-group"><label class="field-label">Quanto vuoi che il coach sia esigente?</label>
-      ${[
-        {v:'1',e:'😌',l:'1 — Gentile e paziente',s:'Nessuna pressione, supporto costante'},
-        {v:'2',e:'🙂',l:'2 — Equilibrato',s:'Ti sprona ma senza esagerare'},
-        {v:'3',e:'💪',l:'3 — Deciso',s:'Ti tiene in riga, poche scuse'},
-        {v:'4',e:'🔥',l:'4 — Esigente',s:'Standard alti, risultati seri'},
-        {v:'5',e:'⚡',l:'5 — Modalità atleta',s:'Duro e diretto, zero compromessi'}
-      ].map(o=>`<div class="coach-level-card ${userData.esigenza===o.v?'selected':''}" onclick="selectCoachLevel(this,'${o.v}')">
-        <div style="font-size:22px;flex-shrink:0">${o.e}</div>
-        <div><div style="font-size:13px;font-weight:600">${o.l}</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px">${o.s}</div></div>
-      </div>`).join('')}
-    </div>`
-  },
-  {title:'LE TUE SCHEDE',sub:'Carica quello che già usi — opzionale',time:'Opzionale',
-   render:()=>`
-    <div class="info-note">📋 Hai già una scheda di palestra o una dieta? Caricale ora. L'AI le analizza prima di generare qualsiasi consiglio — parte da quello che fai, non da zero.</div>
-    <div class="field-group"><label class="field-label">Scheda allenamento attuale</label>
-      <div class="photo-upload" id="onboardUploadScheda" onclick="document.getElementById('onboardInputScheda').click()" style="text-align:left;padding:16px 18px;display:flex;align-items:center;gap:14px">
-        <div style="font-size:26px;flex-shrink:0">🏋️</div>
-        <div><div style="font-size:14px;font-weight:600;margin-bottom:3px">Foto o PDF della scheda</div>
-        <div style="font-size:12px;color:var(--text-muted)">La scheda che ti ha dato la palestra o il tuo PT</div>
-        <div id="onboardSchedaStatus" style="font-size:12px;color:var(--accent);margin-top:3px;display:none">✓ Caricata</div></div>
-      </div>
-      <input type="file" id="onboardInputScheda" accept="image/*,application/pdf" style="display:none" onchange="handleOnboardFile(this,'scheda')">
-    </div>
-    <div class="field-group"><label class="field-label">Piano alimentare / Dieta attuale</label>
-      <div class="photo-upload" id="onboardUploadDieta" onclick="document.getElementById('onboardInputDieta').click()" style="text-align:left;padding:16px 18px;display:flex;align-items:center;gap:14px">
-        <div style="font-size:26px;flex-shrink:0">🥗</div>
-        <div><div style="font-size:14px;font-weight:600;margin-bottom:3px">Foto o PDF della dieta</div>
-        <div style="font-size:12px;color:var(--text-muted)">La dieta che segui attualmente</div>
-        <div id="onboardDietaStatus" style="font-size:12px;color:var(--accent);margin-top:3px;display:none">✓ Caricata</div></div>
-      </div>
-      <input type="file" id="onboardInputDieta" accept="image/*,application/pdf" style="display:none" onchange="handleOnboardFile(this,'dieta')">
-    </div>
-    <div class="info-note" style="border-color:rgba(200,241,53,0.2);background:rgba(200,241,53,0.05)">✅ Tutto pronto. Premi <strong>INIZIA ORA</strong> — l'AI analizzerà il tuo profilo completo.</div>`
+function showModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function goToChat(){ switchTab('chat', document.querySelectorAll('.tab')[0]); }
+
+function showToast(msg, dur=3000){
+  let t = document.getElementById('_toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = '_toast';
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 18px;border-radius:100px;font-size:13px;z-index:999;transition:opacity .3s;pointer-events:none;max-width:300px;text-align:center';
+    document.body.appendChild(t);
   }
-];
-
-function toggleCollapsible(h){
-  h.querySelector('.collapsible-arrow').classList.toggle('open');
-  h.nextElementSibling.classList.toggle('open');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>{ t.style.opacity='0'; }, dur);
 }
 
-function saveCurrentStep(){
-  const g=id=>document.getElementById(id)?.value||'';
-  if(currentStep===0) Object.assign(userData,{nome:g('f_nome'),eta:g('f_eta'),altezza:g('f_altezza'),peso:g('f_peso'),pesobj:g('f_pesobj'),grasso:g('f_grasso'),vita:g('f_vita'),petto:g('f_petto'),braccia:g('f_braccia'),cosce:g('f_cosce'),fianchi:g('f_fianchi'),polpacci:g('f_polpacci')});
-  else if(currentStep===1) Object.assign(userData,{lavoro:g('f_lavoro'),sonno:g('f_sonno'),acqua:g('f_acqua'),intolleranze:g('f_intolleranze'),integratori:g('f_integratori')});
-  else if(currentStep===2) Object.assign(userData,{patologie:g('f_patologie'),infortuni:g('f_infortuni'),giorni:g('f_giorni'),durata:g('f_durata'),escludiex:g('f_escludiex')});
-  else if(currentStep===3) Object.assign(userData,{tempistica:g('f_tempistica'),motivazione:g('f_motivazione')});
-  saveAll();
+// ══════════════════════════════════════════════════════════════════
+// CALCOLI NUTRIZIONALI — basati su profilo utente
+// ══════════════════════════════════════════════════════════════════
+function calcTargets(){
+  // Se l'utente ha inserito target manuali, usa quelli
+  if(dietaAttiva.target && dietaAttiva.target.proteine) return dietaAttiva.target;
+
+  // Altrimenti calcola da profilo
+  const u = userData;
+  const p = parseFloat(u.peso)||80, a = parseFloat(u.altezza)||175, et = parseFloat(u.eta)||30;
+  const male = u.sesso === 'M';
+  const bmr = male ? (10*p + 6.25*a - 5*et + 5) : (10*p + 6.25*a - 5*et - 161);
+  const actMult = {sedentario:1.2, leggero:1.375, moderato:1.55, fisico:1.725}[u.lavoro] || 1.375;
+  const trainMult = {2:0.1, 3:0.15, 4:0.2, 5:0.25, 6:0.3}[u.giorni] || 0.15;
+  const tdee = Math.round(bmr * (actMult + trainMult));
+
+  const protFactor = u.livello === 'avanzato' ? 2.2 : u.livello === 'intermedio' ? 2.0 : 1.8;
+  return {
+    kcal:     tdee,
+    proteine: Math.round(p * protFactor),
+    carbo:    Math.round((tdee * 0.45) / 4),
+    grassi:   Math.round((tdee * 0.25) / 9)
+  };
 }
 
-function renderStep(){
-  const s=steps[currentStep];
-  document.getElementById('onboardTitle').textContent=s.title;
-  document.getElementById('onboardSub').textContent=s.sub;
-  document.getElementById('onboardBody').innerHTML=s.render();
-  document.getElementById('onboardBack').style.display=currentStep>0?'block':'none';
-  document.getElementById('onboardNext').textContent=currentStep===steps.length-1?'INIZIA ORA':'CONTINUA';
-  const timeEl=document.getElementById('onboardTime');
-  if(timeEl) timeEl.textContent=s.time||'';
-  const skipEl=document.getElementById('onboardSkip');
-  if(skipEl) skipEl.style.display=currentStep===4?'block':'none';
-  document.querySelectorAll('.step-dot').forEach((d,i)=>{
-    d.className='step-dot'+(i<currentStep?' done':i===currentStep?' active':'');
-  });
-}
+// ══════════════════════════════════════════════════════════════════
+// ALIMENTAZIONE — memoria pasti giornaliera
+// ══════════════════════════════════════════════════════════════════
 
-function nextStep(){saveCurrentStep();if(currentStep<steps.length-1){currentStep++;renderStep();}else showApp();}
-function prevStep(){saveCurrentStep();if(currentStep>0){currentStep--;renderStep();}}
-
-function selectChip(el,field,value){
-  el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');userData[field]=value;saveAll();
-}
-function selectCoachLevel(el,value){
-  document.querySelectorAll('.coach-level-card').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');userData.esigenza=value;saveAll();
-}
-function handlePhotoUpload(input){
-  if(!input.files[0])return;
-  importedFiles['foto_corporea']=input.files[0];
-  const s=document.getElementById('photoStatus');
-  if(s){s.textContent='✓ Foto caricata';s.style.display='block';}
-}
-function handleOnboardFile(input,type){
-  if(!input.files[0])return;
-  importedFiles[type]=input.files[0];
-  const sid=type==='scheda'?'onboardSchedaStatus':'onboardDietaStatus';
-  const bid=type==='scheda'?'onboardUploadScheda':'onboardUploadDieta';
-  const s=document.getElementById(sid);const b=document.getElementById(bid);
-  if(s){s.textContent=`✓ ${input.files[0].name}`;s.style.display='block';}
-  if(b)b.style.borderColor='var(--accent)';
-}
-
-// ================================================================
-// SYSTEM PROMPT
-// ================================================================
-function buildSystemPrompt(){
-  const esD={
-    '1':'Sei GENTILE e PAZIENTE. Tono sempre incoraggiante, mai pressante.',
-    '2':'Sei EQUILIBRATO. Sproni con positività senza esagerare.',
-    '3':'Sei DECISO. Tieni in riga, poche scuse, tono diretto.',
-    '4':'Sei ESIGENTE. Standard alti, pretendi impegno reale.',
-    '5':'Sei DURO e DIRETTO. Modalità atleta professionista. Zero compromessi.'
-  }[userData.esigenza]||'Sei DECISO. Tieni in riga, poche scuse.';
-
-  const vocD=userData.livello==='principiante'
-    ?'LINGUAGGIO SEMPLICE: evita tecnicismi, guida passo passo.'
-    :userData.livello==='avanzato'
-    ?'LINGUAGGIO TECNICO COMPLETO: usa periodizzazione, RPE, mesocicli. Nessun limite di lunghezza.'
-    :'Linguaggio chiaro e diretto.';
-
-  const etaN=(parseInt(userData.eta)>60||(userData.patologie||'').toLowerCase().match(/artr|osteo|cuore|diabet/))
-    ?'ATTENZIONE PROFILO FRAGILE: prima di qualsiasi nuovo esercizio, invita sempre a consultare un fisioterapista.':'';
-
-  const pesoN=parseFloat(userData.peso)||80;
-  const altN=parseFloat(userData.altezza)||175;
-  const etaN2=parseFloat(userData.eta)||30;
-  const isMale=userData.sesso==='M';
-  const bmr=isMale?10*pesoN+6.25*altN-5*etaN2+5:10*pesoN+6.25*altN-5*etaN2-161;
-  const mult={sedentario:1.2,leggero:1.375,moderato:1.55,fisico:1.725}[userData.lavoro]||1.375;
-  const alMult={2:0.1,3:0.15,4:0.2,5:0.25,6:0.3}[userData.giorni]||0.15;
-  const tdee=Math.round(bmr*(mult+alMult));
-  const prot=Math.round(pesoN*(userData.livello==='avanzato'?2.2:userData.livello==='intermedio'?2.0:1.8));
-  const carb=Math.round((tdee*0.45)/4);
-  const fat=Math.round((tdee*0.25)/9);
-
-  const recentLogs=chatHistory.slice(-30).filter(m=>m.role==='user').map(m=>m.content).filter(c=>c.match(/\d+\s*x\s*\d+|\d+kg|ho fatto|panca|squat|stacco|trazioni|mangiato|colazione|pranzo|cena/i)).slice(-8).join(' | ');
-
-  return `SEI FITMIND AI — IL COACH PERSONALE DI ${(userData.nome||'questo utente').toUpperCase()}.
-Parla SEMPRE e SOLO in italiano.
-
-IMPORTANTE — CONTESTO TEMPORALE:
-Ogni messaggio dell'utente contiene un timestamp [Giorno Data - Ora] aggiunto automaticamente.
-Usalo per capire il contesto temporale di ogni messaggio:
-- Se scrive alle 8:00 → probabilmente sta loggando la colazione di stamattina
-- Se scrive alle 23:00 → probabilmente sta chiudendo la giornata
-- Se scrive "ieri sera" o "stamattina" → rispetta sempre quello che dice l'utente
-- Se scrive il giorno dopo di un pasto → riconosci che si riferisce al giorno precedente
-
-LIVELLO ESIGENZA: ${userData.esigenza||'3'}/5 — ${esD}
-VOCABOLARIO: ${vocD}
-${etaN}
-
-PROFILO:
-${userData.nome||'Utente'}, ${userData.eta||'?'} anni, ${userData.sesso==='M'?'M':'F'} | ${userData.altezza||'?'}cm | ${userData.peso||'?'}kg → obj ${userData.pesobj||'?'}kg
-Grasso: ${userData.grasso||'?'}% | Vita: ${userData.vita||'?'}cm | Petto: ${userData.petto||'?'}cm | Braccia: ${userData.braccia||'?'}cm
-Lavoro: ${userData.lavoro||'?'} | Sonno: ${userData.sonno||'?'}h | Stress: ${userData.stress||'?'} | Acqua: ${userData.acqua||'?'}L
-Intolleranze: ${userData.intolleranze||'nessuna'} | Patologie: ${userData.patologie||'nessuna'} | Infortuni: ${userData.infortuni||'nessuno'}
-Livello: ${userData.livello||'?'} | ${userData.giorni||'?'} gg/sett | ${userData.durata||'?'} min/sessione
-Dieta: ${userData.dieta||'?'} | Escludi esercizi: ${userData.escludiex||'nessuno'}
-Obiettivo: ${userData.obiettivo||'?'} | Entro: ${userData.tempistica||'?'}
-Motivazione: ${userData.motivazione||'?'}
-TDEE: ~${tdee} kcal | Proteine: ${prot}g | Carb: ${carb}g | Grassi: ${fat}g
-${userData.obiettivo==='massa'?`Surplus: +250/300 kcal → ~${tdee+275} kcal/die`:userData.obiettivo==='dimagrimento'?`Deficit: -400/500 kcal → ~${tdee-450} kcal/die`:`Mantenimento: ~${tdee} kcal/die`}
-
-LOG RECENTI: ${recentLogs||'nessuno ancora'}
-Sessioni: ${appStats.sessions||0} | Streak: ${appStats.streak||0} gg | Ultimo peso: ${appStats.lastWeight||userData.peso||'?'}kg
-
-GENERAZIONE SCHEDA PERSONALIZZATA:
-Quando l'utente chiede di generare la scheda:
-- Crea una scheda VERA basata su: livello, giorni/sett, obiettivo, infortuni, esercizi esclusi
-- ${parseInt(userData.giorni)>=6?'6 giorni → Push/Pull/Legs x2':parseInt(userData.giorni)===5?'5 giorni → Upper/Lower x2 + specializzazione':parseInt(userData.giorni)===4?'4 giorni → Upper/Lower x2':parseInt(userData.giorni)===3?'3 giorni → Full Body x3':'2 giorni → Full Body x2'}
-- MAI proporre esercizi esclusi o controindicati per infortuni dichiarati
-- Specifica: esercizio, serie, reps, recupero, note tecniche essenziali
-- Adatta il linguaggio al livello (principiante = più spiegazioni, avanzato = più tecnico)
-
-REGOLE COMPORTAMENTALI:
-1. Usa SEMPRE il timestamp del messaggio per capire il contesto temporale
-2. LOG ALLENAMENTO → registra tutto, confronta con storico, suggerisci progressione
-3. LOG PASTI → stima macro, confronta con target, suggerisci cosa manca — MAI colpevolizzare
-4. "oggi pizza e birra" → "Nessun problema. Un pasto non rovina nulla. Torniamo in carreggiata dal prossimo."
-5. DOLORE IN CHAT → priorità immediata sulla scheda del giorno
-6. STOP >5 giorni → ripresa graduale -30/40% volume
-7. LINGUAGGIO AUTOLESIVO → empatia prima, tecnica dopo
-8. RICHIESTE IRREALISTICHE → onestà sui tempi reali
-9. UTENTE AGGRESSIVO → autorevolezza, mai scuse servili
-10. Non colpevolizzare MAI. Non fare la morale. Il tono deve sembrare un coach vero su WhatsApp.`;
-}
-
-// ================================================================
-// COACH PROATTIVO
-// ================================================================
-function buildProactiveMessage(name){
-  const hour=new Date().getHours();
-  const streak=appStats.streak||0;
-  const sonno=parseFloat(userData.sonno)||7;
-  const stress=userData.stress||'medio';
-  const giorni=parseInt(userData.giorni)||3;
-
-  if(streak===7)return`🔥 ${name}, una settimana di fila. Questo è il livello. Continua così.`;
-  if(streak===14)return`💪 ${name}, 14 giorni consecutivi. La costanza è già un risultato. Avanti.`;
-  if(streak===30)return`⚡ ${name}, UN MESE. Pochi ci arrivano. Tu sì.`;
-  if(sonno<6){
-    if(hour<12)return`Buongiorno ${name}. Hai dormito poco — oggi tieni il volume basso. Il muscolo cresce quando riposi, non quando ti distruggi.`;
-    return`${name}, con poco sonno il recupero è compromesso. Se ti alleni oggi, riduci i carichi del 20%. Non è debolezza — è intelligenza.`;
+// Crea struttura giorno se non esiste
+function ensureGiorno(data){
+  if(!alimentazioneLog[data]){
+    alimentazioneLog[data] = { colazione:[], pranzo:[], cena:[], spuntini:[] };
   }
-  if(stress==='alto'&&hour>=17)return`${name}, giornata pesante? Se hai energia fai la sessione — ti scarica. Se sei a pezzi, una camminata vale più di un allenamento forzato.`;
-  if(hour>=5&&hour<12)return`Buongiorno ${name} 💪 Nuova giornata. Cosa c'è in programma oggi?`;
-  if(hour>=12&&hour<15)return`${name}, ora di pranzo. Ricordati il pre-workout: carboidrati + proteine almeno 90 minuti prima.`;
-  if(hour>=15&&hour<20)return`${name} 💪 ${giorni>=5?'Con la tua frequenza alta il recupero conta quanto il lavoro. Come stai fisicamente oggi?':'Hai allenamento oggi? Scrivimi quando finisci.'}`;
-  if(hour>=20)return`Sera ${name}. Come è andata oggi — in palestra e a tavola? Scrivimi e chiudiamo la giornata insieme.`;
+  return alimentazioneLog[data];
+}
+
+// Identifica tipo pasto dal testo
+function detectPasto(testo){
+  const t = testo.toLowerCase();
+  if(t.match(/colazione|cappuccino|cornetto|cereali|avena|latte.*mattina|yogurt.*mattina|mattina.*ho\s+mangiato/)) return 'colazione';
+  if(t.match(/\ba pranzo\b|ho pranzato|pranzo|mezzogiorno/)) return 'pranzo';
+  if(t.match(/\ba cena\b|ho cenato|cena|stasera\s+ho\s+mangiato|ieri\s+sera/)) return 'cena';
+  if(t.match(/spuntino|snack|merenda|pomeriggio.*mangiato/)) return 'spuntini';
   return null;
 }
 
-// ================================================================
-// APP START
-// ================================================================
-async function showApp(){
-  document.getElementById('onboarding').classList.remove('active');
-  document.getElementById('app').classList.add('active');
-  if(userData.nome)document.getElementById('profileBtn').textContent=userData.nome[0].toUpperCase();
-  if(userData.peso)appStats.lastWeight=userData.peso;
-  updateStreak();
+// Identifica se il messaggio è un log alimentare (evita falsi positivi)
+function isLogAlimentare(testo){
+  const t = testo.toLowerCase();
+  // Deve avere sia una parola trigger che un contenuto reale
+  const hasTrigger = !!t.match(/ho mangiato|ho fatto colazione|ho pranzato|ho cenato|a pranzo ho|a cena ho|spuntino|per colazione|per pranzo|per cena/);
+  const hasCibo = !!t.match(/riso|pasta|pollo|carne|pesce|uova|yogurt|latte|pane|frutta|verdura|pizza|dolce|proteine|carboidrati|caffè|cappuccino|cereali|avena|tonno|salmone|bistecca|insalata|broccoli|patate/);
+  return hasTrigger || (hasCibo && t.length > 15);
+}
 
-  const name=userData.nome||'campione';
-  const esL={
-    '1':'gentile e paziente','2':'equilibrato','3':'deciso',
-    '4':'esigente','5':'in modalità atleta professionista'
-  }[userData.esigenza]||'deciso';
+// Supporto "stessa colazione di ieri" / "stesso pranzo di ieri"
+function gestisciRiferimentoIeri(testo){
+  const match = testo.toLowerCase().match(/stess[ao]\s+(colazione|pranzo|cena|spuntino)\s+di\s+ieri/i);
+  if(!match) return false;
+  const tipo = match[1].toLowerCase() === 'cena' ? 'cena' :
+               match[1].toLowerCase() === 'pranzo' ? 'pranzo' :
+               match[1].toLowerCase() === 'colazione' ? 'colazione' : 'spuntini';
+  const ieri = alimentazioneLog[yesterdayStr()];
+  if(ieri && ieri[tipo] && ieri[tipo].length > 0){
+    const oggi = ensureGiorno(todayStr());
+    oggi[tipo] = [...ieri[tipo]];
+    console.log(`[FM:Alim] Copiato ${tipo} da ieri:`, ieri[tipo]);
+    return true;
+  }
+  return false;
+}
 
-  document.getElementById('alertText').innerHTML=
-    `<strong>Ciao ${name}!</strong> Profilo acquisito. Sarò ${esL} con te. Scrivi quando vuoi 💪`;
+// Salva pasto nel log
+function savePasto(testo){
+  // Prima prova riferimenti temporali
+  if(gestisciRiferimentoIeri(testo)) { saveAll(); return; }
 
-  const files=Object.keys(importedFiles).filter(k=>k!=='foto_corporea');
-  setTimeout(async()=>{
-    const proMsg=buildProactiveMessage(name);
-    // Mostra scelta scheda solo al primo accesso e se non c'è già una scheda
-    const schedaEsistente = caricaScheda();
-    if(!schedaEsistente) {
-      setTimeout(()=> document.getElementById('schedaSceltaModal').classList.add('open'), 1500);
+  const tipo = detectPasto(testo);
+  if(!tipo) return; // non riconoscibile, non salvare
+
+  // Determina data (oggi o ieri se l'utente specifica ieri)
+  const dataRef = testo.toLowerCase().includes('ieri') && !testo.toLowerCase().includes('ieri sera') 
+    ? yesterdayStr() : todayStr();
+  // "ieri sera" = cena di ieri
+  const dataRifCena = testo.toLowerCase().includes('ieri sera') ? yesterdayStr() : todayStr();
+  const dataFinale = tipo === 'cena' ? dataRifCena : dataRef;
+
+  // Estrai contenuto pulito
+  let contenuto = testo
+    .replace(/ho mangiato|ho fatto colazione|ho pranzato|ho cenato|a pranzo ho|a cena ho|per colazione|per pranzo|per cena|spuntino:|oggi|ieri sera|ieri|stamattina/gi, '')
+    .replace(/^\s*[:—\-,]\s*/, '')
+    .trim();
+  if(!contenuto || contenuto.length < 3) contenuto = testo.trim();
+
+  const giorno = ensureGiorno(dataFinale);
+  // Evita duplicati esatti
+  if(!giorno[tipo].includes(contenuto)){
+    giorno[tipo].push(contenuto);
+    console.log(`[FM:Alim] Salvato ${tipo} (${dataFinale}):`, contenuto);
+    saveAll();
+    refreshDietaUI();
+  }
+}
+
+// Costruisce riepilogo per il system prompt AI
+function buildAlimContesto(){
+  const oggi = alimentazioneLog[todayStr()];
+  const ieri = alimentazioneLog[yesterdayStr()];
+  let ctx = '';
+
+  if(oggi){
+    const ps = [];
+    if(oggi.colazione.length) ps.push(`Colazione: ${oggi.colazione.join(', ')}`);
+    if(oggi.pranzo.length)    ps.push(`Pranzo: ${oggi.pranzo.join(', ')}`);
+    if(oggi.cena.length)      ps.push(`Cena: ${oggi.cena.join(', ')}`);
+    if(oggi.spuntini.length)  ps.push(`Spuntini: ${oggi.spuntini.join(', ')}`);
+    ctx += `OGGI: ${ps.length ? ps.join(' | ') : 'nessun pasto registrato ancora'}`;
+  } else {
+    ctx += `OGGI: nessun pasto registrato ancora`;
+  }
+
+  if(ieri){
+    const ps = [];
+    if(ieri.colazione.length) ps.push(`Col: ${ieri.colazione.join(', ')}`);
+    if(ieri.pranzo.length)    ps.push(`Pran: ${ieri.pranzo.join(', ')}`);
+    if(ieri.cena.length)      ps.push(`Cena: ${ieri.cena.join(', ')}`);
+    if(ps.length) ctx += `\nIERI: ${ps.join(' | ')}`;
+  }
+
+  return ctx;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// AI CONTEXT — costruisce il system prompt con tutti i dati reali
+// ══════════════════════════════════════════════════════════════════
+function buildSystemPrompt(){
+  const u = userData;
+  const targets = calcTargets();
+  const alimCtx = buildAlimContesto();
+
+  // Tono coach in base al livello scelto (1-5)
+  const toniCoach = {
+    '1': 'Sei GENTILE e PAZIENTE. Tono sempre incoraggiante, mai pressante. Non fare mai la morale.',
+    '2': 'Sei EQUILIBRATO. Sproni con positività senza esagerare. Tono costruttivo.',
+    '3': 'Sei DECISO. Diretto e professionale. Poche scuse accettate, ma rispettoso.',
+    '4': 'Sei ESIGENTE. Standard alti. Pretendi impegno reale. Tono diretto e fermo.',
+    '5': 'Sei DURO e DIRETTO. Modalità atleta professionista. Zero compromessi.'
+  };
+  const tono = toniCoach[u.esigenza] || toniCoach['3'];
+
+  // Vocabolario adattivo al livello
+  const vocab = u.livello === 'principiante'
+    ? 'USA LINGUAGGIO SEMPLICE: evita tecnicismi non spiegati, guida passo passo.'
+    : u.livello === 'avanzato'
+    ? 'USA LINGUAGGIO TECNICO: periodizzazione, RPE, mesocicli, sintesi proteica. Nessun limite di lunghezza se serve dettaglio.'
+    : 'Linguaggio chiaro e diretto.';
+
+  // Attenzione profili fragili
+  const noteFragili = (parseInt(u.eta)>60 || (u.patologie||'').toLowerCase().match(/artr|osteo|cuore|diabet/))
+    ? '\n⚠️ PROFILO FRAGILE: prima di qualsiasi nuovo esercizio, raccomanda sempre consulto medico/fisioterapista.'
+    : '';
+
+  // Scheda attiva (per contesto allenamento)
+  let schedaCtx = 'Nessuna scheda attiva.';
+  if(schedaAttiva && schedaAttiva.sezioni && schedaAttiva.sezioni.length > 0){
+    schedaCtx = schedaAttiva.sezioni.map(s =>
+      `${s.nome}: ${s.esercizi.map(e=>`${e.nome} ${e.serie}x${e.reps}${e.peso?' @'+e.peso+'kg':''}`).join(', ')}`
+    ).join(' | ');
+  }
+
+  return `SEI FITMIND AI — COACH PERSONALE DI ${(u.nome||'questo utente').toUpperCase()}.
+Parla SEMPRE e SOLO in italiano. Non sei un medico né un nutrizionista clinico.
+Sei un coach fitness intelligente: usa tono probabilistico e suggerimenti realistici.
+Usa "potresti", "probabilmente", "sembra" invece di certezze assolute.
+
+LIVELLO ESIGENZA: ${u.esigenza||'3'}/5
+${tono}
+VOCABOLARIO: ${vocab}${noteFragili}
+
+━━━ PROFILO UTENTE ━━━
+${u.nome||'?'}, ${u.eta||'?'} anni, ${u.sesso==='M'?'Maschio':u.sesso==='F'?'Femmina':'?'}
+Altezza: ${u.altezza||'?'}cm | Peso attuale: ${u.peso||'?'}kg → obiettivo: ${u.pesobj||'?'}kg
+% Grasso: ${u.grasso||'?'} | Vita: ${u.vita||'?'}cm | Petto: ${u.petto||'?'}cm | Braccia: ${u.braccia||'?'}cm
+Lavoro: ${u.lavoro||'?'} | Sonno: ${u.sonno||'?'}h | Stress: ${u.stress||'?'} | Acqua: ${u.acqua||'?'}L/die
+Intolleranze: ${u.intolleranze||'nessuna'} | Patologie: ${u.patologie||'nessuna'} | Infortuni: ${u.infortuni||'nessuno'}
+Livello palestra: ${u.livello||'?'} | ${u.giorni||'?'} gg/sett | ${u.durata||'?'} min/sessione
+Alimentazione: ${u.dieta||'?'} | Esercizi esclusi: ${u.escludiex||'nessuno'}
+Obiettivo: ${u.obiettivo||'?'} | Entro: ${u.tempistica||'?'}
+Motivazione: ${u.motivazione||'?'}
+
+━━━ TARGET NUTRIZIONALI ━━━
+TDEE stimato: ~${targets.kcal||'?'} kcal/die
+Proteine: ~${targets.proteine||'?'}g | Carboidrati: ~${targets.carbo||'?'}g | Grassi: ~${targets.grassi||'?'}g
+${u.obiettivo==='massa'?`→ Surplus consigliato: +250/300 kcal`:u.obiettivo==='dimagrimento'?`→ Deficit consigliato: -400/500 kcal`:'→ Mantenimento calorico'}
+
+━━━ MEMORIA ALIMENTARE REALE ━━━
+${alimCtx}
+(Questi sono dati SALVATI nel diario, non solo dalla chat. Usali per rispondere con precisione.)
+
+━━━ SCHEDA ATTIVA ━━━
+${schedaCtx}
+
+━━━ PROGRESSI ━━━
+Sessioni completate: ${appStats.sessions||0} | Streak: ${appStats.streak||0} giorni
+Ultimo peso registrato: ${appStats.lastWeight||u.peso||'?'}kg
+
+━━━ CONTESTO TEMPORALE ━━━
+Ogni messaggio utente include timestamp [Giorno Data - Ora]. Usalo per capire se si riferisce a oggi, ieri, stamattina, ecc.
+
+━━━ REGOLE COMPORTAMENTALI ━━━
+1. Mai risposte generiche — ogni risposta è specifica per questo utente
+2. LOG ALLENAMENTO → registra esercizio/peso/serie/reps, valuta progressione, suggerisci prossima sessione
+3. LOG PASTI → stima macro da testo, confronta con target, indica cosa manca — MAI colpevolizzare
+4. "oggi pizza e birra" → "Nessun problema, un pasto non rovina nulla. Torniamo in carreggiata dal prossimo."
+5. DOLORE IN CHAT → priorità immediata sulla scheda del giorno
+6. STOP >5 giorni → proponi ripresa graduale con volume ridotto 30-40%
+7. DISAGIO EMOTIVO ("mi odio", "faccio schifo") → rispondi prima con empatia, poi al tecnico
+8. RICHIESTE IRREALISTICHE → sii onesto sui tempi reali, proponi alternativa realistica
+9. UTENTE AGGRESSIVO → mantieni autorevolezza professionale, non scusarti in modo servile
+10. SONNO SCARSO (<6h) → avvisa che recupero muscolare è compromesso, adatta i volumi
+11. Collega sempre alimentazione e allenamento quando pertinente`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// STREAK & STATS
+// ══════════════════════════════════════════════════════════════════
+function updateStreak(){
+  const t = todayStr();
+  const y = yesterdayStr();
+  if(appStats.lastActive === t){ refreshStats(); return; }
+  appStats.streak = (appStats.lastActive === y) ? (appStats.streak||0)+1 : 1;
+  appStats.lastActive = t;
+  saveAll();
+  refreshStats();
+}
+
+function refreshStats(){
+  const s = appStats.streak||0;
+  document.getElementById('streakCount').textContent = s;
+  document.getElementById('spStreak').innerHTML = `${s}<span class="stat-unit">gg</span>`;
+  document.getElementById('spStreakLbl').textContent = s>0 ? '🔥 in corso' : 'inizia oggi';
+  document.getElementById('spStreakLbl').style.color = s>0 ? 'var(--ac)' : 'var(--mt)';
+  document.getElementById('spSess').textContent = appStats.sessions||0;
+
+  if(appStats.lastWeight){
+    document.getElementById('lastWeightVal').textContent = appStats.lastWeight+'kg';
+    document.getElementById('spPeso').innerHTML = `${appStats.lastWeight}<span class="stat-unit">kg</span>`;
+    document.getElementById('spPesoDelta').textContent = 'ultimo aggiornamento';
+    document.getElementById('spPesoDelta').style.color = 'var(--ac)';
+  }
+
+  // Obiettivo
+  const obj = userData.obiettivo || '—';
+  document.getElementById('spObj').textContent = obj !== '—' ? obj.charAt(0).toUpperCase()+obj.slice(1) : '—';
+  document.getElementById('spObjDelta').textContent = userData.tempistica || '—';
+
+  refreshDietaUI();
+}
+
+function refreshDietaUI(){
+  const t = calcTargets();
+  document.getElementById('mvProt').textContent = `— / ${t.proteine||'?'}g`;
+  document.getElementById('mvCarb').textContent = `— / ${t.carbo||'?'}g`;
+  document.getElementById('mvFat').textContent  = `— / ${t.grassi||'?'}g`;
+
+  // Diario oggi
+  const oggi = alimentazioneLog[todayStr()];
+  const log = document.getElementById('dietaOggi');
+  const logTab = document.getElementById('dietaLog');
+
+  if(!oggi || (!oggi.colazione.length && !oggi.pranzo.length && !oggi.cena.length && !oggi.spuntini.length)){
+    log.textContent = 'Nessun pasto registrato ancora.';
+    if(logTab) logTab.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+  const pasti = [['Colazione','colazione'],['Pranzo','pranzo'],['Cena','cena'],['Spuntini','spuntini']];
+  pasti.forEach(([label,key]) => {
+    if(oggi[key] && oggi[key].length > 0){
+      html += `<div class="info-box" style="margin-bottom:8px">
+        <strong style="color:var(--tx);font-size:12px">${label}</strong>
+        <div style="margin-top:4px;font-size:13px">${oggi[key].join(', ')}</div>
+      </div>`;
     }
-    if(files.length>0){
-      addAIMessage(`Perfetto ${name}, ho tutto. Sto analizzando le tue schede...`);
-      showTyping();
-      document.getElementById('analyzingOverlay').classList.add('open');
-      try{
-        const fc=await Promise.all(files.map(type=>new Promise(res=>{
-          const r=new FileReader();
-          r.onload=e=>res({type,data:e.target.result.split(',')[1],mime:importedFiles[type].type});
-          r.readAsDataURL(importedFiles[type]);
-        })));
-        const imgs=fc.map(f=>({type:'image',source:{type:'base64',media_type:f.mime||'image/jpeg',data:f.data}}));
-        const reply=await callAPI([{role:'user',content:[...imgs,{type:'text',text:`${getTimestamp()} Primo accesso. Ho caricato ${files.join(' e ')}. Analizzale, presentati e dimmi cosa ne pensi rispetto al mio profilo.`}]}]);
-        document.getElementById('analyzingOverlay').classList.remove('open');
-        removeTyping();
-        addAIMessage(reply||`Benvenuto ${name}! Sono pronto 💪`);
-      }catch(e){
-        document.getElementById('analyzingOverlay').classList.remove('open');
-        removeTyping();
-        addAIMessage(`Benvenuto ${name}! Profilo acquisito. Sarò ${esL} con te 💪`);
-      }
-    } else {
-      addAIMessage(proMsg||`Benvenuto ${name}! Profilo acquisito. Sarò ${esL} con te. Scrivimi quando vuoi 💪`);
-    }
-  },500);
+  });
+
+  log.innerHTML = html;
+  if(logTab) logTab.innerHTML = html;
 }
 
-// ================================================================
-// SCHEDA — genera e gestisce
-// ================================================================
-function rigeneraScheda(){
-  quickSend('Generami la mia scheda di allenamento personalizzata basata sul mio profilo completo. Tieni conto di livello, giorni disponibili, obiettivo e qualsiasi limitazione fisica.');
+// ══════════════════════════════════════════════════════════════════
+// ONBOARDING — 4 step
+// ══════════════════════════════════════════════════════════════════
+const OB_STEPS = [
+  {
+    title:'CHI SEI?', sub:'Dati anagrafici e fisici', time:'~2 min',
+    render:()=>`
+      <div class="r2">
+        <div class="fg"><label class="fl">Nome</label><input class="fi" id="f_nome" placeholder="Mario" value="${userData.nome||''}"></div>
+        <div class="fg"><label class="fl">Età</label><input class="fi" id="f_eta" type="number" inputmode="numeric" placeholder="28" value="${userData.eta||''}"></div>
+      </div>
+      <div class="fg"><label class="fl">Sesso biologico</label>
+        <div class="chips">
+          <div class="chip ${userData.sesso==='M'?'sel':''}" onclick="selChip(this,'sesso','M')">Maschio</div>
+          <div class="chip ${userData.sesso==='F'?'sel':''}" onclick="selChip(this,'sesso','F')">Femmina</div>
+        </div>
+      </div>
+      <div class="r3">
+        <div class="fg"><label class="fl">Altezza (cm)</label><input class="fi" id="f_altezza" type="number" inputmode="numeric" placeholder="180" value="${userData.altezza||''}"></div>
+        <div class="fg"><label class="fl">Peso (kg)</label><input class="fi" id="f_peso" type="number" inputmode="decimal" placeholder="85" value="${userData.peso||''}"></div>
+        <div class="fg"><label class="fl">Obiettivo (kg)</label><input class="fi" id="f_pesobj" type="number" inputmode="decimal" placeholder="82" value="${userData.pesobj||''}"></div>
+      </div>
+      <div class="r2">
+        <div class="fg"><label class="fl">% Grasso corp.</label><input class="fi" id="f_grasso" type="number" inputmode="decimal" placeholder="15" value="${userData.grasso||''}"></div>
+        <div class="fg"><label class="fl">Vita (cm)</label><input class="fi" id="f_vita" type="number" inputmode="numeric" placeholder="82" value="${userData.vita||''}"></div>
+      </div>
+      <div class="coll-hdr" onclick="toggleColl(this)">
+        <span class="coll-lbl">📏 Misure avanzate (opzionale)</span>
+        <span class="coll-arr">▼</span>
+      </div>
+      <div class="coll-body">
+        <div class="r3">
+          <div class="fg"><label class="fl">Petto (cm)</label><input class="fi" id="f_petto" type="number" inputmode="numeric" placeholder="105" value="${userData.petto||''}"></div>
+          <div class="fg"><label class="fl">Braccia (cm)</label><input class="fi" id="f_braccia" type="number" inputmode="numeric" placeholder="38" value="${userData.braccia||''}"></div>
+          <div class="fg"><label class="fl">Cosce (cm)</label><input class="fi" id="f_cosce" type="number" inputmode="numeric" placeholder="58" value="${userData.cosce||''}"></div>
+        </div>
+        <div class="r2">
+          <div class="fg"><label class="fl">Fianchi (cm)</label><input class="fi" id="f_fianchi" type="number" inputmode="numeric" placeholder="96" value="${userData.fianchi||''}"></div>
+          <div class="fg"><label class="fl">Polpacci (cm)</label><input class="fi" id="f_polpacci" type="number" inputmode="numeric" placeholder="38" value="${userData.polpacci||''}"></div>
+        </div>
+      </div>`
+  },
+  {
+    title:'STILE DI VITA', sub:'Più dettagli = consigli più precisi', time:'~1 min',
+    render:()=>`
+      <div class="fg"><label class="fl">Tipo di lavoro</label>
+        <select class="fi" id="f_lavoro">
+          <option value="">Seleziona...</option>
+          <option value="sedentario" ${userData.lavoro==='sedentario'?'selected':''}>Sedentario (ufficio, scrivania)</option>
+          <option value="leggero" ${userData.lavoro==='leggero'?'selected':''}>Leggero</option>
+          <option value="moderato" ${userData.lavoro==='moderato'?'selected':''}>Moderatamente attivo</option>
+          <option value="fisico" ${userData.lavoro==='fisico'?'selected':''}>Fisicamente impegnativo</option>
+        </select>
+      </div>
+      <div class="r2">
+        <div class="fg"><label class="fl">Ore sonno/notte</label><input class="fi" id="f_sonno" type="number" inputmode="numeric" placeholder="7" value="${userData.sonno||''}"></div>
+        <div class="fg"><label class="fl">Acqua (litri/die)</label><input class="fi" id="f_acqua" type="number" inputmode="decimal" step="0.5" placeholder="2.5" value="${userData.acqua||''}"></div>
+      </div>
+      <div class="fg"><label class="fl">Livello di stress</label>
+        <div class="chips">
+          <div class="chip ${userData.stress==='basso'?'sel':''}" onclick="selChip(this,'stress','basso')">Basso</div>
+          <div class="chip ${userData.stress==='medio'?'sel':''}" onclick="selChip(this,'stress','medio')">Medio</div>
+          <div class="chip ${userData.stress==='alto'?'sel':''}" onclick="selChip(this,'stress','alto')">Alto</div>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Fumo</label>
+        <div class="chips">
+          <div class="chip ${userData.fumo==='no'?'sel':''}" onclick="selChip(this,'fumo','no')">Non fumo</div>
+          <div class="chip ${userData.fumo==='ex'?'sel':''}" onclick="selChip(this,'fumo','ex')">Ex fumatore</div>
+          <div class="chip ${userData.fumo==='si'?'sel':''}" onclick="selChip(this,'fumo','si')">Fumo</div>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Alcolici</label>
+        <div class="chips">
+          <div class="chip ${userData.alcol==='mai'?'sel':''}" onclick="selChip(this,'alcol','mai')">Mai</div>
+          <div class="chip ${userData.alcol==='occasionale'?'sel':''}" onclick="selChip(this,'alcol','occasionale')">Occasionali</div>
+          <div class="chip ${userData.alcol==='frequente'?'sel':''}" onclick="selChip(this,'alcol','frequente')">Frequenti</div>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Intolleranze / Allergie</label><input class="fi" id="f_intolleranze" placeholder="Es: lattosio, nessuna..." value="${userData.intolleranze||''}"></div>
+      <div class="fg"><label class="fl">Integratori in uso</label><input class="fi" id="f_integratori" placeholder="Es: creatina 5g, whey..." value="${userData.integratori||''}"></div>`
+  },
+  {
+    title:'SALUTE & PALESTRA', sub:'Per personalizzare allenamento e consigli', time:'~1 min',
+    render:()=>`
+      <div class="fg"><label class="fl">Patologie o condizioni mediche</label><input class="fi" id="f_patologie" placeholder="Es: ipertensione, nessuna..." value="${userData.patologie||''}"></div>
+      <div class="fg"><label class="fl">Infortuni o limitazioni fisiche</label><input class="fi" id="f_infortuni" placeholder="Es: spalla destra, nessuno..." value="${userData.infortuni||''}"></div>
+      <div class="fg"><label class="fl">Livello di esperienza</label>
+        <div class="chips">
+          <div class="chip ${userData.livello==='principiante'?'sel':''}" onclick="selChip(this,'livello','principiante')">Principiante &lt;1 anno</div>
+          <div class="chip ${userData.livello==='intermedio'?'sel':''}" onclick="selChip(this,'livello','intermedio')">Intermedio 1-3 anni</div>
+          <div class="chip ${userData.livello==='avanzato'?'sel':''}" onclick="selChip(this,'livello','avanzato')">Avanzato &gt;3 anni</div>
+        </div>
+      </div>
+      <div class="r2">
+        <div class="fg"><label class="fl">Giorni/settimana</label>
+          <select class="fi" id="f_giorni">
+            <option value="">--</option>
+            ${[2,3,4,5,6].map(n=>`<option value="${n}" ${userData.giorni==n?'selected':''}>${n} giorni</option>`).join('')}
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Durata sessione</label>
+          <select class="fi" id="f_durata">
+            <option value="">--</option>
+            <option value="45" ${userData.durata==='45'?'selected':''}>~45 min</option>
+            <option value="60" ${userData.durata==='60'?'selected':''}>~60 min</option>
+            <option value="90" ${userData.durata==='90'?'selected':''}>~90 min</option>
+            <option value="120" ${userData.durata==='120'?'selected':''}>~2 ore</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Preferenze alimentari</label>
+        <div class="chips">
+          <div class="chip ${userData.dieta==='onnivoro'?'sel':''}" onclick="selChip(this,'dieta','onnivoro')">Onnivoro</div>
+          <div class="chip ${userData.dieta==='vegetariano'?'sel':''}" onclick="selChip(this,'dieta','vegetariano')">Vegetariano</div>
+          <div class="chip ${userData.dieta==='vegano'?'sel':''}" onclick="selChip(this,'dieta','vegano')">Vegano</div>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Esercizi da escludere</label><input class="fi" id="f_escludiex" placeholder="Es: squat (ginocchia), nessuno..." value="${userData.escludiex||''}"></div>`
+  },
+  {
+    title:'IL TUO OBIETTIVO', sub:"L'AI costruisce tutto su questo", time:'~1 min',
+    render:()=>`
+      <div class="fg"><label class="fl">Obiettivo principale</label>
+        <div class="chips">
+          <div class="chip ${userData.obiettivo==='massa'?'sel':''}" onclick="selChip(this,'obiettivo','massa')">💪 Massa muscolare</div>
+          <div class="chip ${userData.obiettivo==='dimagrimento'?'sel':''}" onclick="selChip(this,'obiettivo','dimagrimento')">🔥 Dimagrimento</div>
+          <div class="chip ${userData.obiettivo==='ricomposizione'?'sel':''}" onclick="selChip(this,'obiettivo','ricomposizione')">⚖️ Ricomposizione</div>
+          <div class="chip ${userData.obiettivo==='forza'?'sel':''}" onclick="selChip(this,'obiettivo','forza')">🏋️ Forza massimale</div>
+          <div class="chip ${userData.obiettivo==='mantenimento'?'sel':''}" onclick="selChip(this,'obiettivo','mantenimento')">✅ Mantenimento</div>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Tempistica desiderata</label><input class="fi" id="f_tempistica" placeholder="Es: perdere 5kg in 3 mesi..." value="${userData.tempistica||''}"></div>
+      <div class="fg"><label class="fl">Motivazione personale</label>
+        <textarea class="fi" id="f_motivazione" placeholder="Perché vuoi raggiungere questo obiettivo?">${userData.motivazione||''}</textarea>
+      </div>
+      <div class="fg"><label class="fl">Quanto vuoi che il coach sia esigente?</label>
+        ${[
+          {v:'1',e:'😌',l:'1 — Gentile e paziente',s:'Nessuna pressione, supporto costante'},
+          {v:'2',e:'🙂',l:'2 — Equilibrato',s:'Ti sprona ma senza esagerare'},
+          {v:'3',e:'💪',l:'3 — Deciso',s:'Ti tiene in riga, poche scuse'},
+          {v:'4',e:'🔥',l:'4 — Esigente',s:'Standard alti, risultati seri'},
+          {v:'5',e:'⚡',l:'5 — Modalità atleta',s:'Duro e diretto, zero compromessi'}
+        ].map(o=>`
+          <div class="coach-card ${userData.esigenza===o.v?'sel':''}" onclick="selCoach(this,'${o.v}')">
+            <div style="font-size:22px;flex-shrink:0">${o.e}</div>
+            <div><div style="font-size:13px;font-weight:600">${o.l}</div>
+            <div style="font-size:11px;color:var(--mt);margin-top:2px">${o.s}</div></div>
+          </div>`).join('')}
+      </div>
+      <div class="info-box ac">✅ Tutto pronto. Premi <strong>INIZIA</strong> per entrare nell'app.</div>`
+  }
+];
+
+function renderObStep(){
+  const s = OB_STEPS[obStep];
+  document.getElementById('obTitle').textContent = s.title;
+  document.getElementById('obSub').textContent   = s.sub;
+  document.getElementById('obTime').textContent  = s.time;
+  document.getElementById('obBody').innerHTML    = s.render();
+  document.getElementById('obBack').style.display  = obStep > 0 ? 'block' : 'none';
+  document.getElementById('obNext').textContent    = obStep === OB_STEPS.length-1 ? 'INIZIA' : 'CONTINUA';
+  document.getElementById('obSkip').style.display  = 'none'; // nessuno step skippabile
+
+  // Aggiorna dots
+  document.querySelectorAll('.ob-dot').forEach((d,i)=>{
+    d.className = 'ob-dot' + (i < obStep ? ' done' : i === obStep ? ' active' : '');
+  });
+  console.log(`[FM:Onboarding] Step ${obStep+1}/${OB_STEPS.length}`);
 }
 
-function renderScheda(schedaText){
-  // Salva la scheda
-  localStorage.setItem('fm_scheda',schedaText);
-  // Mostra scheda come testo formattato nella sezione
-  document.getElementById('schedaContent').innerHTML=`
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;font-size:13px;line-height:1.8;color:var(--text-dim);white-space:pre-wrap">${schedaText.replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--text)">$1</strong>').replace(/\n/g,'<br>')}</div>`;
-}
-
-// ================================================================
-// CHAT
-// ================================================================
-function addUserMessage(text){
-  const msgs=document.getElementById('chatMessages');
-  const now=new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
-  const div=document.createElement('div');
-  div.className='msg user';
-  div.innerHTML=`<div class="msg-avatar user-av">👤</div><div><div class="msg-bubble">${escHtml(text)}</div><div class="msg-time">${now}</div></div>`;
-  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
-  // Aggiunge timestamp al messaggio per l'AI
-  const msgWithTimestamp=`${getTimestamp()} ${text}`;
-  chatHistory.push({role:'user',content:msgWithTimestamp});
+function saveObStep(){
+  const v = id => document.getElementById(id)?.value || '';
+  if(obStep===0) Object.assign(userData,{
+    nome:v('f_nome'), eta:v('f_eta'), altezza:v('f_altezza'), peso:v('f_peso'),
+    pesobj:v('f_pesobj'), grasso:v('f_grasso'), vita:v('f_vita'),
+    petto:v('f_petto'), braccia:v('f_braccia'), cosce:v('f_cosce'),
+    fianchi:v('f_fianchi'), polpacci:v('f_polpacci')
+  });
+  else if(obStep===1) Object.assign(userData,{
+    lavoro:v('f_lavoro'), sonno:v('f_sonno'), acqua:v('f_acqua'),
+    intolleranze:v('f_intolleranze'), integratori:v('f_integratori')
+  });
+  else if(obStep===2) Object.assign(userData,{
+    patologie:v('f_patologie'), infortuni:v('f_infortuni'),
+    giorni:v('f_giorni'), durata:v('f_durata'), escludiex:v('f_escludiex')
+  });
+  else if(obStep===3) Object.assign(userData,{
+    tempistica:v('f_tempistica'), motivazione:v('f_motivazione')
+  });
   saveAll();
 }
 
-function addAIMessage(text){
-  const msgs=document.getElementById('chatMessages');
-  const now=new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
-  const div=document.createElement('div');
-  div.className='msg ai';
-  div.innerHTML=`<div class="msg-avatar ai">FM</div><div><div class="msg-bubble">${text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div><div class="msg-time">${now}</div></div>`;
-  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
-  chatHistory.push({role:'assistant',content:text});
+function nextStep(){
+  saveObStep();
+  if(obStep < OB_STEPS.length-1){ obStep++; renderObStep(); }
+  else launchApp();
+}
 
-  // Auto-detect peso
-  const pm=text.match(/(\d{2,3}(?:[.,]\d)?)\s*kg/i);
-  if(pm&&text.toLowerCase().match(/peso|registr|aggiorn/)){
-    appStats.lastWeight=pm[1].replace(',','.');
-    appStats.weightHistory=appStats.weightHistory||[];
-    appStats.weightHistory.push({date:new Date().toLocaleDateString('it-IT'),val:parseFloat(appStats.lastWeight)});
-    refreshStats();
+function prevStep(){
+  saveObStep();
+  if(obStep > 0){ obStep--; renderObStep(); }
+}
+
+function selChip(el, field, val){
+  el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  userData[field] = val;
+  saveAll();
+}
+
+function selCoach(el, val){
+  document.querySelectorAll('.coach-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  userData.esigenza = val;
+  saveAll();
+}
+
+function toggleColl(hdr){
+  hdr.querySelector('.coll-arr').classList.toggle('open');
+  hdr.nextElementSibling.classList.toggle('open');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// LAUNCH APP — dopo onboarding o al ritorno
+// ══════════════════════════════════════════════════════════════════
+function launchApp(){
+  console.log('[FM:App] Avvio app per:', userData.nome);
+  document.getElementById('onboarding').classList.remove('active');
+  document.getElementById('app').classList.add('active');
+
+  if(userData.nome) document.getElementById('profileBtn').textContent = userData.nome[0].toUpperCase();
+  if(userData.peso) appStats.lastWeight = userData.peso;
+
+  updateStreak();
+
+  // Alert proattivo
+  const proMsg = buildProactiveMsg();
+  document.getElementById('alertTxt').innerHTML = proMsg ||
+    `<strong>Ciao ${userData.nome||''}!</strong> Cosa fai oggi?`;
+
+  // Mostra scheda se esiste
+  if(schedaAttiva) renderSchedaView();
+
+  // Mostra dieta
+  refreshDietaUI();
+
+  // Mostra choice scheda una sola volta (primo accesso)
+  const firstRun = !localStorage.getItem(LS.firstRun);
+  if(firstRun && !schedaAttiva){
+    localStorage.setItem(LS.firstRun, '1');
+    setTimeout(()=> showModal('mSchedaChoice'), 1200);
   }
-  // Auto-detect sessione
-  if(text.toLowerCase().match(/registrat|ottima sessione|ben fatto|bravo|sessione completata/)){
-    appStats.sessions=(appStats.sessions||0)+1;
-    refreshStats();
+
+  // Messaggio benvenuto in chat
+  const msgs = document.getElementById('chatMsgs');
+  msgs.innerHTML = '';
+  if(chatHistory.length === 0){
+    const esL = {
+      '1':'gentile e paziente','2':'equilibrato','3':'deciso',
+      '4':'esigente','5':'in modalità atleta'
+    }[userData.esigenza] || 'deciso';
+    addAiMsg(`Benvenuto ${userData.nome||''}! Profilo acquisito. Sarò ${esL} con te. Scrivimi quando vuoi 💪`);
+    // Non aggiungere alla history il messaggio di benvenuto
+    chatHistory.pop();
+  } else {
+    // Ripristina chat (nasconde timestamp dal display)
+    chatHistory.forEach(m => {
+      const div = document.createElement('div');
+      div.className = `msg ${m.role==='user'?'u':''}`;
+      const av = m.role==='user'
+        ? `<div class="av me">👤</div>`
+        : `<div class="av ai">FM</div>`;
+      const content = m.role==='user'
+        ? esc(m.content.replace(/^\[.*?\]\s*/,''))
+        : fmtMd(m.content);
+      div.innerHTML = `${av}<div><div class="bubble">${content}</div></div>`;
+      msgs.appendChild(div);
+    });
+    msgs.scrollTop = msgs.scrollHeight;
   }
-  // Auto-detect scheda generata
-  if(text.toLowerCase().match(/scheda|push|pull|legs|full body|upper|lower|serie|ripetizioni/) && text.length>300){
-    renderScheda(text);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// COACH PROATTIVO — messaggio contestuale all'apertura
+// ══════════════════════════════════════════════════════════════════
+function buildProactiveMsg(){
+  const name  = userData.nome || '';
+  const hour  = new Date().getHours();
+  const streak = appStats.streak || 0;
+  const sonno = parseFloat(userData.sonno) || 7;
+
+  if(streak===7)  return `🔥 <strong>${name}</strong>, una settimana di fila. Questo è il livello. Avanti.`;
+  if(streak===14) return `💪 <strong>${name}</strong>, 14 giorni consecutivi. La costanza è già un risultato.`;
+  if(streak===30) return `⚡ <strong>${name}</strong>, UN MESE. Pochi ci arrivano.`;
+  if(sonno < 6 && hour < 14) return `<strong>${name}</strong>, hai dormito poco — tieni il volume basso oggi. Il muscolo cresce quando riposi.`;
+
+  if(hour>=5 && hour<12)  return `☀️ Buongiorno <strong>${name}</strong>! Cosa c'è in programma oggi?`;
+  if(hour>=12 && hour<15) return `<strong>${name}</strong>, ricordati il pre-workout: carboidrati + proteine 90 min prima.`;
+  if(hour>=15 && hour<20) return `💪 <strong>${name}</strong>, ore di palestra. Come stai fisicamente oggi?`;
+  if(hour>=20)            return `🌙 Sera <strong>${name}</strong>. Com'è andata oggi in palestra e a tavola?`;
+  return null;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CHAT
+// ══════════════════════════════════════════════════════════════════
+function addUserMsg(text){
+  const msgs = document.getElementById('chatMsgs');
+  const div  = document.createElement('div');
+  div.className = 'msg u';
+  div.innerHTML = `<div class="av me">👤</div>
+    <div><div class="bubble">${esc(text)}</div><div class="msg-time u">${nowTimeStr()}</div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // Salva con timestamp per contesto AI
+  chatHistory.push({ role:'user', content:`${nowTimestamp()} ${text}` });
+
+  // Auto-salva pasto se rilevato
+  if(isLogAlimentare(text)){
+    savePasto(text);
+    console.log('[FM:Chat] Rilevato log alimentare:', text.substring(0,60));
+  }
+  saveAll();
+}
+
+function addAiMsg(text){
+  const msgs = document.getElementById('chatMsgs');
+  const div  = document.createElement('div');
+  div.className = 'msg';
+  div.innerHTML = `<div class="av ai">FM</div>
+    <div><div class="bubble">${fmtMd(text)}</div><div class="msg-time">${nowTimeStr()}</div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  chatHistory.push({ role:'assistant', content:text });
+
+  // Auto-detect peso nel testo AI
+  const pm = text.match(/(\d{2,3}(?:[.,]\d)?)\s*kg/i);
+  if(pm && text.toLowerCase().match(/peso|registr|aggiorn/)){
+    appStats.lastWeight = pm[1].replace(',','.');
+    appStats.weightHistory.push({ date: todayStr(), val: parseFloat(appStats.lastWeight) });
+    refreshStats();
+    console.log('[FM:Chat] Peso rilevato:', appStats.lastWeight);
+  }
+  // Auto-detect sessione completata
+  if(text.toLowerCase().match(/registrat|ottima sessione|ben fatto|completat/)){
+    appStats.sessions = (appStats.sessions||0)+1;
+    refreshStats();
+    console.log('[FM:Chat] Sessione registrata. Totale:', appStats.sessions);
+  }
+  // Auto-detect scheda generata da AI
+  if(text.toLowerCase().match(/scheda:|push:|pull:|legs:|full body:|serie|ripetizioni/) && text.length > 400){
+    saveSchedaFromAI(text);
   }
   saveAll();
 }
 
 function showTyping(){
-  const msgs=document.getElementById('chatMessages');
-  const div=document.createElement('div');
-  div.className='msg ai';div.id='typingMsg';
-  div.innerHTML=`<div class="msg-avatar ai">FM</div><div><div class="msg-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>`;
-  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+  const msgs = document.getElementById('chatMsgs');
+  const div  = document.createElement('div');
+  div.id = '_typing'; div.className = 'msg';
+  div.innerHTML = `<div class="av ai">FM</div>
+    <div><div class="bubble"><div class="typing-row">
+      <div class="tdot"></div><div class="tdot"></div><div class="tdot"></div>
+    </div></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
 }
-function removeTyping(){const t=document.getElementById('typingMsg');if(t)t.remove();}
+function removeTyping(){ const t = document.getElementById('_typing'); if(t) t.remove(); }
 
-async function callAPI(messages,retries=2){
-  for(let i=0;i<=retries;i++){
+async function callAI(messages, retries=2){
+  for(let i=0; i<=retries; i++){
     try{
-      const res=await fetch(API_URL,{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          model:'claude-sonnet-4-5',max_tokens:2000,
-          system:buildSystemPrompt(),
-          messages:messages.filter(m=>m.content&&(typeof m.content==='string'?m.content.trim()!=='':true))
+      const res = await fetch(PROXY_URL, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model: AI_MODEL,
+          max_tokens: 1500,
+          system: buildSystemPrompt(),
+          messages: messages.filter(m => m.content && m.content.trim && m.content.trim() !== '')
         })
       });
-      if(!res.ok)throw new Error(`HTTP ${res.status}`);
-      const data=await res.json();
-      if(data.error)throw new Error(data.error.message);
-      return data.content?.[0]?.text||null;
-    }catch(e){
-      if(i===retries)throw e;
-      await new Promise(r=>setTimeout(r,1000*(i+1)));
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if(data.error) throw new Error(data.error.message);
+      return data.content?.[0]?.text || null;
+    } catch(e){
+      console.warn(`[FM:AI] Tentativo ${i+1} fallito:`, e.message);
+      if(i===retries) throw e;
+      await new Promise(r=>setTimeout(r, 1000*(i+1)));
     }
   }
 }
 
-async function sendMessage(){
-  const input=document.getElementById('chatInput');
-  const text=input.value.trim();
-  if(!text)return;
-  input.value='';input.style.height='auto';
-  addUserMessage(text);showTyping();
-  try{
-    const reply=await callAPI(chatHistory.slice(-20));
-    removeTyping();
-    if(reply)addAIMessage(reply);
-    else addAIMessage('Non ho ricevuto una risposta valida. Riprova tra un secondo.');
-  }catch(err){
-    removeTyping();
-    const isOffline=!navigator.onLine;
-    if(isOffline)addAIMessage('📵 Sei offline. Riconnettiti e riprova — i tuoi dati sono al sicuro.');
-    else addAIMessage('⚡ Connessione momentanea assente. Riprova — sono qui.');
-  }
-}
-
-function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
-function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
-function quickSend(text){
-  document.getElementById('chatInput').value=text;
-  sendMessage();
-  switchTab('chat',document.querySelectorAll('.tab')[0]);
-}
-function goToChat(){switchTab('chat',document.querySelectorAll('.tab')[0]);}
-function escHtml(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
-function switchTab(tab,el){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('tab-'+tab).classList.add('active');
-}
-
-// ================================================================
-// IMPORT
-// ================================================================
-function showImportModal(){document.getElementById('importModal').classList.add('open');}
-
-function handleFileUpload(input,type){
-  if(!input.files[0])return;
-  importedFiles[type]=input.files[0];
-  const s=document.getElementById(type==='scheda'?'schedaStatus':'dietaStatus');
-  if(s){s.textContent=`✓ ${input.files[0].name}`;s.style.display='block';}
-  document.getElementById('importAnalyzeBtn').style.display='block';
-}
-
-async function analyzeImports(){
-  document.getElementById('importModal').classList.remove('open');
-  switchTab('chat',document.querySelectorAll('.tab')[0]);
-  const types=Object.keys(importedFiles).filter(k=>k!=='foto_corporea');
-  if(!types.length)return;
-  const labels=types.map(t=>t==='scheda'?'scheda di allenamento':'piano alimentare').join(' e ');
-  addUserMessage(`Ho caricato la mia ${labels}. Analizzala rispetto al mio profilo.`);
+async function sendMsg(){
+  const inp = document.getElementById('chatIn');
+  const text = inp.value.trim();
+  if(!text) return;
+  inp.value = '';
+  inp.style.height = 'auto';
+  addUserMsg(text);
   showTyping();
-  document.getElementById('analyzingOverlay').classList.add('open');
+
   try{
-    const fc=await Promise.all(types.map(type=>new Promise(res=>{
-      const r=new FileReader();
-      r.onload=e=>res({type,data:e.target.result.split(',')[1],mime:importedFiles[type].type});
-      r.readAsDataURL(importedFiles[type]);
-    })));
-    const imgs=fc.map(f=>({type:'image',source:{type:'base64',media_type:f.mime||'image/jpeg',data:f.data}}));
-    const reply=await callAPI([{role:'user',content:[...imgs,{type:'text',text:`${getTimestamp()} Analizza questa/e immagine/i: ${labels}. Valutala rispetto al mio profilo e dimmi cosa ne pensi.`}]}]);
-    document.getElementById('analyzingOverlay').classList.remove('open');
+    const reply = await callAI(chatHistory.slice(-20));
     removeTyping();
-    addAIMessage(reply||'Non riesco a leggere il file. Prova con una foto più nitida.');
-  }catch(e){
-    document.getElementById('analyzingOverlay').classList.remove('open');
+    if(reply) addAiMsg(reply);
+    else addAiMsg('Non ho ricevuto una risposta valida. Riprova tra un secondo.');
+  } catch(e){
     removeTyping();
-    addAIMessage('Errore nel caricamento. Assicurati che la foto sia leggibile e riprova.');
+    console.error('[FM:AI] Errore finale:', e.message);
+    addAiMsg(navigator.onLine
+      ? '⚡ Connessione momentanea assente. Riprova — sono qui.'
+      : '📵 Sei offline. I tuoi dati sono al sicuro.');
   }
 }
 
-// ================================================================
-// RESET
-// ================================================================
-function confirmReset(){document.getElementById('resetModal1').classList.add('open');}
-function confirmReset2(){
-  document.getElementById('resetModal1').classList.remove('open');
-  setTimeout(()=>document.getElementById('resetModal2').classList.add('open'),200);
+function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMsg(); } }
+function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,110)+'px'; }
+function qs(text){ document.getElementById('chatIn').value=text; sendMsg(); switchTab('chat',document.querySelectorAll('.tab')[0]); }
+
+// ══════════════════════════════════════════════════════════════════
+// NAVIGAZIONE TAB
+// ══════════════════════════════════════════════════════════════════
+function switchTab(tab, el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tc').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tc-'+tab).classList.add('active');
 }
-function executeReset(){
-  document.getElementById('resetModal2').classList.remove('open');
-  try{localStorage.clear();}catch(e){}
-  userData={};chatHistory=[];importedFiles={};scheda_attiva=null;
-  appStats={streak:0,sessions:0,lastActive:null,lastWeight:null,weightHistory:[],workoutHistory:[]};
-  currentStep=0;
+
+// ══════════════════════════════════════════════════════════════════
+// SCHEDA — visualizzazione e salvataggio AI
+// ══════════════════════════════════════════════════════════════════
+function renderSchedaView(){
+  if(!schedaAttiva) return;
+  const v = document.getElementById('schedaView');
+
+  // Gestisci formato vecchio (lista piatta) — compatibilità
+  if(schedaAttiva.esercizi && !schedaAttiva.sezioni){
+    let html = `<div class="info-box" style="margin-bottom:14px">⚠️ Scheda in formato vecchio — modifica per aggiornare.</div>`;
+    schedaAttiva.esercizi.forEach((es,i)=>{
+      html += `<div class="es-card">
+        <div class="es-num">${i+1}</div>
+        <div class="es-info"><div class="es-name">${esc(es.nome)}</div>
+        <div class="es-det">${es.serie||''}</div></div>
+      </div>`;
+    });
+    v.innerHTML = html;
+    return;
+  }
+
+  if(!schedaAttiva.sezioni || schedaAttiva.sezioni.length===0){
+    v.innerHTML = `<div class="empty-state">
+      <div class="empty-ico">📋</div><div class="empty-title">SCHEDA VUOTA</div>
+      <div class="empty-sub">La scheda è stata creata ma non ha sezioni. Modificala per aggiungere esercizi.</div>
+      <button class="btn btn-a" onclick="openBuilder()">✏️ MODIFICA</button>
+    </div>`;
+    return;
+  }
+
+  const badge = schedaAttiva.origine==='utente' ? '✍️ Scheda personale' : '🤖 Generata da AI';
+  const badgeCol = schedaAttiva.origine==='utente' ? 'var(--ac2)' : 'var(--bl)';
+
+  let html = `<div style="margin-bottom:14px">
+    <span style="font-size:11px;padding:4px 12px;border-radius:100px;background:${badgeCol};color:#000;font-weight:600">${badge}</span>
+  </div>`;
+
+  schedaAttiva.sezioni.forEach(sez=>{
+    html += `<div style="margin-bottom:18px">
+      <div class="day-badge">${esc(sez.nome)}</div>`;
+    sez.esercizi.forEach((es,i)=>{
+      html += `<div class="es-card">
+        <div class="es-num">${i+1}</div>
+        <div class="es-info">
+          <div class="es-name">${esc(es.nome)}</div>
+          <div class="es-det">${es.serie}×${es.reps}${es.peso?' · '+es.peso+'kg':''} ${es.recupero?'· rec '+es.recupero+'s':''}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  v.innerHTML = html;
+  console.log('[FM:Scheda] Vista aggiornata:', schedaAttiva.sezioni.length, 'sezioni');
+}
+
+function deleteScheda(){
+  if(!confirm('Cancellare la scheda attiva?')) return;
+  schedaAttiva = null;
+  saveAll();
+  document.getElementById('schedaView').innerHTML = `<div class="empty-state">
+    <div class="empty-ico">📋</div><div class="empty-title">NESSUNA SCHEDA</div>
+    <div class="empty-sub">Crea la tua scheda guidata oppure chiedi all'AI di generartene una.</div>
+    <button class="btn btn-a" style="margin-bottom:10px" onclick="openBuilder()">✍️ CREA SCHEDA GUIDATA</button>
+    <button class="btn btn-b" onclick="qs('Generami una scheda di allenamento personalizzata basata sul mio profilo completo')">🤖 GENERA CON AI</button>
+  </div>`;
+  console.log('[FM:Scheda] Cancellata');
+}
+
+// Quando l'AI genera una scheda in chat, salvala automaticamente
+function saveSchedaFromAI(text){
+  // Salva il testo grezzo come scheda AI per ora
+  // In futuro: parsing strutturato
+  if(!schedaAttiva || schedaAttiva.origine === 'ai'){
+    console.log('[FM:Scheda] Scheda AI rilevata in chat, lunghezza:', text.length);
+    // Non sovrascrive scheda utente
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BUILDER SCHEDA — creazione guidata
+// ══════════════════════════════════════════════════════════════════
+
+// Database esercizi per gruppo
+const ES_DB = {
+  Petto:   ['Panca piana','Panca inclinata','Panca declinata','Croci manubri','Chest press','Dip','Cable crossover','Altro esercizio'],
+  Schiena: ['Lat machine','Rematore bilanciere','Rematore manubrio','Pulley basso','Trazioni','Face pull','Stacco da terra','Altro esercizio'],
+  Gambe:   ['Squat','Leg press','Affondi','Leg extension','Leg curl','Calf raise','Romanian deadlift','Hip thrust','Altro esercizio'],
+  Spalle:  ['Military press','Alzate laterali','Arnold press','Alzate frontali','Reverse fly','Tirate al mento','Altro esercizio'],
+  Braccia: ['Curl bilanciere','Curl manubri','Curl cavo','Push-down','French press','Dip tricipiti','Martello','Altro esercizio'],
+  Addome:  ['Crunch','Plank','Leg raise','Russian twist','Ab wheel','Cable crunch','Altro esercizio'],
+  Cardio:  ['Tapis roulant','Cyclette','Ellittica','Vogatore','Jump rope','HIIT','Altro esercizio']
+};
+
+const GRUPPI = [
+  {n:'Petto',e:'🫀'},{n:'Schiena',e:'💪'},{n:'Gambe',e:'🦵'},
+  {n:'Spalle',e:'🎯'},{n:'Braccia',e:'💪'},{n:'Addome',e:'⬛'},{n:'Cardio',e:'❤️'}
+];
+
+// Preset nomi sezione
+const SEZ_PRESETS = ['Push','Pull','Legs','Upper','Lower','Full Body','Scheda A','Scheda B','Scheda C'];
+
+function openBuilder(){
+  closeModal('mSchedaChoice');
+  // Carica scheda esistente o crea nuova
+  if(schedaAttiva && schedaAttiva.sezioni){
+    builderData = JSON.parse(JSON.stringify(schedaAttiva));
+  } else {
+    builderData = { origine:'utente', sezioni:[] };
+  }
+  renderBuilder();
+  document.getElementById('builderScreen').classList.add('active');
+  console.log('[FM:Builder] Aperto. Sezioni esistenti:', builderData.sezioni.length);
+}
+
+function closeBuilder(){
+  document.getElementById('builderScreen').classList.remove('active');
+}
+
+function saveBuilder(){
+  if(builderData.sezioni.length === 0){
+    showToast('⚠️ Aggiungi almeno una sezione');
+    return;
+  }
+  const totEs = builderData.sezioni.reduce((a,s)=>a+s.esercizi.length,0);
+  if(totEs === 0){
+    showToast('⚠️ Aggiungi almeno un esercizio');
+    return;
+  }
+  schedaAttiva = { ...builderData, origine:'utente' };
+  saveAll();
+  closeBuilder();
+  renderSchedaView();
+  showToast('✅ Scheda salvata!');
+  console.log('[FM:Builder] Salvato:', schedaAttiva.sezioni.length, 'sezioni,', totEs, 'esercizi');
+}
+
+function renderBuilder(){
+  const body = document.getElementById('builderBody');
+  if(builderData.sezioni.length === 0){
+    body.innerHTML = `<div style="text-align:center;padding:44px 16px">
+      <div style="font-size:42px;margin-bottom:14px">📋</div>
+      <div style="font-size:15px;font-weight:600;color:#ddd;margin-bottom:8px">Nessuna sezione ancora</div>
+      <div style="font-size:13px;color:var(--mt);line-height:1.6">Tocca "+ Aggiungi sezione" in basso<br>Es: Push, Pull, Full Body, Scheda A...</div>
+    </div>`;
+    return;
+  }
+
+  let html = '';
+  builderData.sezioni.forEach((sez,si)=>{
+    html += `<div class="bsez">
+      <div class="bsez-hdr">
+        <div class="bsez-name">${esc(sez.nome)}</div>
+        <button class="btn-sm btn-sm-a" onclick="startAddEs(${si})" style="font-size:13px;padding:8px 14px">+ Esercizio</button>
+        <button class="btn-sm btn-sm-b" onclick="removeSez(${si})" style="padding:8px 12px">✕</button>
+      </div>`;
+    if(sez.esercizi.length === 0){
+      html += `<div class="builder-empty">Tocca "+ Esercizio" per aggiungere</div>`;
+    } else {
+      sez.esercizi.forEach((es,ei)=>{
+        html += `<div class="bes-card">
+          <div class="bes-info">
+            <div class="bes-name">${esc(es.nome)}</div>
+            <div class="bes-det">${es.serie}×${es.reps}${es.peso?' · '+es.peso+'kg':''}</div>
+            ${es.recupero?`<div class="bes-rec">rec. ${es.recupero}s</div>`:''}
+          </div>
+          <div class="bes-actions">
+            <button class="bes-btn" onclick="openEditEs(${si},${ei})">✏️</button>
+            <button class="bes-btn" onclick="removeEs(${si},${ei})">🗑️</button>
+          </div>
+        </div>`;
+      });
+    }
+    html += `</div>`;
+  });
+  body.innerHTML = html;
+}
+
+// Sezione
+function openAddSez(){
+  // Genera preset chips
+  const presetsEl = document.getElementById('sezPresets');
+  if(presetsEl){
+    presetsEl.innerHTML = SEZ_PRESETS.map(n=>
+      `<div class="chip" id="sp_${n.replace(/ /g,'_')}" onclick="pickSezPreset('${n}')">${n}</div>`
+    ).join('');
+  }
+  document.getElementById('sezNameIn').value = '';
+  showModal('mAddSez');
+}
+
+function pickSezPreset(nome){
+  document.querySelectorAll('#sezPresets .chip').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('sp_'+nome.replace(/ /g,'_')).classList.add('sel');
+  document.getElementById('sezNameIn').value = nome;
+}
+
+function syncSezInput(){
+  // Se l'utente digita, deseleziona i preset
+  document.querySelectorAll('#sezPresets .chip').forEach(c=>c.classList.remove('sel'));
+}
+
+function confirmAddSez(){
+  const nome = document.getElementById('sezNameIn').value.trim();
+  if(!nome){ showToast('Inserisci un nome per la sezione'); return; }
+  builderData.sezioni.push({ nome, esercizi:[] });
+  closeModal('mAddSez');
+  renderBuilder();
+  console.log('[FM:Builder] Sezione aggiunta:', nome);
+}
+
+function removeSez(si){
+  if(!confirm(`Rimuovere "${builderData.sezioni[si].nome}" con tutti i suoi esercizi?`)) return;
+  builderData.sezioni.splice(si,1);
+  renderBuilder();
+}
+
+// Esercizio — step 1 (gruppo)
+function startAddEs(si){
+  builderSezIdx = si;
+  builderGruppo = '';
+  builderEsNome = '';
+  document.getElementById('addEs1Title').textContent = `AGGIUNGI — ${builderData.sezioni[si].nome.toUpperCase()}`;
+
+  // Genera griglia gruppi
+  document.getElementById('gruppoGrid').innerHTML = GRUPPI.map(g=>
+    `<div onclick="pickGruppo('${g.n}')" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:14px 11px;cursor:pointer;text-align:center">
+      <div style="font-size:22px;margin-bottom:6px">${g.e}</div>
+      <div style="font-size:13px;font-weight:600;color:#ddd">${g.n}</div>
+    </div>`
+  ).join('');
+
+  showModal('mAddEs1');
+}
+
+// Step 2 (esercizio)
+function pickGruppo(g){
+  builderGruppo = g;
+  closeModal('mAddEs1');
+  document.getElementById('addEs2Title').textContent = g.toUpperCase();
+  const lista = document.getElementById('esLista');
+  lista.innerHTML = (ES_DB[g]||[]).map(es=>
+    `<div onclick="pickEsercizio('${esc(es)}')" style="background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:13px 15px;cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:14px;font-weight:500;color:#ddd">${esc(es)}</span>
+      <span style="color:var(--mt);font-size:17px">›</span>
+    </div>`
+  ).join('');
+  showModal('mAddEs2');
+}
+
+function backToStep1(){ closeModal('mAddEs2'); showModal('mAddEs1'); }
+
+// Step 3 (dettagli)
+function pickEsercizio(nome){
+  if(nome === 'Altro esercizio'){
+    const custom = prompt('Nome esercizio personalizzato:');
+    if(!custom||!custom.trim()) return;
+    builderEsNome = custom.trim();
+  } else {
+    builderEsNome = nome;
+  }
+  closeModal('mAddEs2');
+  document.getElementById('addEs3Nome').textContent   = builderEsNome;
+  document.getElementById('addEs3Gruppo').textContent = builderGruppo;
+  document.getElementById('esS').value   = '';
+  document.getElementById('esR').value   = '';
+  document.getElementById('esP').value   = '';
+  document.getElementById('esRec').value = '90';
+  showModal('mAddEs3');
+}
+
+function backToStep2(){ closeModal('mAddEs3'); showModal('mAddEs2'); }
+
+function confirmAddEs(){
+  const serie    = parseInt(document.getElementById('esS').value)   || 4;
+  const reps     = parseInt(document.getElementById('esR').value)   || 8;
+  const peso     = parseFloat(document.getElementById('esP').value) || 0;
+  const recupero = parseInt(document.getElementById('esRec').value) || 90;
+
+  builderData.sezioni[builderSezIdx].esercizi.push({
+    gruppo: builderGruppo, nome: builderEsNome,
+    serie, reps, peso, recupero,
+    storico: [] // pronto per log futuri
+  });
+
+  closeModal('mAddEs3');
+  renderBuilder();
+  console.log(`[FM:Builder] Esercizio aggiunto: ${builderEsNome} (${builderGruppo}) ${serie}x${reps} @${peso}kg`);
+}
+
+function removeEs(si,ei){
+  builderData.sezioni[si].esercizi.splice(ei,1);
+  renderBuilder();
+}
+
+// Modifica esercizio
+function openEditEs(si,ei){
+  editSi = si; editEi = ei;
+  const es = builderData.sezioni[si].esercizi[ei];
+  document.getElementById('editEsNome').textContent   = es.nome;
+  document.getElementById('editEsGruppo').textContent = es.gruppo;
+  document.getElementById('editS').value   = es.serie;
+  document.getElementById('editR').value   = es.reps;
+  document.getElementById('editP').value   = es.peso || '';
+  document.getElementById('editRec').value = es.recupero || 90;
+  showModal('mEditEs');
+}
+
+function confirmEditEs(){
+  const es = builderData.sezioni[editSi].esercizi[editEi];
+  es.serie    = parseInt(document.getElementById('editS').value)   || es.serie;
+  es.reps     = parseInt(document.getElementById('editR').value)   || es.reps;
+  es.peso     = parseFloat(document.getElementById('editP').value) || 0;
+  es.recupero = parseInt(document.getElementById('editRec').value) || 90;
+  closeModal('mEditEs');
+  renderBuilder();
+  console.log(`[FM:Builder] Esercizio modificato: ${es.nome}`);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DIETA
+// ══════════════════════════════════════════════════════════════════
+function openDietaModal(){ showModal('mDietaChoice'); }
+
+function openDietaTarget(){
+  closeModal('mDietaChoice');
+  const t = dietaAttiva.target || {};
+  if(t.kcal)     document.getElementById('dKcal').value = t.kcal;
+  if(t.proteine) document.getElementById('dProt').value = t.proteine;
+  if(t.carbo)    document.getElementById('dCarb').value = t.carbo;
+  if(t.grassi)   document.getElementById('dFat').value  = t.grassi;
+  showModal('mDietaTarget');
+}
+
+function saveDietaTarget(){
+  const kcal = document.getElementById('dKcal').value;
+  const prot = document.getElementById('dProt').value;
+  const carb = document.getElementById('dCarb').value;
+  const fat  = document.getElementById('dFat').value;
+  dietaAttiva = {
+    origine: 'utente',
+    target: {
+      kcal:     kcal ? parseInt(kcal) : null,
+      proteine: prot ? parseInt(prot) : null,
+      carbo:    carb ? parseInt(carb) : null,
+      grassi:   fat  ? parseInt(fat)  : null
+    }
+  };
+  saveAll();
+  closeModal('mDietaTarget');
+  refreshDietaUI();
+  showToast('✅ Target salvati!');
+  console.log('[FM:Dieta] Target salvati:', dietaAttiva.target);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RESET
+// ══════════════════════════════════════════════════════════════════
+function confirmReset(){ showModal('mReset1'); }
+function confirmReset2(){ closeModal('mReset1'); setTimeout(()=>showModal('mReset2'),200); }
+function execReset(){
+  closeModal('mReset2');
+  try{ localStorage.clear(); } catch(e){}
+  // Reset stato
+  userData={};chatHistory=[];appStats={streak:0,sessions:0,lastActive:null,lastWeight:null,weightHistory:[]};
+  schedaAttiva=null; dietaAttiva={origine:null,target:{kcal:null,proteine:null,carbo:null,grassi:null}};
+  alimentazioneLog={}; builderData={sezioni:[]}; obStep=0;
+  // Torna all'onboarding
   setTimeout(()=>{
     document.getElementById('app').classList.remove('active');
-    document.getElementById('chatMessages').innerHTML=`<div class="msg ai"><div class="msg-avatar ai">FM</div><div><div class="msg-bubble">Ciao! Sono pronto. Scrivimi cosa hai fatto oggi 💪</div><div class="msg-time">Ora</div></div></div>`;
+    document.getElementById('builderScreen').classList.remove('active');
+    document.getElementById('chatMsgs').innerHTML=`
+      <div class="msg"><div class="av ai">FM</div>
+        <div><div class="bubble">Ciao! Sono pronto. Scrivimi cosa hai fatto oggi 💪</div></div>
+      </div>`;
     document.getElementById('onboarding').classList.add('active');
-    renderStep();
+    renderObStep();
+    console.log('[FM] Reset completato');
   },300);
 }
 
+// ══════════════════════════════════════════════════════════════════
+// PROFILO
+// ══════════════════════════════════════════════════════════════════
 function showProfile(){
+  const u = userData;
   alert([
-    `👤 ${userData.nome||'—'}, ${userData.eta||'—'} anni`,
-    `⚖️ ${userData.peso||'—'}kg → obj ${userData.pesobj||'—'}kg`,
-    `🎯 ${userData.obiettivo||'—'}`,
-    `🏋️ ${userData.giorni||'—'} gg/sett · ${userData.livello||'—'}`,
-    `⚡ Coach: esigenza ${userData.esigenza||'—'}/5`,
-    `🔥 Streak: ${appStats.streak||0} giorni`
+    `👤 ${u.nome||'—'}, ${u.eta||'—'} anni`,
+    `⚖️ ${u.peso||'—'}kg → obj ${u.pesobj||'—'}kg`,
+    `🎯 ${u.obiettivo||'—'}`,
+    `🏋️ ${u.giorni||'—'} gg/sett · ${u.livello||'—'}`,
+    `⚡ Coach: esigenza ${u.esigenza||'—'}/5`,
+    `🔥 Streak: ${appStats.streak||0} giorni`,
+    `📊 Sessioni: ${appStats.sessions||0}`
   ].join('\n'));
 }
 
-// ================================================================
-// BOOT
-// ================================================================
+// ══════════════════════════════════════════════════════════════════
+// BOOT — avvio applicazione
+// ══════════════════════════════════════════════════════════════════
 setTimeout(()=>{
   document.getElementById('splash').classList.remove('active');
-  const hasProfile=loadAll();
+  const hasProfile = loadAll();
+  console.log('[FM:Boot] Profilo trovato:', hasProfile);
+
   if(hasProfile){
-    document.getElementById('app').classList.add('active');
-    if(userData.nome)document.getElementById('profileBtn').textContent=userData.nome[0].toUpperCase();
-    if(userData.peso)appStats.lastWeight=userData.peso;
-    updateStreak();
-    document.getElementById('alertText').innerHTML=
-      `<strong>Bentornato ${userData.nome||''}!</strong> ${appStats.streak>1?`🔥 Streak: <strong>${appStats.streak} giorni</strong>.`:''} Cosa fai oggi?`;
-
-    // Ripristina scheda attiva (nuovo sistema)
-    scheda_attiva = caricaScheda();
-    if(scheda_attiva) {
-      visualizzaSchedaAttiva();
-    } else {
-      // Compatibilità con vecchio sistema fm_scheda testuale
-      const oldScheda = localStorage.getItem('fm_scheda');
-      if(oldScheda) renderScheda(oldScheda);
-    }
-
-    // Ripristina chat
-    const msgs=document.getElementById('chatMessages');
-    msgs.innerHTML='';
-    if(chatHistory.length===0){
-      const proMsg=buildProactiveMessage(userData.nome||'');
-      msgs.innerHTML=`<div class="msg ai"><div class="msg-avatar ai">FM</div><div><div class="msg-bubble">${proMsg||`Bentornato ${userData.nome||''}! Sono qui. Cosa fai oggi? 💪`}</div><div class="msg-time">Ora</div></div></div>`;
-    } else {
-      chatHistory.forEach(m=>{
-        const div=document.createElement('div');
-        div.className=`msg ${m.role==='user'?'user':'ai'}`;
-        const av=m.role==='user'?'<div class="msg-avatar user-av">👤</div>':'<div class="msg-avatar ai">FM</div>';
-        // Rimuovi il timestamp dalla visualizzazione nella chat
-        const displayContent=m.role==='user'?escHtml(m.content.replace(/^\[.*?\]\s*/,'')):m.content.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
-        div.innerHTML=`${av}<div><div class="msg-bubble">${displayContent}</div></div>`;
-        msgs.appendChild(div);
-      });
-      msgs.scrollTop=msgs.scrollHeight;
-    }
+    launchApp();
   } else {
     document.getElementById('onboarding').classList.add('active');
-    renderStep();
+    renderObStep();
   }
-},2000);
+}, 2000);
 </script>
 </body>
 </html>
