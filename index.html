@@ -330,8 +330,47 @@ textarea.fi{resize:none;height:76px}
   <!-- TAB DIETA -->
   <div class="tc" id="tc-dieta">
     <div class="tab-scroll">
-      <div class="macro-card">
-        <div class="macro-lbl">TARGET GIORNALIERO</div>
+      <!-- Panoramica target nutrizionali -->
+      <div class="macro-card" id="nutriPanorama">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="macro-lbl" style="margin-bottom:0">TARGET GIORNALIERO</div>
+          <button class="btn-sm btn-sm-a" onclick="showModal('mDietaChoice')" style="font-size:11px;padding:6px 12px">⚙️ Modifica</button>
+        </div>
+        <!-- Kcal grande -->
+        <div style="text-align:center;margin-bottom:16px;padding:12px;background:var(--s2);border-radius:12px;border:1px solid var(--bd)">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:600;color:var(--ac)" id="nutriKcal">— kcal</div>
+          <div style="font-size:11px;color:var(--mt);margin-top:3px;letter-spacing:1px" id="nutriKcalSub">Imposta i tuoi target</div>
+        </div>
+        <!-- Macro row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:14px" id="nutriMacroGrid">
+          <div style="background:var(--s2);border-radius:11px;padding:11px 8px;text-align:center;border:1px solid rgba(200,241,53,.15)">
+            <div style="font-size:9px;letter-spacing:1.5px;color:var(--mt);text-transform:uppercase;margin-bottom:5px">Proteine</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--ac)" id="nutriProt">—g</div>
+          </div>
+          <div style="background:var(--s2);border-radius:11px;padding:11px 8px;text-align:center;border:1px solid rgba(255,107,53,.15)">
+            <div style="font-size:9px;letter-spacing:1.5px;color:var(--mt);text-transform:uppercase;margin-bottom:5px">Carboidrati</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--ac2)" id="nutriCarb">—g</div>
+          </div>
+          <div style="background:var(--s2);border-radius:11px;padding:11px 8px;text-align:center;border:1px solid rgba(59,130,246,.15)">
+            <div style="font-size:9px;letter-spacing:1.5px;color:var(--mt);text-transform:uppercase;margin-bottom:5px">Grassi</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--bl)" id="nutriFat">—g</div>
+          </div>
+        </div>
+        <!-- Acqua e strategia -->
+        <div style="display:flex;gap:9px">
+          <div style="background:var(--s2);border-radius:11px;padding:10px 12px;flex:1;border:1px solid var(--bd)">
+            <div style="font-size:9px;letter-spacing:1.5px;color:var(--mt);text-transform:uppercase;margin-bottom:4px">Acqua</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;color:#60a5fa" id="nutriAcqua">—L</div>
+          </div>
+          <div style="background:var(--s2);border-radius:11px;padding:10px 12px;flex:2;border:1px solid var(--bd)">
+            <div style="font-size:9px;letter-spacing:1.5px;color:var(--mt);text-transform:uppercase;margin-bottom:4px">Strategia</div>
+            <div style="font-size:11px;color:#ddd;line-height:1.4" id="nutriStrategia">—</div>
+          </div>
+        </div>
+      </div>
+      <!-- Barre progresso (come prima) -->
+      <div class="macro-card" style="padding-top:12px">
+        <div class="macro-lbl">OGGI</div>
         <div class="mb-hdr"><span class="mb-lbl">Proteine</span><span class="mb-val" id="mvProt" style="color:var(--ac)">— / —g</span></div>
         <div class="mb-track"><div class="mb-fill fp" id="mfProt" style="width:0%"></div></div>
         <div class="mb-hdr"><span class="mb-lbl">Carboidrati</span><span class="mb-val" id="mvCarb" style="color:var(--ac2)">— / —g</span></div>
@@ -340,8 +379,7 @@ textarea.fi{resize:none;height:76px}
         <div class="mb-track" style="margin-bottom:0"><div class="mb-fill ff" id="mfFat" style="width:0%"></div></div>
       </div>
       <div class="info-box" style="display:flex;align-items:center;justify-content:space-between">
-        <span>🍽️ Logga i pasti nel chatbot — l'AI ricorda tutto.</span>
-        <button class="btn-sm btn-sm-a" onclick="showModal('mDietaChoice')" style="margin-left:10px;flex-shrink:0">⚙️ Target</button>
+        <span>🍽️ Logga i pasti in chat — l'AI stima e monitora per te.</span>
       </div>
       <div id="dietaLog"></div>
     </div>
@@ -400,6 +438,52 @@ textarea.fi{resize:none;height:76px}
 
 <!-- ══ MODALS ══ -->
 
+<!-- Builder: scegli tipo scheda (NUOVO — guidato) -->
+<div class="overlay" id="mBuilderTipo">
+  <div class="sheet"><div class="handle"></div>
+    <div class="sh-title">TIPO DI SCHEDA</div>
+    <div class="sh-sub">Scegli l'organizzazione che preferisci. Puoi sempre modificarla dopo.</div>
+    <div id="builderTipoList">
+      <div class="choice-card ac-bd" onclick="applicaTipoScheda('ppl')" style="margin-bottom:10px">
+        <div class="choice-ico">🔁</div>
+        <div class="choice-title">Push · Pull · Legs</div>
+        <div class="choice-sub">3 sezioni: spinta, tirata, gambe. Ideale per 3-6 giorni. Recupero muscolare ottimale.</div>
+      </div>
+      <div class="choice-card dm-bd" onclick="applicaTipoScheda('ul')" style="margin-bottom:10px">
+        <div class="choice-ico">⬆️</div>
+        <div class="choice-title">Upper · Lower</div>
+        <div class="choice-sub">2 sezioni: parte superiore e inferiore. Perfetto per 4 giorni (2+2).</div>
+      </div>
+      <div class="choice-card dm-bd" onclick="applicaTipoScheda('fb')" style="margin-bottom:10px">
+        <div class="choice-ico">💪</div>
+        <div class="choice-title">Full Body</div>
+        <div class="choice-sub">1 sezione, tutto il corpo. Consigliato per 2-3 giorni o principianti.</div>
+      </div>
+      <div class="choice-card dm-bd" onclick="showModal('mBuilderPersonalizzata');closeModal('mBuilderTipo')" style="margin-bottom:10px">
+        <div class="choice-ico">✏️</div>
+        <div class="choice-title">Personalizzata</div>
+        <div class="choice-sub">Scegli tu il numero di sezioni (A, B, C...) e costruisci esattamente come vuoi.</div>
+      </div>
+    </div>
+    <button class="btn btn-b" onclick="closeModal('mBuilderTipo');openBuilderDiretto()">Salta — costruisci manuale</button>
+  </div>
+</div>
+
+<!-- Builder: personalizzata — quante sezioni -->
+<div class="overlay" id="mBuilderPersonalizzata">
+  <div class="sheet"><div class="handle"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px">
+      <button onclick="closeModal('mBuilderPersonalizzata');showModal('mBuilderTipo')" style="width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);font-size:16px;cursor:pointer;color:#ddd;outline:none">←</button>
+      <div class="sh-title" style="margin-bottom:0">SCHEDA PERSONALIZZATA</div>
+    </div>
+    <div class="sh-sub">Quante sezioni vuoi nella tua scheda?</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px">
+      ${[1,2,3,4,5].map(n=>`<div onclick="applicaTipoPersonalizzata(${n})" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:18px 8px;cursor:pointer;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--ac);letter-spacing:1px">${n}</div>`).join('')}
+    </div>
+    <div class="info-box">Le sezioni saranno chiamate A, B, C... — puoi rinominarle nel builder.</div>
+  </div>
+</div>
+
 <!-- Reset 1 -->
 <div class="overlay" id="mReset1">
   <div class="sheet"><div class="handle"></div>
@@ -449,10 +533,10 @@ textarea.fi{resize:none;height:76px}
       <div class="choice-title">Inserisco i miei target</div>
       <div class="choice-sub">Anche solo kcal e proteine — il resto è opzionale.</div>
     </div>
-    <div class="choice-card dm-bd" onclick="closeModal('mDietaChoice')">
+    <div class="choice-card dm-bd" onclick="usaTargetAI()">
       <div class="choice-ico">🔵</div>
-      <div class="choice-title">Calcola dall'AI</div>
-      <div class="choice-sub">L'app calcola i target in base al tuo profilo automaticamente.</div>
+      <div class="choice-title">Usa target calcolati dall'AI</div>
+      <div class="choice-sub">Calcolati dal tuo profilo: peso, obiettivo, attività, giorni allenamento.</div>
     </div>
     <button class="btn btn-b" onclick="closeModal('mDietaChoice')">Annulla</button>
   </div>
@@ -910,68 +994,129 @@ function buildAlimContesto(){
 // ══════════════════════════════════════════════════════════════════
 // AI CONTEXT
 // ══════════════════════════════════════════════════════════════════
+
+// Sessione allenamento attiva: tiene traccia di quale scheda si sta eseguendo
+let sessioneAttiva = null; // { sezNome, esercizi:[{nome,serie,reps,peso}], esIdx:0, log:[] }
+
+function buildSchedaCtxCompleto(){
+  if(!schedaAttiva?.sezioni?.length) return 'Nessuna scheda attiva.';
+  return schedaAttiva.sezioni.map(sez=>{
+    const esStr = sez.esercizi.map(e=>{
+      let s = `${e.nome} ${e.serie}x${e.reps}`;
+      if(e.peso) s += ` @${e.peso}kg`;
+      if(e.recupero) s += ` rec${e.recupero}s`;
+      if(e.storico?.length){
+        const ult = e.storico.slice(-3);
+        s += ` | storico: ${ult.map(h=>`${h.data||'?'} ${h.peso||'?'}kg×${h.reps||'?'}`).join(', ')}`;
+      }
+      return s;
+    }).join('\n    ');
+    return `[${sez.nome}]\n    ${esStr}`;
+  }).join('\n');
+}
+
 function buildSystemPrompt(){
   const u=userData;
   const t=calcTargets();
   const toni={
-    '1':'Sei GENTILE e PAZIENTE. Tono incoraggiante, mai pressante.',
-    '2':'Sei EQUILIBRATO. Sproni con positività senza esagerare.',
-    '3':'Sei DECISO. Diretto e professionale, poche scuse.',
-    '4':'Sei ESIGENTE. Standard alti, pretendi impegno reale.',
-    '5':'Sei DURO e DIRETTO. Modalità atleta professionista, zero compromessi.'
+    '1':'Sei GENTILE e PAZIENTE. Tono incoraggiante, mai pressante. Celebra ogni piccolo progresso.',
+    '2':'Sei EQUILIBRATO. Sproni con positività senza esagerare. Feedback costruttivo sempre.',
+    '3':'Sei DECISO. Diretto e professionale, poche scuse. Vai al sodo.',
+    '4':'Sei ESIGENTE. Standard alti, pretendi impegno reale. Non accetti mezze misure.',
+    '5':'Sei DURO e DIRETTO. Modalità atleta professionista. Zero compromessi, massima intensità.'
   };
   const tono=toni[u.esigenza]||toni['3'];
-  const vocab=u.livello==='principiante'?'LINGUAGGIO SEMPLICE: evita tecnicismi, guida passo passo.':u.livello==='avanzato'?'LINGUAGGIO TECNICO: periodizzazione, RPE, mesocicli. Nessun limite lunghezza.':'Linguaggio chiaro e diretto.';
-  const fragile=(parseInt(u.eta)>60||(u.patologie||'').toLowerCase().match(/artr|osteo|cuore|diabet/))?'\n⚠️ PROFILO FRAGILE: raccomanda sempre consulto medico prima di nuovi esercizi.':'';
-  const schedaCtx=schedaAttiva?.sezioni?.length
-    ? schedaAttiva.sezioni.map(s=>s.nome+': '+s.esercizi.map(e=>e.nome+' '+e.serie+'x'+e.reps+(e.peso?' @'+e.peso+'kg':'')).join(', ')).join(' | ')
-    : 'Nessuna scheda attiva.';
+  const vocab=u.livello==='principiante'
+    ?'LINGUAGGIO SEMPLICE: evita tecnicismi, guida passo passo, spiega il perché di ogni esercizio.'
+    :u.livello==='avanzato'
+    ?'LINGUAGGIO TECNICO AVANZATO: usa periodizzazione, RPE, RIR, mesocicli, sovraccarico progressivo, deload. Nessun limite di lunghezza quando serve.'
+    :'Linguaggio chiaro e diretto. Qualche termine tecnico spiegato brevemente.';
+  const fragile=(parseInt(u.eta)>60||(u.patologie||'').toLowerCase().match(/artr|osteo|cuore|diabet|iper/))?'\n⚠️ PROFILO FRAGILE: raccomanda sempre consulto medico prima di nuovi esercizi o cambi significativi.':'';
+  const sessCtx=sessioneAttiva
+    ?`\n━━━ SESSIONE IN CORSO: ${sessioneAttiva.sezNome} ━━━\nEsercizio attuale: ${sessioneAttiva.esercizi[sessioneAttiva.esIdx]?.nome||'?'} (${sessioneAttiva.esIdx+1}/${sessioneAttiva.esercizi.length})\nCompletati: ${sessioneAttiva.log.map(l=>`${l.nome} ${l.serie}x${l.reps}@${l.peso}kg`).join(', ')||'nessuno ancora'}`
+    :'';
 
-  return `SEI FITMIND AI — COACH PERSONALE DI ${(u.nome||'questo utente').toUpperCase()}.
-Parla SEMPRE e SOLO in italiano. Sei un coach fitness intelligente, NON un medico clinico.
-Usa tono probabilistico: "potresti", "probabilmente", "sembra" — mai certezze assolute.
-NON sovrascrivere o modificare automaticamente scheda o target nutrizionali dell'utente.
-Suggerisci e commenta, ma le decisioni finali spettano all'utente.
+  // Calcolo BMR e TDEE per contesto nutrizionale preciso
+  const p=parseFloat(u.peso)||80, h=parseFloat(u.altezza)||175, a=parseFloat(u.eta)||30;
+  const male=u.sesso==='M';
+  const bmr=male?(10*p+6.25*h-5*a+5):(10*p+6.25*h-5*a-161);
+  const actMult={sedentario:1.2,leggero:1.375,moderato:1.55,fisico:1.725}[u.lavoro]||1.375;
+  const trnMult={2:.1,3:.15,4:.2,5:.25,6:.3}[u.giorni]||.15;
+  const tdee=Math.round(bmr*(actMult+trnMult));
+
+  return `SEI FITMIND AI — IL COACH PERSONALE ELITE DI ${(u.nome||'questo utente').toUpperCase()}.
+Parla SEMPRE e SOLO in italiano. Rispondi come farebbe il miglior personal trainer e nutrizionista sportivo al mondo: pratico, preciso, umano.
+Usa tono probabilistico quando stimi: "probabilmente", "sembra", "potresti" — mai false certezze cliniche.
+NON sovrascrivere mai scheda o target automaticamente: suggerisci, l'utente decide e conferma.
 
 LIVELLO ESIGENZA: ${u.esigenza||'3'}/5 — ${tono}
-VOCABOLARIO: ${vocab}${fragile}
+VOCABOLARIO: ${vocab}${fragile}${sessCtx}
 
-━━━ PROFILO ━━━
-${u.nome||'?'}, ${u.eta||'?'} anni, ${u.sesso==='M'?'M':'F'} | ${u.altezza||'?'}cm | ${u.peso||'?'}kg → obj ${u.pesobj||'?'}kg
-Grasso: ${u.grasso||'?'}% | Vita: ${u.vita||'?'}cm | Petto: ${u.petto||'?'}cm | Braccia: ${u.braccia||'?'}cm
-Lavoro: ${u.lavoro||'?'} | Sonno: ${u.sonno||'?'}h | Stress: ${u.stress||'?'} | Acqua: ${u.acqua||'?'}L
-Intolleranze: ${u.intolleranze||'nessuna'} | Patologie: ${u.patologie||'nessuna'} | Infortuni: ${u.infortuni||'nessuno'}
-Livello: ${u.livello||'?'} | ${u.giorni||'?'} gg/sett | ${u.durata||'?'} min/sessione | Dieta: ${u.dieta||'?'}
-Escludi: ${u.escludiex||'nessuno'} | Obiettivo: ${u.obiettivo||'?'} | Entro: ${u.tempistica||'?'}
+━━━ PROFILO COMPLETO ━━━
+${u.nome||'?'} | ${u.eta||'?'} anni | ${male?'M':'F'} | ${u.altezza||'?'}cm | ${p}kg → obiettivo ${u.pesobj||'?'}kg
+Grasso corporeo: ${u.grasso||'?'}% | Vita: ${u.vita||'?'}cm | Petto: ${u.petto||'?'}cm | Braccia: ${u.braccia||'?'}cm | Cosce: ${u.cosce||'?'}cm
+Lavoro: ${u.lavoro||'?'} | Sonno: ${u.sonno||'?'}h | Stress: ${u.stress||'?'} | Acqua: ${u.acqua||'?'}L/die
+Fumo: ${u.fumo||'?'} | Alcol: ${u.alcol||'?'} | Intolleranze: ${u.intolleranze||'nessuna'}
+Patologie: ${u.patologie||'nessuna'} | Infortuni: ${u.infortuni||'nessuno'}
+Integratori: ${u.integratori||'nessuno'}
+Livello: ${u.livello||'?'} | ${u.giorni||'?'} gg/sett | ${u.durata||'?'} min/sessione | Dieta: ${u.dieta||'onnivoro'}
+Escludi esercizi: ${u.escludiex||'nessuno'}
+Obiettivo: ${u.obiettivo||'?'} | Tempistica: ${u.tempistica||'?'}
 Motivazione: ${u.motivazione||'?'}
 
-━━━ TARGET NUTRIZIONALI ━━━
-~${t.kcal||'?'} kcal/die | Proteine: ~${t.proteine||'?'}g | Carb: ~${t.carbo||'?'}g | Grassi: ~${t.grassi||'?'}g
-${u.obiettivo==='massa'?'→ Surplus consigliato: +250/300 kcal':u.obiettivo==='dimagrimento'?'→ Deficit consigliato: -400/500 kcal':'→ Mantenimento'}
+━━━ METABOLISMO & TARGET NUTRIZIONALI ━━━
+BMR stimato: ~${Math.round(bmr)} kcal | TDEE stimato: ~${tdee} kcal
+TARGET GIORNALIERO: ~${t.kcal||'?'} kcal | Proteine: ~${t.proteine||'?'}g | Carboidrati: ~${t.carbo||'?'}g | Grassi: ~${t.grassi||'?'}g
+${u.obiettivo==='massa'?'STRATEGIA: Surplus +200/300 kcal. Priorità: proteine primo, carbo timing intorno workout, grassi saturi moderati.':u.obiettivo==='dimagrimento'?'STRATEGIA: Deficit -400/500 kcal. Priorità: proteine alte (protezione massa magra), deficit progressivo, refeed settimanale se streak >10gg.':u.obiettivo==='ricomposizione'?'STRATEGIA: Kcal mantenimento. Cycling carbo: più nei giorni workout, meno nei rest day. Proteine costantemente alte.':u.obiettivo==='forza'?'STRATEGIA: Lieve surplus +150/200 kcal. Carbo alti per performance, proteine moderate-alte, creatina consigliata.':'STRATEGIA: Mantenimento. Qualità > quantità. Focus micronutrienti e idratazione.'}
+Acqua target: ~${Math.round(p*0.033*10)/10}L/die (basale) + 0.5/0.7L per ogni ora di allenamento intenso
 
-━━━ DIARIO ALIMENTARE (dati reali salvati) ━━━
+━━━ DIARIO ALIMENTARE OGGI ━━━
 ${buildAlimContesto()}
 
-━━━ SCHEDA ATTIVA ━━━
-${schedaCtx}
+━━━ SCHEDA ATTIVA (con storico progressioni) ━━━
+${buildSchedaCtxCompleto()}
 
-━━━ PROGRESSI ━━━
-Sessioni: ${appStats.sessions||0} | Streak: ${appStats.streak||0} gg | Peso: ${appStats.lastWeight||u.peso||'?'}kg
+━━━ STATISTICHE ━━━
+Sessioni totali: ${appStats.sessions||0} | Streak: ${appStats.streak||0} gg | Peso attuale: ${appStats.lastWeight||p||'?'}kg
 
 ━━━ CONTESTO TEMPORALE ━━━
-I messaggi utente includono [Giorno Data - Ora]. Usalo per contestualizzare pasti e allenamenti.
+I messaggi utente includono [Giorno Data - Ora]. Usalo per contestualizzare: pasti mattutini, allenamenti, recupero notturno.
 
-━━━ REGOLE ━━━
-1. Sempre specifico per questo utente, mai generico
-2. LOG ALLENAMENTO → registra, valuta progressione, suggerisci prossima sessione
-3. LOG PASTI → stima macro, confronta target, indica cosa manca — MAI colpevolizzare
-4. "pizza e birra" → "Nessun problema, un pasto non rovina nulla. Torniamo in carreggiata."
-5. DOLORE → priorità immediata sulla scheda
-6. STOP >5 gg → ripresa graduale -30/40% volume
-7. DISAGIO EMOTIVO → empatia prima, tecnica dopo
-8. RICHIESTE IRREALISTICHE → tempi reali, alternativa concreta
-9. UTENTE AGGRESSIVO → autorevolezza professionale, no scuse servili
-10. Collega alimentazione e allenamento quando pertinente`;
+━━━ KNOWLEDGE BASE NUTRIZIONE (livello elite) ━━━
+PROTEINE: 1.6-2.2g/kg per ipertrofia (2.2-2.6g/kg in deficit). Fonti complete: pollo, uova, pesce, manzo, latticini, whey. Fonti vegetali: legumi+cereali, tofu, tempeh, seitan. Distribuzione: 20-40g per pasto ogni 3-4h per sintesi proteica ottimale (leucine threshold ~2.5g).
+CARBOIDRATI: Fonte energetica primaria. Pre-workout (90-120min prima): 40-60g complessi + 20-30g semplici. Post-workout: 40-80g ad alto indice glicemico per ricostituire glicogeno. Nei giorni di riposo: -20/30% quota carbo. Fibre: 25-35g/die.
+GRASSI: Min 0.8g/kg, preferibilmente 1g/kg. Omega-3 (pesce grasso, noci, semi di lino) fondamentali per riduzione infiammazione e recupero. Evitare grassi trans. Grassi saturi <10% kcal totali.
+TIMING: Colazione entro 1-2h dal risveglio, non saltarla se obiettivo ipertrofia. Finestra anabolica post-workout: 30-60min. Ultima proteina prima di dormire: caseina (yogurt greco, ricotta) per sintesi proteica notturna.
+MICRONUTRIENTI CRITICI: Vit.D (sole + integrazione 2000-4000UI/die in inverno), Magnesio (recupero muscolare, sonno), Zinco (testosterone, sistema immunitario), Ferro (donne), Creatina monoidrato 3-5g/die (sicura, efficace per forza e massa).
+IDRATAZIONE: -2% peso corporeo in acqua = -20% performance. Urine: giallo paglierino = buona idratazione. Bevande ipotonico/isotoniche durante allenamenti >60min intensi.
+
+━━━ KNOWLEDGE BASE TRAINING (livello elite) ━━━
+SOVRACCARICO PROGRESSIVO: Principio fondamentale. Ogni sessione: +peso, +reps, +serie, -recupero, o +densità. Non aumentare tutto insieme.
+PROGRESSIONE PESO: +2.5kg bilanciere quando completi tutte le serie con buona forma. +1kg manubri. Microcarichi (0.5-1.25kg) per esercizi plateau.
+RPE/RIR: Allenati a RPE 7-9 (RIR 1-3). Mai cedimento muscolare per ogni serie, massimo ultima serie. Cedimento costante → overtraining.
+VOLUME SETTIMANALE PER GRUPPO: Principiante: 8-10 serie. Intermedio: 12-16 serie. Avanzato: 16-22 serie. Incremento graduale 1-2 serie/settimana.
+RECUPERO TRA SERIE: Forza (<6 reps): 3-5 min. Ipertrofia (6-12): 60-120s. Resistenza (>15): 30-60s.
+FREQUENZA MUSCOLARE: Ogni muscolo 2x/settimana ottimale per ipertrofia. 1x/settimana funziona ma subottimale per intermedi/avanzati.
+SPLIT INTELLIGENTE: 2gg → Full Body. 3gg → PPL o Upper/Lower. 4gg → Upper/Lower x2 o PPL+Full. 5-6gg → PPL x2 o Bro split avanzato. MAI muscoli sinergici pesanti in giorni consecutivi (es: petto ieri, spalle/tricipiti oggi = errore).
+DELOAD: Ogni 4-8 settimane, -40-50% volume/intensità per 1 settimana. Obbligatorio, non opzionale.
+RISCALDAMENTO: 5-10min cardio leggero + mobilità articolare + serie di avvicinamento (50%, 70%, 85% del carico lavoro).
+DOLORI: Dolore articolare/tendineo → stop immediato. DOMS (indolenzimento muscolare 24-72h post) → normale, continua con movimenti leggeri.
+
+━━━ REGOLE COMPORTAMENTALI ━━━
+1. SEMPRE specifico per questo utente — mai risposte generiche
+2. SESSIONE IN CORSO → guida esercizio per esercizio: nome, serie, reps, peso, note tecniche, poi chiedi il risultato
+3. PROGRESSIONE RILEVATA → commenta entusiasta (in proporzione al livello esigenza), aggiorna mentalmente il record, suggerisci il prossimo target
+4. LOG PASTI → stima macro con probabilistic reasoning, confronta con target, indica mancanze o eccessi con tono costruttivo
+5. PASTO "LIBERO" (pizza, birra, dolce) → normalizza: "Un pasto non cambia nulla. Domani torniamo in carreggiata." MAI colpevolizzare
+6. BASSA PROTEINA GIORNALIERA → suggerisci integrazioni pratiche e veloci (es: "aggiungi 200g yogurt greco = +17g proteine, 5 min")
+7. DOLORE/INFORTUNIO → priorità assoluta, ferma l'esercizio, proponi alternativa sicura
+8. STOP >5gg → ripresa graduale -30/40% volume prima settimana
+9. DISAGIO EMOTIVO → empatia prima, tecnica dopo. Non ignorare mai il lato umano
+10. RICHIESTE IRREALISTICHE → tempi reali con spiegazione fisiologica, alternativa concreta
+11. UTENTE AGGRESSIVO → autorevolezza calma, no apologie servili
+12. COLLEGA alimentazione↔allenamento↔recupero↔sonno quando pertinente: sono un sistema unico
+13. GENERAZIONE SCHEDA → rispetta split muscolare (niente muscoli sinergici consecutivi), adatta al numero di giorni, distribuisci volume intelligentemente
+14. SUGGERISCI integratori solo se realmente utili per questo profilo specifico, con dosaggi precisi`;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1006,18 +1151,57 @@ function refreshStats(){
 
 function refreshDietaUI(){
   const t=calcTargets();
+  const u=userData;
+
+  // ── Panoramica target ──
+  const kcalEl=document.getElementById('nutriKcal');
+  const kcalSubEl=document.getElementById('nutriKcalSub');
+  const protEl=document.getElementById('nutriProt');
+  const carbEl=document.getElementById('nutriCarb');
+  const fatEl=document.getElementById('nutriFat');
+  const acquaEl=document.getElementById('nutriAcqua');
+  const stratEl=document.getElementById('nutriStrategia');
+
+  if(kcalEl) kcalEl.textContent=(t.kcal||'—')+' kcal';
+  if(kcalSubEl){
+    const fonte=dietaAttiva?.target?.proteine?'Target personalizzato':'Calcolato dal profilo';
+    kcalSubEl.textContent=fonte;
+  }
+  if(protEl) protEl.textContent=(t.proteine||'—')+'g';
+  if(carbEl) carbEl.textContent=(t.carbo||'—')+'g';
+  if(fatEl) fatEl.textContent=(t.grassi||'—')+'g';
+  // Acqua: formula 33ml/kg + extra allenamento
+  const acquaBase=u.peso?Math.round(parseFloat(u.peso)*0.033*10)/10:2.5;
+  if(acquaEl) acquaEl.textContent=acquaBase+'L+';
+  // Strategia
+  const stratMap={
+    massa:'Surplus +200/300 kcal. Proteine prioritarie.',
+    dimagrimento:'Deficit -400/500 kcal. Proteine alte.',
+    ricomposizione:'Kcal mantenimento. Carbo ciclici.',
+    forza:'Lieve surplus. Carbo alti per performance.',
+    mantenimento:'Qualità > quantità.'
+  };
+  if(stratEl) stratEl.textContent=stratMap[u.obiettivo]||'Imposta obiettivo nel profilo';
+
+  // ── Barre progresso oggi ──
   document.getElementById('mvProt').textContent=`— / ${t.proteine||'?'}g`;
   document.getElementById('mvCarb').textContent=`— / ${t.carbo||'?'}g`;
   document.getElementById('mvFat').textContent=`— / ${t.grassi||'?'}g`;
+
   const oggi=alimentazioneLog[todayStr()];
   const logEl=document.getElementById('dietaOggi');
   const logTab=document.getElementById('dietaLog');
-  if(!oggi||Object.values(oggi).every(a=>!a.length)){ logEl.textContent='Nessun pasto registrato ancora.'; if(logTab) logTab.innerHTML=''; return; }
+  if(!oggi||Object.values(oggi).every(a=>!a.length)){
+    if(logEl) logEl.textContent='Nessun pasto registrato ancora.';
+    if(logTab) logTab.innerHTML='';
+    return;
+  }
   let html='';
   [['Colazione','colazione'],['Pranzo','pranzo'],['Cena','cena'],['Spuntini','spuntini']].forEach(([lbl,k])=>{
     if(oggi[k]?.length) html+=`<div class="info-box" style="margin-bottom:8px"><strong style="color:var(--tx);font-size:12px">${lbl}</strong><div style="margin-top:4px;font-size:13px">${oggi[k].join(', ')}</div></div>`;
   });
-  logEl.innerHTML=html; if(logTab) logTab.innerHTML=html;
+  if(logEl) logEl.innerHTML=html;
+  if(logTab) logTab.innerHTML=html;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1217,12 +1401,25 @@ async function sendMsg(){
   const text=inp.value.trim();
   if(!text) return;
   inp.value=''; inp.style.height='auto';
+
+  // Rileva avvio sessione allenamento
+  detectSessioneStart(text);
+
+  // Rileva chiusura sessione
+  const closeTrigger=text.toLowerCase().match(/finit[oa]|sessione complet|ho finito|done|basta per oggi/);
+  if(closeTrigger&&sessioneAttiva) chiudiSessione();
+
   addUserMsg(text); showTyping();
   try{
     const reply=await callAI(chatHistory.slice(0,-1));
     removeTyping();
-    if(reply) addAiMsg(reply);
-    else addAiMsg('Non ho ricevuto una risposta valida. Riprova tra un secondo.');
+    if(reply){
+      addAiMsg(reply);
+      // Salva progressioni rilevate nel testo utente
+      detectEsalvaProgressioni(text, reply);
+    } else {
+      addAiMsg('Non ho ricevuto una risposta valida. Riprova tra un secondo.');
+    }
   } catch(e){
     removeTyping();
     console.error('[FM:AI] Errore finale:',e.message);
@@ -1232,12 +1429,111 @@ async function sendMsg(){
 
 function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} }
 function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,110)+'px'; }
+
+// ── Rileva se l'utente vuole iniziare una sessione di allenamento ──
+function detectSessioneStart(text){
+  if(!schedaAttiva?.sezioni?.length) return false;
+  const s=text.toLowerCase();
+  // Cerca "iniziamo scheda X" o "facciamo X" o "alleno X" o "oggi X"
+  const trigger=s.match(/inizi[ao]|facciam[oa]|alleno|partiamo|oggi.*scheda|scheda.*oggi|si va|andiamo/);
+  if(!trigger) return false;
+  // Cerca il nome di una sezione
+  for(const sez of schedaAttiva.sezioni){
+    if(s.includes(sez.nome.toLowerCase())||s.includes(sez.nome.toLowerCase().replace(/\s/g,''))){
+      attivaSessione(sez);
+      return true;
+    }
+  }
+  // Trigger generico senza nome sezione — se c'è solo 1 sezione la prende
+  if(schedaAttiva.sezioni.length===1){
+    attivaSessione(schedaAttiva.sezioni[0]);
+    return true;
+  }
+  return false;
+}
+
+function attivaSessione(sez){
+  sessioneAttiva={
+    sezNome: sez.nome,
+    esercizi: sez.esercizi.map(e=>({...e})),
+    esIdx: 0,
+    log: [],
+    dataInizio: todayStr()
+  };
+  console.log('[FM:Sessione] Avviata:',sez.nome,'|',sez.esercizi.length,'esercizi');
+  showToast('💪 Sessione '+sez.nome+' avviata!');
+}
+
+// ── Rileva progressioni nel testo e aggiorna storico esercizi ──
+function detectEsalvaProgressioni(text, aiReply){
+  if(!schedaAttiva?.sezioni?.length) return;
+  const s=text.toLowerCase();
+
+  // Pattern: "ho fatto 4x8 a 85" o "4 serie 8 reps 85 chili" o "panca 90kg" etc.
+  // Cerca prima il nome esercizio nel messaggio
+  schedaAttiva.sezioni.forEach(sez=>{
+    sez.esercizi.forEach(es=>{
+      const nomeKey=es.nome.toLowerCase().split(' ')[0]; // prima parola (es "panca")
+      if(!s.includes(nomeKey)&&!s.includes(es.nome.toLowerCase())) return;
+
+      // Cerca peso
+      const pesoMatch=text.match(/(\d{1,3}(?:[.,]\d{1,2})?)\s*(?:kg|chili|kili)/i);
+      // Cerca serie x reps
+      const sxrMatch=text.match(/(\d{1,2})\s*[x×]\s*(\d{1,2})/i)||text.match(/(\d)\s*serie.*?(\d{1,2})\s*rep/i);
+
+      if(pesoMatch||sxrMatch){
+        const newPeso=pesoMatch?parseFloat(pesoMatch[1].replace(',','.')):null;
+        const newSerie=sxrMatch?parseInt(sxrMatch[1]):null;
+        const newReps=sxrMatch?parseInt(sxrMatch[2]):null;
+
+        // Aggiorna storico
+        if(!es.storico) es.storico=[];
+        const entry={
+          data: todayStr(),
+          peso: newPeso||es.peso||0,
+          reps: newReps||es.reps||0,
+          serie: newSerie||es.serie||0,
+          note: ''
+        };
+        es.storico.push(entry);
+
+        // Aggiorna peso base se in progressione
+        if(newPeso&&newPeso>=(es.peso||0)){
+          es.peso=newPeso;
+          console.log('[FM:Progressione] '+es.nome+' → '+newPeso+'kg salvato');
+        }
+
+        // Aggiorna sessione attiva log
+        if(sessioneAttiva){
+          const inLog=sessioneAttiva.log.find(l=>l.nome===es.nome);
+          if(!inLog) sessioneAttiva.log.push({nome:es.nome,serie:entry.serie,reps:entry.reps,peso:entry.peso});
+        }
+      }
+    });
+  });
+  saveAll();
+}
+
+// ── Fine sessione: salva in allenamentiLog ──
+function chiudiSessione(){
+  if(!sessioneAttiva) return;
+  const data=sessioneAttiva.dataInizio||todayStr();
+  if(!allenamentiLog[data]) allenamentiLog[data]={sessioni:[]};
+  allenamentiLog[data].sessioni.push({
+    sezNome: sessioneAttiva.sezNome,
+    log: sessioneAttiva.log,
+    timestamp: Date.now()
+  });
+  appStats.sessions=(appStats.sessions||0)+1;
+  refreshStats();
+  saveAll();
+  console.log('[FM:Sessione] Chiusa e salvata:',sessioneAttiva.sezNome);
+  sessioneAttiva=null;
+  showToast('✅ Sessione salvata!');
+}
+
 function switchTab(tab,el){ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tc').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.getElementById('tc-'+tab).classList.add('active'); }
 function goToChat(){ switchTab('chat',document.querySelectorAll('.tab')[0]); }
-
-// ══════════════════════════════════════════════════════════════════
-// ELIMINAZIONE MESSAGGI — predisposto per future feature edit/regenerate
-// ══════════════════════════════════════════════════════════════════
 function requestDeleteMsg(msgId){
   if(!msgId) return;
   pendingDeleteId=msgId;
@@ -1375,10 +1671,47 @@ const GRUPPI=[
 
 function openBuilder(){
   closeModal('mSchedaChoice');
+  // Se scheda già esistente: vai diretto al builder per modificarla
+  if(schedaAttiva?.sezioni?.length){
+    openBuilderDiretto();
+    return;
+  }
+  // Prima volta: mostra selettore tipo scheda
+  showModal('mBuilderTipo');
+}
+
+function openBuilderDiretto(){
+  closeModal('mBuilderTipo');
+  closeModal('mBuilderPersonalizzata');
   builderData=schedaAttiva?JSON.parse(JSON.stringify(schedaAttiva)):{origine:'utente',sezioni:[]};
   renderBuilder();
   document.getElementById('builderScreen').classList.add('active');
   console.log('[FM:Builder] Aperto. Sezioni:',builderData.sezioni.length);
+}
+
+function applicaTipoScheda(tipo){
+  closeModal('mBuilderTipo');
+  const tipi={
+    ppl:[{nome:'Push',desc:'Petto · Spalle · Tricipiti'},{nome:'Pull',desc:'Schiena · Bicipiti'},{nome:'Legs',desc:'Gambe · Glutei · Polpacci'}],
+    ul:[{nome:'Upper',desc:'Parte superiore'},{nome:'Lower',desc:'Parte inferiore'}],
+    fb:[{nome:'Full Body',desc:'Corpo intero'}]
+  };
+  const sezioni=tipi[tipo];
+  builderData={origine:'utente',sezioni:sezioni.map(s=>({nome:s.nome,esercizi:[]}))};
+  renderBuilder();
+  document.getElementById('builderScreen').classList.add('active');
+  showToast('✅ Struttura creata! Aggiungi gli esercizi.');
+  console.log('[FM:Builder] Tipo',tipo,'applicato:',sezioni.length,'sezioni');
+}
+
+function applicaTipoPersonalizzata(n){
+  closeModal('mBuilderPersonalizzata');
+  const lettere=['A','B','C','D','E'];
+  builderData={origine:'utente',sezioni:Array.from({length:n},(_,i)=>({nome:'Scheda '+lettere[i],esercizi:[]}))};
+  renderBuilder();
+  document.getElementById('builderScreen').classList.add('active');
+  showToast('✅ '+n+' sezioni create! Aggiungi gli esercizi.');
+  console.log('[FM:Builder] Personalizzata:',n,'sezioni');
 }
 
 function closeBuilder(){ document.getElementById('builderScreen').classList.remove('active'); }
@@ -1494,6 +1827,21 @@ function confirmEditEs(){
 // ══════════════════════════════════════════════════════════════════
 // DIETA
 // ══════════════════════════════════════════════════════════════════
+function usaTargetAI(){
+  const t=calcTargets();
+  const u=userData;
+  const acqua=u.peso?Math.round(parseFloat(u.peso)*0.033*10)/10:2.5;
+  dietaAttiva={
+    origine:'ai',
+    target:{kcal:t.kcal, proteine:t.proteine, carbo:t.carbo, grassi:t.grassi, acqua:acqua}
+  };
+  saveAll();
+  closeModal('mDietaChoice');
+  refreshDietaUI();
+  showToast('✅ Target AI applicati!');
+  console.log('[FM:Dieta] Target AI applicati:',dietaAttiva.target);
+}
+
 function saveDietaTarget(){
   const kcal=document.getElementById('dKcal').value, prot=document.getElementById('dProt').value;
   const carb=document.getElementById('dCarb').value, fat=document.getElementById('dFat').value;
