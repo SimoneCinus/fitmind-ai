@@ -478,7 +478,11 @@ textarea.fi{resize:none;height:76px}
     </div>
     <div class="sh-sub">Quante sezioni vuoi nella tua scheda?</div>
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px">
-      ${[1,2,3,4,5].map(n=>`<div onclick="applicaTipoPersonalizzata(${n})" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:18px 8px;cursor:pointer;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--ac);letter-spacing:1px">${n}</div>`).join('')}
+      <div onclick="applicaTipoPersonalizzata(1)" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:18px 8px;cursor:pointer;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--ac);letter-spacing:1px">1</div>
+      <div onclick="applicaTipoPersonalizzata(2)" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:18px 8px;cursor:pointer;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--ac);letter-spacing:1px">2</div>
+      <div onclick="applicaTipoPersonalizzata(3)" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:18px 8px;cursor:pointer;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--ac);letter-spacing:1px">3</div>
+      <div onclick="applicaTipoPersonalizzata(4)" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:18px 8px;cursor:pointer;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--ac);letter-spacing:1px">4</div>
+      <div onclick="applicaTipoPersonalizzata(5)" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:18px 8px;cursor:pointer;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--ac);letter-spacing:1px">5</div>
     </div>
     <div class="info-box">Le sezioni saranno chiamate A, B, C... — puoi rinominarle nel builder.</div>
   </div>
