@@ -1394,7 +1394,7 @@ async function sendMsg(){
 
   addUserMsg(text); showTyping();
   try{
-    const reply=await callAI(chatHistory.slice(0,-1));
+    const reply=await callAI(chatHistory);
     removeTyping();
     if(reply){
       addAiMsg(reply);
