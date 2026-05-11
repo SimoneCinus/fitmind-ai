@@ -1360,12 +1360,13 @@ function removeTyping(){ const t=document.getElementById('_typing'); if(t)t.remo
 
 async function callAI(messages,retries=2){
   const limited=messages.slice(-RECENT_CHAT_LIMIT);
-  console.log('[FM:AI] Invio',limited.length,'messaggi al modello');
+  // Invia all'API solo role e content — id e timestamp sono solo per uso interno
+  const clean=limited.filter(m=>m.content&&m.content.trim&&m.content.trim()!=='').map(m=>({role:m.role,content:m.content}));
+  console.log('[FM:AI] Invio',clean.length,'messaggi al modello');
   for(let i=0;i<=retries;i++){
     try{
       const res=await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({model:AI_MODEL,max_tokens:1500,system:buildSystemPrompt(),
-          messages:limited.filter(m=>m.content&&m.content.trim&&m.content.trim()!=='')})});
+        body:JSON.stringify({model:AI_MODEL,max_tokens:1500,system:buildSystemPrompt(),messages:clean})});
       if(!res.ok) throw new Error('HTTP '+res.status);
       const data=await res.json();
       if(data.error) throw new Error(data.error.message);
