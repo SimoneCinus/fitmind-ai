@@ -138,6 +138,14 @@ textarea.fi{resize:none;height:76px}
 .msg-del-btn{background:rgba(255,59,48,.12);border:1px solid rgba(255,59,48,.25);
   border-radius:100px;padding:3px 9px;font-size:10px;color:var(--rd);cursor:pointer}
 .msg-del-btn:active{background:rgba(255,59,48,.3)}
+/* Bottoni azione AI — registro pasto, allenamento, aggiorna scheda */
+.ai-action-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.ai-action-btn{padding:8px 16px;border-radius:100px;border:none;cursor:pointer;
+  font-size:13px;font-weight:600;transition:all .2s;display:flex;align-items:center;gap:6px}
+.ai-action-btn:active{transform:scale(.96);opacity:.8}
+.ai-btn-pasto{background:rgba(200,241,53,.15);border:1px solid rgba(200,241,53,.4);color:var(--ac)}
+.ai-btn-allenamento{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.4);color:var(--bl)}
+.ai-btn-scheda{background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.4);color:var(--ac2)}
 .typing-row{display:flex;gap:4px;padding:3px 0}
 .tdot{width:5px;height:5px;background:var(--mt);border-radius:50%;animation:tb 1.2s infinite}
 .tdot:nth-child(2){animation-delay:.2s}.tdot:nth-child(3){animation-delay:.4s}
@@ -1123,18 +1131,46 @@ I messaggi utente includono [Giorno Data - Ora]. Usalo per contestualizzare: pas
 ━━━ REGOLE COMPORTAMENTALI ━━━
 1. SEMPRE specifico per questo utente — mai risposte generiche
 2. SESSIONE IN CORSO → guida esercizio per esercizio: nome, serie, reps, peso, note tecniche, poi chiedi il risultato
-3. PROGRESSIONE RILEVATA → commenta entusiasta (in proporzione al livello esigenza), aggiorna mentalmente il record, suggerisci il prossimo target
-4. LOG PASTI → stima macro con probabilistic reasoning, confronta con target, indica mancanze o eccessi con tono costruttivo
+3. PROGRESSIONE RILEVATA → commenta entusiasta (in proporzione al livello esigenza), suggerisci il prossimo target
+4. LOG PASTI → stima macro, confronta con target, indica mancanze o eccessi con tono costruttivo
 5. PASTO "LIBERO" (pizza, birra, dolce) → normalizza: "Un pasto non cambia nulla. Domani torniamo in carreggiata." MAI colpevolizzare
-6. BASSA PROTEINA GIORNALIERA → suggerisci integrazioni pratiche e veloci (es: "aggiungi 200g yogurt greco = +17g proteine")
+6. BASSA PROTEINA GIORNALIERA → suggerisci integrazioni pratiche e veloci
 7. DOLORE/INFORTUNIO → priorità assoluta, ferma l'esercizio, proponi alternativa sicura
 8. STOP >5gg → ripresa graduale -30/40% volume prima settimana
-9. DISAGIO EMOTIVO → empatia prima, tecnica dopo. Non ignorare mai il lato umano
-10. RICHIESTE IRREALISTICHE → tempi reali con spiegazione fisiologica, alternativa concreta
+9. DISAGIO EMOTIVO → empatia prima, tecnica dopo
+10. RICHIESTE IRREALISTICHE → tempi reali con alternativa concreta
 11. UTENTE AGGRESSIVO → autorevolezza calma, no apologie servili
 12. COLLEGA alimentazione↔allenamento↔recupero↔sonno quando pertinente
-13. GENERAZIONE SCHEDA → rispetta split muscolare, adatta al numero di giorni, distribuisci volume intelligentemente
-14. SUGGERISCI integratori solo se realmente utili per questo profilo specifico, con dosaggi precisi`;
+13. GENERAZIONE SCHEDA → rispetta split muscolare, adatta al numero di giorni
+14. SUGGERISCI integratori solo se realmente utili, con dosaggi precisi
+
+━━━ SISTEMA TAG — OBBLIGATORIO ━━━
+Alla fine di OGNI risposta dove rilevi un pasto, un esercizio o una progressione, aggiungi il tag corrispondente.
+Il tag è invisibile all'utente — viene intercettato dall'app automaticamente.
+NON spiegare il tag, NON menzionarlo, aggiungilo semplicemente in fondo alla risposta.
+
+FORMAT TAG (uno per risposta, solo se pertinente):
+
+PASTO RILEVATO → aggiungi esattamente:
+[LOG_PASTO:tipo:contenuto]
+dove tipo = colazione | pranzo | cena | spuntino
+esempio: [LOG_PASTO:colazione:yogurt greco 150g, cereali, caffè]
+
+ESERCIZIO RILEVATO → aggiungi esattamente:
+[LOG_ALLENAMENTO:nome_esercizio:serie:reps:peso_kg]
+esempio: [LOG_ALLENAMENTO:panca piana:4:8:80]
+Se più esercizi nella stessa risposta, aggiungi un tag per ognuno.
+
+PROPOSTA AGGIORNAMENTO SCHEDA → aggiungi esattamente:
+[UPDATE_SCHEDA:nome_esercizio:nuovo_peso_kg:reps]
+esempio: [UPDATE_SCHEDA:panca piana:82.5:8]
+Usalo SOLO quando hai evidenza di progressione (almeno 2 sessioni allo stesso peso con buona forma).
+
+REGOLE TAG:
+- Aggiungi il tag SOLO se hai dati concreti dall'utente (non su supposizioni)
+- Un solo [LOG_ALLENAMENTO] per esercizio menzionato
+- Mai aggiungere tag se l'utente parla di intenzioni future ("farò", "vorrei")
+- Il tag va sempre nell'ultima riga della risposta, dopo tutto il testo`;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1358,23 +1394,84 @@ function addUserMsg(text){
   document.getElementById('chatMsgs').appendChild(div);
   document.getElementById('chatMsgs').scrollTop=99999;
   chatHistory.push({id,role:'user',content:`${nowTimestamp()} ${text}`,timestamp:ts});
-  if(isLogAlimentare(text)) savePasto(text);
+  // Il salvataggio pasti avviene tramite tag AI + conferma utente (bottone)
+  // Non più automatico da keyword per evitare falsi positivi
   saveAll();
 }
 
 function addAiMsg(text){
   const id=genMsgId(), ts=Date.now();
+
+  // ── PARSING TAG ──
+  // Intercetta i tag invisibili inseriti dall'AI e costruisce i bottoni azione.
+  // Il testo visibile viene ripulito dai tag prima di essere mostrato.
+  const actions=[];
+  let cleanText=text;
+
+  // LOG_PASTO — salva nel diario alimentare con conferma utente
+  const pastoMatches=[...text.matchAll(/\[LOG_PASTO:(colazione|pranzo|cena|spuntino):([^\]]+)\]/gi)];
+  pastoMatches.forEach(m=>{
+    const tipo=m[1].toLowerCase(), contenuto=m[2].trim();
+    actions.push({
+      type:'pasto', label:`✅ Registro ${tipo}`, sublabel:contenuto.substring(0,40)+(contenuto.length>40?'...':''),
+      cls:'ai-btn-pasto',
+      fn:()=>{ eseguiRegistraPasto(tipo, contenuto, id); }
+    });
+    cleanText=cleanText.replace(m[0],'');
+  });
+
+  // LOG_ALLENAMENTO — salva in allenamentiLog con conferma utente
+  const allMatches=[...text.matchAll(/\[LOG_ALLENAMENTO:([^:]+):(\d+):(\d+):(\d+(?:\.\d+)?)\]/gi)];
+  allMatches.forEach(m=>{
+    const nome=m[1].trim(), serie=parseInt(m[2]), reps=parseInt(m[3]), peso=parseFloat(m[4]);
+    actions.push({
+      type:'allenamento', label:`✅ Registro allenamento`, sublabel:`${nome} ${serie}x${reps} @${peso}kg`,
+      cls:'ai-btn-allenamento',
+      fn:()=>{ eseguiRegistraAllenamento(nome, serie, reps, peso, id); }
+    });
+    cleanText=cleanText.replace(m[0],'');
+  });
+
+  // UPDATE_SCHEDA — proposta aggiornamento peso/reps con conferma utente
+  const schedaMatches=[...text.matchAll(/\[UPDATE_SCHEDA:([^:]+):(\d+(?:\.\d+)?):(\d+)\]/gi)];
+  schedaMatches.forEach(m=>{
+    const nome=m[1].trim(), newPeso=parseFloat(m[2]), newReps=parseInt(m[3]);
+    actions.push({
+      type:'scheda', label:`✅ Aggiorna scheda`, sublabel:`${nome}: ${newPeso}kg × ${newReps}`,
+      cls:'ai-btn-scheda',
+      fn:()=>{ eseguiUpdateScheda(nome, newPeso, newReps, id); }
+    });
+    cleanText=cleanText.replace(m[0],'');
+  });
+
+  cleanText=cleanText.trim();
+
+  // ── RENDER MESSAGGIO ──
   const div=document.createElement('div');
   div.className='msg'; div.dataset.msgId=id;
-  div.innerHTML=`<div class="av ai">FM</div><div><div class="bubble">${fmtMd(text)}</div><div class="msg-time">${nowTimeStr()}</div></div>`;
+
+  let actionsHtml='';
+  if(actions.length>0){
+    actionsHtml=`<div class="ai-action-row">${actions.map((a,i)=>`
+      <button class="ai-action-btn ${a.cls}" id="aiBtn_${id}_${i}" onclick="aiActionBtns['${id}_${i}'](this)">
+        ${a.label}<span style="font-size:11px;opacity:.7;margin-left:4px">${a.sublabel}</span>
+      </button>`).join('')}</div>`;
+    // Registra le funzioni (non inline per sicurezza)
+    actions.forEach((a,i)=>{ window.aiActionBtns=window.aiActionBtns||{}; window.aiActionBtns[`${id}_${i}`]=function(btn){ a.fn(); btn.disabled=true; btn.style.opacity='.4'; btn.textContent='✓ Salvato'; }; });
+  }
+
+  div.innerHTML=`<div class="av ai">FM</div><div><div class="bubble">${fmtMd(cleanText)}</div>${actionsHtml}<div class="msg-time">${nowTimeStr()}</div></div>`;
   document.getElementById('chatMsgs').appendChild(div);
   document.getElementById('chatMsgs').scrollTop=99999;
+
+  // Salva in history il testo COMPLETO con tag (per contesto AI futuro)
   chatHistory.push({id,role:'assistant',content:text,timestamp:ts});
-  // Auto-detect peso
-  const pm=text.match(/(\d{2,3}(?:[.,]\d)?)\s*kg/i);
-  if(pm&&text.toLowerCase().match(/peso|registr|aggiorn/)){ appStats.lastWeight=pm[1].replace(',','.'); appStats.weightHistory.push({date:todayStr(),val:parseFloat(appStats.lastWeight)}); refreshStats(); }
-  // Auto-detect sessione
-  if(text.toLowerCase().match(/registrat|ottima sessione|completat/)){ appStats.sessions=(appStats.sessions||0)+1; refreshStats(); }
+
+  // Auto-detect peso corporeo
+  const pm=cleanText.match(/(\d{2,3}(?:[.,]\d)?)\s*kg/i);
+  if(pm&&cleanText.toLowerCase().match(/peso|registr|aggiorn/)){ appStats.lastWeight=pm[1].replace(',','.'); appStats.weightHistory.push({date:todayStr(),val:parseFloat(appStats.lastWeight)}); refreshStats(); }
+  // Auto-detect sessione completata
+  if(cleanText.toLowerCase().match(/registrat|ottima sessione|completat/)){ appStats.sessions=(appStats.sessions||0)+1; refreshStats(); }
   saveAll();
 }
 
@@ -1384,6 +1481,69 @@ function addAiMsgNoSave(text){
   div.className='msg';
   div.innerHTML=`<div class="av ai">FM</div><div><div class="bubble">${fmtMd(text)}</div></div>`;
   document.getElementById('chatMsgs').appendChild(div);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// AZIONI AI — eseguite dopo conferma utente tramite bottone
+// ══════════════════════════════════════════════════════════════════
+
+// Registra pasto nel diario alimentare
+function eseguiRegistraPasto(tipo, contenuto, msgId){
+  const g=ensureGiorno(todayStr());
+  if(!g[tipo].includes(contenuto)){
+    g[tipo].push(contenuto);
+    console.log('[FM:Alim] Registrato da tag AI —',tipo+':',contenuto);
+    saveAll(); refreshDietaUI();
+    showToast('✅ '+tipo.charAt(0).toUpperCase()+tipo.slice(1)+' registrata!');
+  }
+}
+
+// Registra sessione allenamento in allenamentiLog
+function eseguiRegistraAllenamento(nome, serie, reps, peso, msgId){
+  const data=todayStr();
+  if(!allenamentiLog[data]) allenamentiLog[data]={ esercizi:[] };
+  // Aggiorna se esercizio già presente nella sessione odierna
+  const idx=allenamentiLog[data].esercizi.findIndex(e=>e.nome.toLowerCase()===nome.toLowerCase());
+  const entry={ nome, serie, reps, peso, timestamp:Date.now() };
+  if(idx>=0) allenamentiLog[data].esercizi[idx]=entry;
+  else allenamentiLog[data].esercizi.push(entry);
+  // Aggiorna anche storico nell'esercizio della scheda attiva
+  if(schedaAttiva?.sezioni){
+    schedaAttiva.sezioni.forEach(sez=>{
+      sez.esercizi.forEach(es=>{
+        if(es.nome.toLowerCase()===nome.toLowerCase()){
+          if(!es.storico) es.storico=[];
+          es.storico.push({data, peso, reps, serie});
+          // Mantieni solo ultimi 20 log per esercizio
+          if(es.storico.length>20) es.storico=es.storico.slice(-20);
+        }
+      });
+    });
+  }
+  appStats.sessions=(appStats.sessions||0)+1;
+  refreshStats(); saveAll();
+  showToast('✅ Allenamento registrato!');
+  console.log('[FM:Allenamenti] Registrato:',nome,serie+'x'+reps,'@'+peso+'kg');
+}
+
+// Aggiorna peso/reps di un esercizio nella scheda attiva
+function eseguiUpdateScheda(nome, newPeso, newReps, msgId){
+  if(!schedaAttiva?.sezioni){ showToast('⚠️ Nessuna scheda attiva'); return; }
+  let trovato=false;
+  schedaAttiva.sezioni.forEach(sez=>{
+    sez.esercizi.forEach(es=>{
+      if(es.nome.toLowerCase()===nome.toLowerCase()){
+        es.peso=newPeso; es.reps=newReps; trovato=true;
+        console.log('[FM:Scheda] Aggiornato:',nome,'→',newPeso+'kg x'+newReps);
+      }
+    });
+  });
+  if(trovato){
+    saveAll(); renderSchedaView();
+    showToast('✅ Scheda aggiornata: '+nome+' → '+newPeso+'kg');
+  } else {
+    showToast('⚠️ Esercizio "'+nome+'" non trovato nella scheda');
+  }
 }
 
 function showTyping(){
