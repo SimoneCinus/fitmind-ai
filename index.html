@@ -655,7 +655,7 @@ textarea.fi{resize:none;height:76px}
 const PROXY_URL         = 'https://fitmind-proxy.simo-simone.workers.dev/';
 const AI_MODEL          = 'claude-sonnet-4-5';
 const STORAGE_VERSION   = 3;    // v3 = architettura consolidata, scheda unica
-const RECENT_CHAT_LIMIT = 20;   // messaggi inviati all'AI (cronologia visibile intatta)
+const RECENT_CHAT_LIMIT = 40;   // messaggi inviati all'AI (cronologia visibile intatta)
 
 // ══════════════════════════════════════════════════════════════════
 // STRUTTURE DATI — documentate per evoluzione futura
@@ -1363,13 +1363,24 @@ async function callAI(messages,retries=2){
   // Invia all'API solo role e content — id e timestamp sono solo per uso interno
   const clean=limited.filter(m=>m.content&&m.content.trim&&m.content.trim()!=='').map(m=>({role:m.role,content:m.content}));
 
-  // Costruisce il system prompt con gestione errori
-  let sysPrompt='Sei FitMind AI, un coach fitness personale. Rispondi sempre in italiano.';
+  // Costruisce il system prompt con gestione errori per sezione
+  let sysPrompt = 'Sei FitMind AI, un coach fitness personale. Rispondi sempre in italiano.';
   try{
-    sysPrompt=buildSystemPrompt();
+    sysPrompt = buildSystemPrompt();
     console.log('[FM:AI] System prompt lunghezza:',sysPrompt.length,'chars');
   } catch(e){
     console.error('[FM:AI] Errore buildSystemPrompt:',e.message);
+    // Fallback con memoria pasti inclusa anche in caso di errore
+    try{
+      const alim = buildAlimContesto();
+      const u = userData;
+      sysPrompt = `Sei FitMind AI, coach personale di ${u.nome||'questo utente'}. Rispondi SEMPRE in italiano.
+Profilo: ${u.peso||'?'}kg, obiettivo ${u.obiettivo||'?'}, livello ${u.livello||'?'}, ${u.giorni||'?'} gg/sett.
+MEMORIA PASTI: ${alim}
+Ricorda sempre cosa ha mangiato l'utente oggi e ieri — non chiedere di nuovo cose già dette.`;
+    } catch(e2){
+      console.error('[FM:AI] Errore anche nel fallback:',e2.message);
+    }
   }
 
   console.log('[FM:AI] Invio',clean.length,'messaggi al modello');
