@@ -935,9 +935,30 @@ function detectPasto(t){
   return null;
 }
 
+// Rileva il tipo pasto dall'ultimo messaggio AI — per contesto follow-up
+function detectPastoFromAiContext(){
+  // Cerca negli ultimi 2 messaggi AI se ha chiesto/parlato di un pasto specifico
+  const recentAi = chatHistory.filter(m=>m.role==='assistant').slice(-2).map(m=>m.content.toLowerCase()).join(' ');
+  if(recentAi.match(/colazione|cosa hai mangiato.*matt|stamattina/)) return 'colazione';
+  if(recentAi.match(/pranzo|cosa hai mangiato.*oggi.*mezz|a pranzo/)) return 'pranzo';
+  if(recentAi.match(/cena|cosa hai mangiato.*sera|stasera/)) return 'cena';
+  if(recentAi.match(/spuntino|merenda/)) return 'spuntini';
+  // Cerca anche nell'ultimo messaggio utente precedente
+  const recentUser = chatHistory.filter(m=>m.role==='user').slice(-3).map(m=>m.content.toLowerCase()).join(' ');
+  if(recentUser.match(/colazione|scrivo.*colazione|colazione.*scrivo/)) return 'colazione';
+  if(recentUser.match(/pranzo|scrivo.*pranzo/)) return 'pranzo';
+  if(recentUser.match(/cena|scrivo.*cena/)) return 'cena';
+  if(recentUser.match(/spuntino|scrivo.*spuntino/)) return 'spuntini';
+  return null;
+}
+
 function isLogAlimentare(t){
   const s=t.toLowerCase();
-  return !!(s.match(/ho mangiato|ho fatto colazione|ho pranzato|ho cenato|a pranzo ho|a cena ho|per colazione|per pranzo|per cena|spuntino:/));
+  // Parole chiave dirette
+  if(s.match(/ho mangiato|ho fatto colazione|ho pranzato|ho cenato|a pranzo ho|a cena ho|per colazione|per pranzo|per cena|spuntino:/)) return true;
+  // Contesto: messaggio precedente AI o utente parlava di pasto
+  if(detectPastoFromAiContext()) return true;
+  return false;
 }
 
 function gestisciRifIeri(t){
@@ -951,13 +972,28 @@ function gestisciRifIeri(t){
 
 function savePasto(testo){
   if(gestisciRifIeri(testo)){ refreshDietaUI(); return; }
-  const tipo=detectPasto(testo);
+
+  // Prima prova riconoscimento diretto dal testo
+  let tipo = detectPasto(testo);
+
+  // Se non trovato, usa il contesto dalla conversazione precedente
+  if(!tipo) tipo = detectPastoFromAiContext();
+
   if(!tipo) return;
+
   const dataRef=testo.toLowerCase().includes('ieri sera')?yesterdayStr():todayStr();
-  let contenuto=testo.replace(/ho mangiato|ho fatto colazione|ho pranzato|ho cenato|a pranzo ho|a cena ho|per colazione|per pranzo|per cena|spuntino:|oggi|ieri sera|ieri|stamattina/gi,'').replace(/^\s*[:—\-,]\s*/,'').trim();
+  let contenuto=testo
+    .replace(/ho mangiato|ho fatto colazione|ho pranzato|ho cenato|a pranzo ho|a cena ho|per colazione|per pranzo|per cena|spuntino:|oggi|ieri sera|ieri|stamattina|ti scrivo|ecco|questi sono|ho mangiato:/gi,'')
+    .replace(/^\s*[:—\-,]\s*/,'')
+    .trim();
   if(!contenuto||contenuto.length<3) contenuto=testo.trim();
+
   const g=ensureGiorno(dataRef);
-  if(!g[tipo].includes(contenuto)){ g[tipo].push(contenuto); console.log('[FM:Alim] Salvato',tipo,'('+dataRef+'):',contenuto); saveAll(); refreshDietaUI(); }
+  if(!g[tipo].includes(contenuto)){
+    g[tipo].push(contenuto);
+    console.log('[FM:Alim] Salvato',tipo,'('+dataRef+') via contesto:',contenuto);
+    saveAll(); refreshDietaUI();
+  }
 }
 
 function buildAlimContesto(){
