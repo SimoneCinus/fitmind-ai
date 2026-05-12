@@ -772,7 +772,76 @@ textarea.fi{resize:none;height:76px}
 // ══════════════════════════════════════════════════════════════════
 const PROXY_URL         = 'https://fitmind-proxy.simo-simone.workers.dev/';
 const AI_MODEL          = 'claude-sonnet-4-5';
-const RECENT_CHAT_LIMIT = 40;   // messaggi inviati all'AI (cronologia visibile intatta)
+const RECENT_CHAT_LIMIT = 40;
+
+/*
+ * DEBUG MODE — attivabile da console browser con: FitMind.debug(true)
+ * Mostra: tag AI rilevati, pasti salvati, filtri bloccati,
+ *         matching esercizi, memoria passata al prompt, storage.
+ * NON attivo in produzione — zero overhead per utenti normali.
+ */
+let DEBUG_MODE = false;
+
+function dbg(category, ...args){
+  if(!DEBUG_MODE) return;
+  console.log(`[FM:DBG:${category}]`, ...args);
+}
+
+// API pubblica debug — usabile dalla console browser
+window.FitMind = {
+  debug: (on=true) => {
+    DEBUG_MODE = on;
+    console.log('[FM] Debug mode:', on ? '✅ ON' : '❌ OFF');
+    if(on){
+      console.log('[FM] Stato corrente:', {
+        utente:        userData.nome,
+        chat:          chatHistory.length + ' messaggi',
+        scheda:        schedaAttiva ? schedaAttiva.sezioni?.length + ' sezioni' : 'nessuna',
+        pastiOggi:     alimentazioneLog[todayStr()] || 'nessuno',
+        dieta:         dietaAttiva,
+        stats:         appStats,
+        storageVersion:localStorage.getItem(LS.version)
+      });
+    }
+  },
+  stato: () => {
+    if(!DEBUG_MODE){ console.warn('[FM] Attiva prima il debug: FitMind.debug(true)'); return; }
+    console.log('[FM] Stato:', {userData, chatHistory, schedaAttiva, dietaAttiva, alimentazioneLog, appStats});
+  },
+  // prompt() — solo in debug mode: espone struttura interna e regole AI
+  prompt: () => {
+    if(!DEBUG_MODE){ console.warn('[FM] FitMind.prompt() disponibile solo in debug mode. Usa: FitMind.debug(true)'); return; }
+    try{
+      const p = buildSystemPrompt();
+      // Misura dimensione prompt — monitorare se supera ~3000 chars
+      const chars = p.length;
+      const stima_tokens = Math.round(chars / 4);
+      console.log(`[FM] Prompt size: ${chars} chars | ~${stima_tokens} tokens`);
+      if(stima_tokens > 2500) console.warn('[FM] ⚠️ Prompt grande — considera di ridurre lo storico');
+      console.log('[FM] System prompt:\n', p);
+    } catch(e){
+      console.error('[FM] Errore buildSystemPrompt:', e.message);
+    }
+  },
+  pasti:  () => {
+    if(!DEBUG_MODE){ console.warn('[FM] Attiva prima il debug: FitMind.debug(true)'); return; }
+    console.log('[FM] Alimentazione log:', alimentazioneLog);
+  },
+  scheda: () => {
+    if(!DEBUG_MODE){ console.warn('[FM] Attiva prima il debug: FitMind.debug(true)'); return; }
+    console.log('[FM] Scheda attiva:', schedaAttiva);
+  },
+  // Misura dimensione prompt senza stamparlo — sicuro anche in produzione
+  promptSize: () => {
+    try{
+      const p = buildSystemPrompt();
+      const chars = p.length;
+      const stima_tokens = Math.round(chars / 4);
+      console.log(`[FM] Prompt size: ${chars} chars | ~${stima_tokens} tokens | messaggi: ${Math.min(chatHistory.length, RECENT_CHAT_LIMIT)}`);
+      if(stima_tokens > 2500) console.warn('[FM] ⚠️ Prompt grande');
+    } catch(e){ console.error('[FM] Errore:', e.message); }
+  }
+};
 
 /*
  * STORAGE VERSIONING
@@ -1110,109 +1179,219 @@ function calcTargets(){
 }
 
 // ══════════════════════════════════════════════════════════════════
-// ALIMENTAZIONE
+// ALIMENTAZIONE — dual layer: tag AI (primario) + keyword utente (fallback)
 // ══════════════════════════════════════════════════════════════════
 function ensureGiorno(data){
   if(!alimentazioneLog[data]) alimentazioneLog[data]={colazione:[],pranzo:[],cena:[],spuntini:[]};
   return alimentazioneLog[data];
 }
 
-// Identifica tipo pasto — evita falsi positivi richiedendo parole chiave specifiche
+// Riconosce tipo pasto dal testo
 function detectPasto(t){
   const s=t.toLowerCase();
-  if(s.match(/\bcolazione\b|cappuccino|cornetto|avena|yogurt.*matt|matt.*mangiato/)) return 'colazione';
-  if(s.match(/\bpranzo\b|ho pranzato|a pranzo/)) return 'pranzo';
-  if(s.match(/\bcena\b|ho cenato|a cena|ieri sera/)) return 'cena';
-  if(s.match(/\bspuntino\b|merenda/)) return 'spuntini';
+  if(s.match(/\bcolazione\b|cappuccino|cornetto|avena|latte.*mattina|stamattina.*mangiato|ho fatto colazione/)) return 'colazione';
+  if(s.match(/\bpranzo\b|ho pranzato|a pranzo|mezzogiorno/)) return 'pranzo';
+  if(s.match(/\bcena\b|ho cenato|a cena|stasera.*mangiato|ieri sera/)) return 'cena';
+  if(s.match(/\bspuntino\b|\bmerenda\b/)) return 'spuntini';
   return null;
 }
 
-// Rileva il tipo pasto dall'ultimo messaggio AI — per contesto follow-up
-function detectPastoFromAiContext(){
-  // Cerca negli ultimi 2 messaggi AI se ha chiesto/parlato di un pasto specifico
-  const recentAi = chatHistory.filter(m=>m.role==='assistant').slice(-2).map(m=>m.content.toLowerCase()).join(' ');
-  if(recentAi.match(/colazione|cosa hai mangiato.*matt|stamattina/)) return 'colazione';
-  if(recentAi.match(/pranzo|cosa hai mangiato.*oggi.*mezz|a pranzo/)) return 'pranzo';
-  if(recentAi.match(/cena|cosa hai mangiato.*sera|stasera/)) return 'cena';
-  if(recentAi.match(/spuntino|merenda/)) return 'spuntini';
-  // Cerca anche nell'ultimo messaggio utente precedente
-  const recentUser = chatHistory.filter(m=>m.role==='user').slice(-3).map(m=>m.content.toLowerCase()).join(' ');
-  if(recentUser.match(/colazione|scrivo.*colazione|colazione.*scrivo/)) return 'colazione';
-  if(recentUser.match(/pranzo|scrivo.*pranzo/)) return 'pranzo';
-  if(recentUser.match(/cena|scrivo.*cena/)) return 'cena';
-  if(recentUser.match(/spuntino|scrivo.*spuntino/)) return 'spuntini';
-  return null;
-}
+// Salva pasto dal testo utente (layer 2 — fallback se AI non mette il tag)
+function savePastoFromText(testo){
+  // ── FILTRO FALSI POSITIVI ──
+  // Blocca frasi che menzionano pasti ma NON sono un log reale.
+  // Meglio non salvare nulla che salvare dati sporchi.
+  const t = testo.toLowerCase();
+  const isFalsoPositivo =
+    t.match(/non ho mangiato|niente colazione|colazione saltata|pranzo saltato|cena saltata|ho saltato|non mangio|non mangiavo|mangiavo prima|mangiavo ieri|mangiavo di solito|mangiavo sempre|di solito mangio|prima mangiavo|peggio di|meglio di|rispetto a|ma oggi|invece oggi|domani|domani mangio|domani farò|vorrei mangiare|penso di mangiare|potrei mangiare|dovresti mangiare|dovresti fare colazione/) ||
+    t.match(/ieri (a colazione|a pranzo|a cena|mangiavo|ho mangiato male|ho mangiato troppo|ho esagerato)/) ||
+    t.match(/settimana scorsa|il mese scorso|una volta|di solito|normalmente|in generale|tendenzialmente/);
 
-function isLogAlimentare(t){
-  const s=t.toLowerCase();
-  // Parole chiave dirette
-  if(s.match(/ho mangiato|ho fatto colazione|ho pranzato|ho cenato|a pranzo ho|a cena ho|per colazione|per pranzo|per cena|spuntino:/)) return true;
-  // Contesto: messaggio precedente AI o utente parlava di pasto
-  if(detectPastoFromAiContext()) return true;
-  return false;
-}
+  if(isFalsoPositivo){
+    console.log('[FM:FoodFilter] BLOCCATO:', {
+      testo:     testo.substring(0,80),
+      tipo:      detectPasto(testo) || 'non rilevato',
+      motivo:    t.match(/non ho mangiato|niente colazione|colazione saltata|pranzo saltato|cena saltata|ho saltato|non mangio/) ? 'negative_statement' :
+                 t.match(/mangiavo|mangiavo prima|mangiavo ieri|di solito|normalmente|tendenzialmente/) ? 'habitual_or_past' :
+                 t.match(/domani|vorrei|potrei|penso di|dovresti/) ? 'future_or_hypothetical' :
+                 t.match(/settimana scorsa|il mese scorso|una volta|in generale/) ? 'generic_reference' :
+                 t.match(/peggio di|meglio di|rispetto a|invece oggi|ma oggi/) ? 'comparison' :
+                 'other_pattern',
+      timestamp: new Date().toLocaleTimeString()
+    });
+    return;
+  }
 
-function gestisciRifIeri(t){
-  const m=t.toLowerCase().match(/stess[ao]\s+(colazione|pranzo|cena|spuntino)\s+di\s+ieri/i);
-  if(!m) return false;
-  const tipo=m[1].toLowerCase()==='colazione'?'colazione':m[1].toLowerCase()==='pranzo'?'pranzo':m[1].toLowerCase()==='cena'?'cena':'spuntini';
-  const ieri=alimentazioneLog[yesterdayStr()];
-  if(ieri?.[tipo]?.length){ ensureGiorno(todayStr())[tipo]=[...ieri[tipo]]; saveAll(); return true; }
-  return false;
-}
-
-function savePasto(testo){
-  if(gestisciRifIeri(testo)){ refreshDietaUI(); return; }
-
-  // Prima prova riconoscimento diretto dal testo
-  let tipo = detectPasto(testo);
-
-  // Se non trovato, usa il contesto dalla conversazione precedente
-  if(!tipo) tipo = detectPastoFromAiContext();
-
+  const rifIeri=testo.toLowerCase().match(/stess[ao]\s+(colazione|pranzo|cena|spuntino)\s+di\s+ieri/i);
+  if(rifIeri){
+    const tipoKey=rifIeri[1].toLowerCase()==='spuntino'?'spuntini':rifIeri[1].toLowerCase();
+    const ieri=alimentazioneLog[yesterdayStr()];
+    if(ieri?.[tipoKey]?.length){ ensureGiorno(todayStr())[tipoKey]=[...ieri[tipoKey]]; saveAll(); refreshDietaUI(); console.log('[FM:Alim] Copiato',tipoKey,'da ieri'); }
+    return;
+  }
+  const tipo=detectPasto(testo);
   if(!tipo) return;
-
   const dataRef=testo.toLowerCase().includes('ieri sera')?yesterdayStr():todayStr();
-  let contenuto=testo
-    .replace(/ho mangiato|ho fatto colazione|ho pranzato|ho cenato|a pranzo ho|a cena ho|per colazione|per pranzo|per cena|spuntino:|oggi|ieri sera|ieri|stamattina|ti scrivo|ecco|questi sono|ho mangiato:/gi,'')
-    .replace(/^\s*[:—\-,]\s*/,'')
-    .trim();
+  let contenuto=testo.replace(/\b(ho mangiato|ho fatto colazione|ho pranzato|ho cenato|a pranzo ho|a cena ho|per colazione|per pranzo|per cena|spuntino:|oggi|ieri sera|ieri|stamattina|ti scrivo|ecco|questi sono)\b/gi,'').replace(/^\s*[:—\-,]\s*/,'').trim();
   if(!contenuto||contenuto.length<3) contenuto=testo.trim();
-
   const g=ensureGiorno(dataRef);
   if(!g[tipo].includes(contenuto)){
     g[tipo].push(contenuto);
-    console.log('[FM:Alim] Salvato',tipo,'('+dataRef+') via contesto:',contenuto);
+    console.log('[FM:Alim] Salvato (keyword)', tipo+'('+dataRef+'):', contenuto);
+    dbg('FOOD_SAVE', {layer:'keyword', tipo, contenuto, data:dataRef});
     saveAll(); refreshDietaUI();
   }
 }
 
-function buildAlimContesto(){
-  const oggi=alimentazioneLog[todayStr()];
-  const ieri=alimentazioneLog[yesterdayStr()];
-  let ctx='';
-  if(oggi){
-    const ps=[];
-    if(oggi.colazione.length) ps.push('Col: '+oggi.colazione.join(', '));
-    if(oggi.pranzo.length)    ps.push('Pran: '+oggi.pranzo.join(', '));
-    if(oggi.cena.length)      ps.push('Cena: '+oggi.cena.join(', '));
-    if(oggi.spuntini.length)  ps.push('Spunt: '+oggi.spuntini.join(', '));
-    ctx='OGGI: '+(ps.length?ps.join(' | '):'nessun pasto registrato');
-  } else { ctx='OGGI: nessun pasto registrato'; }
-  if(ieri){
-    const ps=[];
-    if(ieri.colazione.length) ps.push('Col: '+ieri.colazione.join(', '));
-    if(ieri.pranzo.length)    ps.push('Pran: '+ieri.pranzo.join(', '));
-    if(ieri.cena.length)      ps.push('Cena: '+ieri.cena.join(', '));
-    if(ps.length) ctx+='\nIERI: '+ps.join(' | ');
+// Salva pasto da tag AI (layer 1 — primario)
+function eseguiRegistraPasto(tipo,contenuto,msgId){
+  const tipoKey=tipo==='spuntino'?'spuntini':tipo;
+  const g=ensureGiorno(todayStr());
+  if(!g[tipoKey].includes(contenuto)){
+    g[tipoKey].push(contenuto);
+    console.log('[FM:Alim] Salvato (tag AI)', tipoKey+':', contenuto);
+    dbg('FOOD_SAVE', {layer:'ai_tag', tipo:tipoKey, contenuto});
+    saveAll(); refreshDietaUI();
+    showToast('✅ '+tipoKey.charAt(0).toUpperCase()+tipoKey.slice(1)+' registrata!');
   }
+}
+
+// Riepilogo pasti per il system prompt — SEMPRE completo, SEMPRE aggiornato
+function buildAlimContesto(){
+  const oggi=alimentazioneLog[todayStr()]||null;
+  const ieri=alimentazioneLog[yesterdayStr()]||null;
+  const fmt=g=>{
+    if(!g) return null;
+    const ps=[];
+    if(g.colazione?.length) ps.push('Colazione: '+g.colazione.join(', '));
+    if(g.pranzo?.length)    ps.push('Pranzo: '+g.pranzo.join(', '));
+    if(g.cena?.length)      ps.push('Cena: '+g.cena.join(', '));
+    if(g.spuntini?.length)  ps.push('Spuntini: '+g.spuntini.join(', '));
+    return ps.length?ps.join(' | '):null;
+  };
+  const oggiStr=fmt(oggi);
+  const ieriStr=fmt(ieri);
+  let ctx='— OGGI ('+todayStr()+'): '+(oggiStr||'nessun pasto registrato ancora');
+  if(ieriStr) ctx+='\n— IERI ('+yesterdayStr()+'): '+ieriStr;
   return ctx;
 }
 
+function gestisciRifIeri(){ return false; } // compatibilità
+
 // ══════════════════════════════════════════════════════════════════
-// AI CONTEXT
+// WEEKLY SUMMARY — Layer 2 memory (skeleton, non ancora in uso)
+// Da collegare a buildSystemPrompt() quando promptSize() > 2500 tokens
 // ══════════════════════════════════════════════════════════════════
+//
+// REGOLA: max 5-6 bullet. Breve, utile, orientato alle decisioni.
+// NON cronaca — pattern rilevanti per il coaching.
+//
+function buildWeeklySummary(){
+  const oggi = new Date();
+  const lines = [];
+
+  // ── Analisi proteine ultimi 7 giorni ──
+  let giorniSottoProteine = 0;
+  let giorniConDati = 0;
+  const targetProt = calcTargets().proteine || 0;
+  for(let i=1; i<=7; i++){
+    const d = new Date(oggi); d.setDate(d.getDate()-i);
+    const key = d.toISOString().split('T')[0];
+    const g = alimentazioneLog[key];
+    if(!g) continue;
+    giorniConDati++;
+    const tuttiPasti = [...(g.colazione||[]),...(g.pranzo||[]),...(g.cena||[]),...(g.spuntini||[])];
+    // Stima approssimativa: se meno di 2 pasti registrati → probabile sotto target
+    if(tuttiPasti.length < 2) giorniSottoProteine++;
+  }
+  if(giorniConDati >= 3 && giorniSottoProteine >= 3)
+    lines.push(`- Pasti registrati pochi giorni su ${giorniConDati} — possibile sotto target proteine`);
+
+  // ── Analisi allenamenti ultimi 7 giorni ──
+  let sessioniSettimana = 0;
+  for(let i=1; i<=7; i++){
+    const d = new Date(oggi); d.setDate(d.getDate()-i);
+    const key = d.toISOString().split('T')[0];
+    if(allenamentiLog[key]?.esercizi?.length) sessioniSettimana++;
+  }
+  if(sessioniSettimana > 0)
+    lines.push(`- ${sessioniSettimana} sessioni di allenamento nell'ultima settimana`);
+
+  // ── Trend peso ──
+  const wh = appStats.weightHistory || [];
+  if(wh.length >= 2){
+    const ultimo = wh[wh.length-1].val;
+    const penultimo = wh[wh.length-2].val;
+    const diff = (ultimo - penultimo).toFixed(1);
+    if(Math.abs(diff) < 0.5) lines.push('- Peso stabile');
+    else lines.push(`- Peso ${diff > 0 ? '+'+diff : diff}kg rispetto all'ultima misurazione`);
+  }
+
+  // ── Progressioni esercizi principali ──
+  if(schedaAttiva?.sezioni){
+    schedaAttiva.sezioni.forEach(sez=>{
+      sez.esercizi.forEach(es=>{
+        if(!es.storico || es.storico.length < 2) return;
+        const primo = es.storico[0].peso;
+        const ultimo = es.storico[es.storico.length-1].peso;
+        if(ultimo > primo)
+          lines.push(`- ${es.nome}: progressione ${primo}→${ultimo}kg`);
+      });
+    });
+  }
+
+  if(lines.length === 0) return null;
+  return 'RIEPILOGO SETTIMANA:\n' + lines.join('\n');
+}
+// TODO: collegare a buildSystemPrompt() come Layer 2
+// quando FitMind.promptSize() supera regolarmente 2500 tokens
+// ══════════════════════════════════════════════════════════════════
+//
+// MEMORY ARCHITECTURE — roadmap futura (non ancora implementata)
+// ─────────────────────────────────────────────────────────────────
+// Il context management è il vero collo di bottiglia di questa app.
+// Con crescita di storico, pasti, progressioni e chat, il prompt
+// esploderà. La soluzione è una memoria a 3 livelli:
+//
+// LAYER 1 — Context immediato (già implementato parzialmente)
+//   Ultimi RECENT_CHAT_LIMIT messaggi
+//   Pasti di oggi e ieri
+//   Allenamento sessione corrente
+//   → Cambia ad ogni messaggio
+//
+// LAYER 2 — Summary persistente (da implementare)
+//   Obiettivo attuale + fase (massa/cut/mantenimento)
+//   Trend peso ultimo mese
+//   Progressioni esercizi principali (es. panca: 70→80kg in 3 mesi)
+//   Aderenza media (es. 4/5 sessioni settimana)
+//   → Si aggiorna ogni settimana o al cambio obiettivo
+//   → Salvato in localStorage come testo compresso
+//
+// LAYER 3 — Long-term memory (da implementare)
+//   PR per esercizio principale
+//   Pattern alimentari ricorrenti
+//   Periodi di stop e ripresa
+//   → Si aggiorna raramente, max 1 volta al mese
+//   → Poche righe di testo — mai strutture JSON grandi
+//
+// ─────────────────────────────────────────────────────────────────
+// PRINCIPIO FONDAMENTALE — summary > dati grezzi
+// ─────────────────────────────────────────────────────────────────
+// Il formato corretto per il prompt futuro NON è:
+//   [{"giorno":"2026-05-01","pasto":"yogurt"},{"giorno":"..."}]
+//
+// MA è linguaggio naturale compresso:
+//   "Ultime 2 settimane: proteine spesso sotto target,
+//    miglioramento costante sulla panca, sonno irregolare,
+//    peso stabile. Aderenza allenamento: 4/5 sessioni."
+//
+// Motivo: l'AI ragiona meglio su pattern descritti che su log grezzi.
+// Un summary di 3 righe vale più di 200 righe di JSON.
+// ─────────────────────────────────────────────────────────────────
+// TRIGGER DI COMPRESSIONE
+//   FitMind.promptSize() > 2500 tokens → attivare Layer 2
+//   Non "mi sembra lungo" — metriche concrete.
+// ─────────────────────────────────────────────────────────────────
 
 // Sessione allenamento attiva: tiene traccia di quale scheda si sta eseguendo
 let sessioneAttiva = null; // { sezNome, esercizi:[{nome,serie,reps,peso}], esIdx:0, log:[] }
@@ -1300,8 +1479,12 @@ TARGET GIORNALIERO: ~${t.kcal||'?'} kcal | Proteine: ~${t.proteine||'?'}g | Carb
 ${u.obiettivo==='massa'?'STRATEGIA: Surplus +200/300 kcal. Priorità: proteine primo, carbo timing intorno workout, grassi saturi moderati.':u.obiettivo==='dimagrimento'?'STRATEGIA: Deficit -400/500 kcal. Priorità: proteine alte (protezione massa magra), deficit progressivo, refeed settimanale se streak >10gg.':u.obiettivo==='ricomposizione'?'STRATEGIA: Kcal mantenimento. Cycling carbo: più nei giorni workout, meno nei rest day. Proteine costantemente alte.':u.obiettivo==='forza'?'STRATEGIA: Lieve surplus +150/200 kcal. Carbo alti per performance, proteine moderate-alte, creatina consigliata.':'STRATEGIA: Mantenimento. Qualità > quantità. Focus micronutrienti e idratazione.'}
 Acqua target: ~${Math.round(p*0.033*10)/10}L/die (basale) + 0.5/0.7L per ogni ora di allenamento intenso
 
-━━━ DIARIO ALIMENTARE OGGI ━━━
+━━━ DIARIO ALIMENTARE OGGI — MEMORIA REALE ━━━
 ${buildAlimContesto()}
+
+⚠️ REGOLA OBBLIGATORIA: Se il diario mostra pasti già registrati, USALI sempre.
+NON chiedere di nuovo cosa ha mangiato se è già nel diario.
+Esempio corretto: "Hai già fatto colazione con [X] e lo spuntino con [Y]. A pranzo ti servono ancora circa Z grammi di proteine."
 
 ━━━ SCHEDA ATTIVA (con storico progressioni) ━━━
 ${buildSchedaCtxCompleto()}
@@ -1576,10 +1759,14 @@ function addUserMsg(text){
   div.addEventListener('touchend',()=>clearTimeout(pt),{passive:true});
   div.addEventListener('touchmove',()=>clearTimeout(pt),{passive:true});
   document.getElementById('chatMsgs').appendChild(div);
-  document.getElementById('chatMsgs').scrollTop=99999;
+  scrollToBottom();
   chatHistory.push({id,role:'user',content:`${nowTimestamp()} ${text}`,timestamp:ts});
-  // Il salvataggio pasti avviene tramite tag AI + conferma utente (bottone)
-  // Non più automatico da keyword per evitare falsi positivi
+
+  // Layer 2 — salva pasto da keyword nel testo (fallback se AI non mette il tag)
+  // Il layer 1 (tag AI + bottone) ha priorità e salva con più precisione
+  const tipoPasto = detectPasto(text);
+  if(tipoPasto) savePastoFromText(text);
+
   saveAll();
 }
 
@@ -1591,6 +1778,12 @@ function addAiMsg(text){
   // Il testo visibile viene ripulito dai tag prima di essere mostrato.
   const actions=[];
   let cleanText=text;
+  dbg('AI_TAGS', {
+    hasPasto:      text.includes('[LOG_PASTO:'),
+    hasAllenamento:text.includes('[LOG_ALLENAMENTO:'),
+    hasScheda:     text.includes('[UPDATE_SCHEDA:'),
+    preview:       text.substring(text.length-120)
+  });
 
   // LOG_PASTO — salva nel diario alimentare con conferma utente
   const pastoMatches=[...text.matchAll(/\[LOG_PASTO:(colazione|pranzo|cena|spuntino):([^\]]+)\]/gi)];
@@ -1646,7 +1839,7 @@ function addAiMsg(text){
 
   div.innerHTML=`<div class="av ai">FM</div><div><div class="bubble">${fmtMd(cleanText)}</div>${actionsHtml}<div class="msg-time">${nowTimeStr()}</div></div>`;
   document.getElementById('chatMsgs').appendChild(div);
-  document.getElementById('chatMsgs').scrollTop=99999;
+  scrollToBottom();
 
   // Salva in history il testo COMPLETO con tag (per contesto AI futuro)
   chatHistory.push({id,role:'assistant',content:text,timestamp:ts});
@@ -1727,6 +1920,7 @@ function eseguiUpdateScheda(nome, newPeso, newReps, msgId){
   if(!schedaAttiva?.sezioni){ showToast('⚠️ Nessuna scheda attiva'); return; }
   const es = findEsercizioInScheda(nome);
   if(es){
+    dbg('EXERCISE_MATCH', {cercato: nome, trovato: es.nome, id: es.id});
     const vecchioPeso = es.peso;
     es.peso=newPeso; es.reps=newReps;
     console.log('[FM:Scheda] Aggiornato:',es.nome,vecchioPeso+'kg →',newPeso+'kg x'+newReps);
@@ -1742,7 +1936,7 @@ function showTyping(){
   const div=document.createElement('div'); div.id='_typing'; div.className='msg';
   div.innerHTML=`<div class="av ai">FM</div><div><div class="bubble"><div class="typing-row"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div></div>`;
   document.getElementById('chatMsgs').appendChild(div);
-  document.getElementById('chatMsgs').scrollTop=99999;
+  scrollToBottom();
 }
 function removeTyping(){ const t=document.getElementById('_typing'); if(t)t.remove(); }
 
@@ -1772,6 +1966,12 @@ Ricorda sempre cosa ha mangiato l'utente oggi e ieri — non chiedere di nuovo c
   }
 
   console.log('[FM:AI] Invio',clean.length,'messaggi al modello');
+  dbg('AI_CONTEXT', {
+    messaggi:       clean.length,
+    promptChars:    sysPrompt.length,
+    pastiOggi:      buildAlimContesto().substring(0,120),
+    schedaSezioni:  schedaAttiva?.sezioni?.length || 0
+  });
   for(let i=0;i<=retries;i++){
     try{
       const res=await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},
@@ -1821,6 +2021,15 @@ async function sendMsg(){
 
 function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} }
 function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,110)+'px'; }
+
+// Scroll affidabile — usa requestAnimationFrame per aspettare il render DOM
+function scrollToBottom(){
+  const el = document.getElementById('chatMsgs');
+  if(!el) return;
+  requestAnimationFrame(()=>{
+    el.scrollTop = el.scrollHeight;
+  });
+}
 
 // ── Rileva se l'utente vuole iniziare una sessione di allenamento ──
 function detectSessioneStart(text){
@@ -1955,7 +2164,7 @@ function rerenderChat(){
     }
     msgs.appendChild(div);
   });
-  msgs.scrollTop=99999;
+  scrollToBottom();
 }
 
 // ══════════════════════════════════════════════════════════════════
