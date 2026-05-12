@@ -198,28 +198,67 @@ textarea.fi{resize:none;height:76px}
 .chart-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .chart-title{font-size:13px;font-weight:600}.chart-period{font-size:10px;color:var(--mt);letter-spacing:1px}
 
-/* ── BUILDER ── */
-#builderScreen{background:var(--bg)}
-.builder-hdr{padding:50px 18px 12px;flex-shrink:0;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--bd)}
-.builder-body{flex:1;overflow-y:auto;padding:16px 18px 20px;scrollbar-width:none}
-.builder-body::-webkit-scrollbar{display:none}
-.builder-footer{padding:11px 18px 28px;flex-shrink:0;border-top:1px solid var(--bd)}
-.bsez{margin-bottom:22px}
-.bsez-hdr{display:flex;align-items:center;gap:9px;margin-bottom:6px}
-.bsez-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--ac);flex:1;line-height:1.1}
-.bsez-desc{font-size:11px;color:var(--mt);margin-bottom:10px;padding-left:2px}
-.bes-card{background:var(--s1);border:1px solid var(--bd);border-radius:13px;
-  padding:13px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
-.bes-info{flex:1}
-.bes-name{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px}
-.bes-det{font-size:13px;color:var(--ac);font-family:'JetBrains Mono',monospace;font-weight:600}
-.bes-rec{font-size:11px;color:var(--mt);margin-top:2px}
-.bes-actions{display:flex;gap:7px;flex-shrink:0;padding-top:1px}
-.bes-btn{background:var(--s2);border:1px solid var(--bd);border-radius:8px;
-  padding:7px 11px;font-size:12px;cursor:pointer;color:#ccc}
-.bes-btn:active{opacity:.7}
-.builder-empty{background:var(--s1);border:1px dashed var(--bd);border-radius:12px;
-  padding:15px;text-align:center;color:var(--mt);font-size:13px}
+/* ── BUILDER STEP-BY-STEP ── */
+#builderScreen{background:var(--bg);position:relative}
+.bstep{display:none;flex-direction:column;height:100dvh;overflow:hidden;animation:bstepIn .22s ease}
+.bstep.active{display:flex}
+@keyframes bstepIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+.bstep-hdr{padding:50px 18px 16px;flex-shrink:0;display:flex;align-items:center;
+  justify-content:space-between;border-bottom:1px solid var(--bd)}
+.bback-btn{width:40px;height:40px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);
+  font-size:20px;cursor:pointer;color:#ddd;outline:none;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bback-btn:active{opacity:.7}
+.bstep-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;
+  color:#fff;text-align:center;flex:1;padding:0 8px}
+.bsave-btn{background:var(--ac);color:#000;border:none;border-radius:10px;
+  padding:9px 16px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;cursor:pointer;outline:none}
+.bsave-btn:active{opacity:.8}
+.bstep-body{flex:1;overflow-y:auto;padding:22px 18px 16px;scrollbar-width:none}
+.bstep-body::-webkit-scrollbar{display:none}
+.bstep-hint{font-size:14px;color:#aaa;margin-bottom:22px;line-height:1.6}
+.bstep-footer{padding:14px 18px 30px;flex-shrink:0;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:8px}
+/* Input numerici grandi — ottimizzati per mobile */
+.bnum{font-size:22px;text-align:center;padding:16px;font-family:'JetBrains Mono',monospace;font-weight:600;letter-spacing:1px}
+/* Card sezione nella preview (step 0) */
+.bsez-card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;
+  padding:16px 18px;margin-bottom:12px;cursor:pointer;transition:border-color .15s}
+.bsez-card:active{border-color:var(--ac)}
+.bsez-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.bsez-card-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--ac)}
+.bsez-card-count{font-size:11px;color:var(--mt);letter-spacing:1px}
+.bsez-card-desc{font-size:12px;color:#666}
+/* Riga esercizio nella lista sezione (step 2) */
+.bes-row{background:var(--s2);border:1px solid var(--bd);border-radius:13px;
+  padding:15px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.bes-row:active{opacity:.75}
+.bes-row-info{flex:1}
+.bes-row-name{font-size:15px;font-weight:600;color:#fff;margin-bottom:3px}
+.bes-row-det{font-size:13px;color:var(--ac);font-family:'JetBrains Mono',monospace}
+.bes-row-arr{font-size:20px;color:var(--mt);flex-shrink:0}
+/* Card gruppo muscolare (step 3) */
+.bgrp-card{background:var(--s2);border:1.5px solid var(--bd);border-radius:14px;
+  padding:20px 12px;cursor:pointer;text-align:center;transition:all .15s}
+.bgrp-card:active{border-color:var(--ac);background:rgba(200,241,53,.08)}
+.bgrp-ico{font-size:28px;margin-bottom:8px}
+.bgrp-name{font-size:13px;font-weight:600;color:#ddd}
+/* Card esercizio nel picker (step 4) */
+.bes-pick{background:var(--s2);border:1px solid var(--bd);border-radius:13px;
+  padding:16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all .15s;margin-bottom:8px}
+.bes-pick:active{border-color:var(--ac)}
+.bes-pick-name{font-size:14px;font-weight:500;color:#ddd}
+.bes-pick-arr{font-size:18px;color:var(--mt)}
+/* Preset sezione nel picker (step 1) */
+.bsez-preset{background:var(--s2);border:1px solid var(--bd);border-radius:13px;
+  padding:15px 16px;cursor:pointer;transition:all .15s}
+.bsez-preset:active{border-color:var(--ac)}
+.bsez-preset.sel{border-color:var(--ac);background:rgba(200,241,53,.07)}
+.bsez-preset-name{font-size:15px;font-weight:700;color:#fff;margin-bottom:3px}
+.bsez-preset-desc{font-size:12px;color:#777}
+/* Empty state builder */
+.b0-empty{text-align:center;padding:48px 16px}
+.b0-empty-ico{font-size:46px;margin-bottom:14px}
+.b0-empty-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--dm);margin-bottom:8px}
+.b0-empty-sub{font-size:13px;color:var(--mt);line-height:1.7}
 
 /* ── MODALS ── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:100;
@@ -426,22 +465,156 @@ textarea.fi{resize:none;height:76px}
   </div>
 </div>
 
-<!-- BUILDER SCHEDA -->
+<!-- BUILDER SCHEDA — step-by-step, una schermata alla volta -->
 <div id="builderScreen" class="screen">
-  <div class="builder-hdr">
-    <button onclick="closeBuilder()" style="width:38px;height:38px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);font-size:19px;cursor:pointer;flex-shrink:0;color:#ddd;outline:none">←</button>
-    <div style="flex:1;margin-left:4px">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:2px;color:#fff">COSTRUISCI SCHEDA</div>
-      <div style="font-size:11px;color:#777;margin-top:1px">Aggiungi sezioni ed esercizi</div>
+
+  <!-- Step 0: Panoramica scheda + preview -->
+  <div id="bStep0" class="bstep active">
+    <div class="bstep-hdr">
+      <button onclick="closeBuilder()" class="bback-btn">←</button>
+      <div class="bstep-title">LA MIA SCHEDA</div>
+      <button onclick="saveBuilder()" class="bsave-btn">SALVA</button>
     </div>
-    <button onclick="saveBuilder()" style="background:var(--ac);color:#000;border:none;border-radius:12px;padding:10px 18px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;cursor:pointer;flex-shrink:0;outline:none">SALVA</button>
+    <div class="bstep-body" id="b0Body"></div>
+    <div class="bstep-footer">
+      <button class="btn btn-a" onclick="builderGoStep(1)">+ Aggiungi sezione</button>
+    </div>
   </div>
-  <div class="builder-body" id="builderBody"></div>
-  <div class="builder-footer">
-    <button class="btn-ghost" onclick="showModal('mAddSez')">
-      <span style="font-size:18px">+</span> Aggiungi sezione
-    </button>
+
+  <!-- Step 1: Scegli nome sezione -->
+  <div id="bStep1" class="bstep">
+    <div class="bstep-hdr">
+      <button onclick="builderGoStep(0)" class="bback-btn">←</button>
+      <div class="bstep-title">NUOVA SEZIONE</div>
+      <div></div>
+    </div>
+    <div class="bstep-body">
+      <div class="bstep-hint">Scegli un tipo o scrivi il nome che preferisci.</div>
+      <div id="b1Presets" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
+      <div class="fg">
+        <label class="fl">Oppure scrivi un nome personalizzato</label>
+        <input class="fi" id="b1Custom" placeholder="Es: Scheda A, Braccia, Cardio..." style="font-size:16px;padding:15px">
+      </div>
+    </div>
+    <div class="bstep-footer">
+      <button class="btn btn-a" onclick="builderConfirmSez()">CONTINUA →</button>
+      <button class="btn btn-b" onclick="builderGoStep(0)">Annulla</button>
+    </div>
   </div>
+
+  <!-- Step 2: Lista esercizi sezione corrente -->
+  <div id="bStep2" class="bstep">
+    <div class="bstep-hdr">
+      <button onclick="builderGoStep(0)" class="bback-btn">←</button>
+      <div class="bstep-title" id="b2SezNome">PUSH</div>
+      <div></div>
+    </div>
+    <div class="bstep-body" id="b2Body"></div>
+    <div class="bstep-footer">
+      <button class="btn btn-a" onclick="builderGoStep(3)">+ Aggiungi esercizio</button>
+      <button class="btn btn-b" onclick="builderGoStep(0)">← Torna alla scheda</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Scegli gruppo muscolare -->
+  <div id="bStep3" class="bstep">
+    <div class="bstep-hdr">
+      <button onclick="builderGoStep(2)" class="bback-btn">←</button>
+      <div class="bstep-title">GRUPPO MUSCOLARE</div>
+      <div></div>
+    </div>
+    <div class="bstep-body">
+      <div class="bstep-hint">Quale gruppo vuoi allenare in questo esercizio?</div>
+      <div id="b3Gruppi" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+    </div>
+  </div>
+
+  <!-- Step 4: Scegli esercizio -->
+  <div id="bStep4" class="bstep">
+    <div class="bstep-hdr">
+      <button onclick="builderGoStep(3)" class="bback-btn">←</button>
+      <div class="bstep-title" id="b4Gruppo">PETTO</div>
+      <div></div>
+    </div>
+    <div class="bstep-body">
+      <div class="bstep-hint">Scegli l'esercizio.</div>
+      <div id="b4Lista" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
+
+  <!-- Step 5: Dettagli esercizio (serie, reps, peso, rec) -->
+  <div id="bStep5" class="bstep">
+    <div class="bstep-hdr">
+      <button onclick="builderGoStep(4)" class="bback-btn">←</button>
+      <div class="bstep-title" id="b5EsNome" style="font-size:16px;letter-spacing:1px">ESERCIZIO</div>
+      <div></div>
+    </div>
+    <div class="bstep-body">
+      <div class="bstep-hint" id="b5Gruppo" style="margin-bottom:24px"></div>
+      <div class="r2" style="margin-bottom:14px">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Serie</label>
+          <input class="fi bnum" id="b5S" type="number" inputmode="numeric" placeholder="4">
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Reps</label>
+          <input class="fi bnum" id="b5R" type="number" inputmode="numeric" placeholder="8">
+        </div>
+      </div>
+      <div class="r2" style="margin-bottom:14px">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Peso (kg)</label>
+          <input class="fi bnum" id="b5P" type="number" inputmode="decimal" placeholder="0">
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Recupero (sec)</label>
+          <input class="fi bnum" id="b5Rec" type="number" inputmode="numeric" placeholder="90">
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:8px">💡 Puoi sempre modificare questi valori dalla scheda.</div>
+    </div>
+    <div class="bstep-footer">
+      <button class="btn btn-a" onclick="builderConfirmEs()">AGGIUNGI ESERCIZIO</button>
+      <button class="btn btn-b" onclick="builderGoStep(4)">← Cambia esercizio</button>
+    </div>
+  </div>
+
+  <!-- Step 6: Modifica esercizio esistente -->
+  <div id="bStep6" class="bstep">
+    <div class="bstep-hdr">
+      <button onclick="builderGoStep(2)" class="bback-btn">←</button>
+      <div class="bstep-title" id="b6EsNome" style="font-size:16px;letter-spacing:1px">MODIFICA</div>
+      <div></div>
+    </div>
+    <div class="bstep-body">
+      <div class="bstep-hint" id="b6Gruppo" style="margin-bottom:24px"></div>
+      <div class="r2" style="margin-bottom:14px">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Serie</label>
+          <input class="fi bnum" id="b6S" type="number" inputmode="numeric">
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Reps</label>
+          <input class="fi bnum" id="b6R" type="number" inputmode="numeric">
+        </div>
+      </div>
+      <div class="r2" style="margin-bottom:14px">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Peso (kg)</label>
+          <input class="fi bnum" id="b6P" type="number" inputmode="decimal">
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Recupero (sec)</label>
+          <input class="fi bnum" id="b6Rec" type="number" inputmode="numeric">
+        </div>
+      </div>
+    </div>
+    <div class="bstep-footer">
+      <button class="btn btn-a" onclick="builderConfirmEdit()">SALVA MODIFICHE</button>
+      <button class="btn btn-b" style="color:var(--rd);border-color:rgba(255,59,48,.3)" onclick="builderDeleteEs()">Elimina esercizio</button>
+    </div>
+  </div>
+
 </div>
 
 <!-- ══ MODALS ══ -->
@@ -573,69 +746,6 @@ textarea.fi{resize:none;height:76px}
 </div>
 
 <!-- Builder: aggiungi sezione -->
-<div class="overlay" id="mAddSez">
-  <div class="sheet"><div class="handle"></div>
-    <div class="sh-title">NUOVA SEZIONE</div>
-    <div class="sh-sub">Scegli un preset o scrivi un nome personalizzato.</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px" id="sezPresets"></div>
-    <input class="fi" id="sezNameIn" placeholder="Nome personalizzato..." style="margin-bottom:16px" oninput="clearSezPresets()">
-    <button class="btn btn-a" onclick="confirmAddSez()">CREA SEZIONE</button>
-    <button class="btn btn-b" onclick="closeModal('mAddSez')">Annulla</button>
-  </div>
-</div>
-
-<!-- Builder: step 1 gruppo muscolare -->
-<div class="overlay" id="mAddEs1">
-  <div class="sheet"><div class="handle"></div>
-    <div class="sh-title" id="addEs1Title">AGGIUNGI ESERCIZIO</div>
-    <div class="sh-sub" style="margin-bottom:16px">Scegli il gruppo muscolare</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="gruppoGrid"></div>
-  </div>
-</div>
-
-<!-- Builder: step 2 esercizio -->
-<div class="overlay" id="mAddEs2">
-  <div class="sheet"><div class="handle"></div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px">
-      <button onclick="closeModal('mAddEs2');showModal('mAddEs1')" style="width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);font-size:16px;cursor:pointer;color:#ddd;outline:none">←</button>
-      <div class="sh-title" id="addEs2Title" style="margin-bottom:0">GRUPPO</div>
-    </div>
-    <div class="sh-sub" style="margin-bottom:14px">Scegli l'esercizio</div>
-    <div id="esLista" style="display:flex;flex-direction:column;gap:8px"></div>
-  </div>
-</div>
-
-<!-- Builder: step 3 dettagli -->
-<div class="overlay" id="mAddEs3">
-  <div class="sheet"><div class="handle"></div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <button onclick="closeModal('mAddEs3');showModal('mAddEs2')" style="width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);font-size:16px;cursor:pointer;color:#ddd;outline:none">←</button>
-      <div>
-        <div class="sh-title" id="addEs3Nome" style="margin-bottom:0;font-size:20px">Esercizio</div>
-        <div style="font-size:11px;color:#777;margin-top:2px" id="addEs3Gruppo"></div>
-      </div>
-    </div>
-    <!-- Campi dinamici in base al tipo esercizio -->
-    <div id="addEs3Fields"></div>
-    <button class="btn btn-a" onclick="confirmAddEs()">AGGIUNGI ESERCIZIO</button>
-    <button class="btn btn-b" onclick="closeModal('mAddEs3');showModal('mAddEs2')">← Cambia esercizio</button>
-  </div>
-</div>
-
-<!-- Builder: modifica esercizio -->
-<div class="overlay" id="mEditEs">
-  <div class="sheet"><div class="handle"></div>
-    <div class="sh-title">MODIFICA ESERCIZIO</div>
-    <div style="background:var(--s2);border-radius:10px;padding:10px 13px;margin-bottom:16px">
-      <div style="font-size:15px;font-weight:600;color:#fff" id="editEsNome"></div>
-      <div style="font-size:11px;color:#777;margin-top:2px" id="editEsGruppo"></div>
-    </div>
-    <div id="editEs3Fields"></div>
-    <button class="btn btn-a" onclick="confirmEditEs()">SALVA MODIFICHE</button>
-    <button class="btn btn-b" onclick="closeModal('mEditEs')">Annulla</button>
-  </div>
-</div>
-
 <!-- Eliminazione messaggio -->
 <div class="overlay" id="mDeleteMsg">
   <div class="sheet"><div class="handle"></div>
@@ -738,8 +848,11 @@ let builderData   = { sezioni:[] };
 let builderSezIdx = null;
 let builderGruppo = '';
 let builderEsNome = '';
-let editSi = null;
-let editEi = null;
+// Stato builder (non globale all'app — solo durante la sessione builder)
+let bSezIdx   = null;  // indice sezione corrente
+let bEsIdx    = null;  // indice esercizio in modifica
+let bGruppo   = '';
+let bEsNome   = '';
 
 // Delete messaggio
 let pendingDeleteId = null;
@@ -1499,50 +1612,58 @@ function eseguiRegistraPasto(tipo, contenuto, msgId){
 }
 
 // Registra sessione allenamento in allenamentiLog
+// Sistema unico — sostituisce detectEsalvaProgressioni per evitare duplicazioni
 function eseguiRegistraAllenamento(nome, serie, reps, peso, msgId){
   const data=todayStr();
   if(!allenamentiLog[data]) allenamentiLog[data]={ esercizi:[] };
-  // Aggiorna se esercizio già presente nella sessione odierna
-  const idx=allenamentiLog[data].esercizi.findIndex(e=>e.nome.toLowerCase()===nome.toLowerCase());
-  const entry={ nome, serie, reps, peso, timestamp:Date.now() };
-  if(idx>=0) allenamentiLog[data].esercizi[idx]=entry;
-  else allenamentiLog[data].esercizi.push(entry);
-  // Aggiorna anche storico nell'esercizio della scheda attiva
-  if(schedaAttiva?.sezioni){
-    schedaAttiva.sezioni.forEach(sez=>{
-      sez.esercizi.forEach(es=>{
-        if(es.nome.toLowerCase()===nome.toLowerCase()){
-          if(!es.storico) es.storico=[];
-          es.storico.push({data, peso, reps, serie});
-          // Mantieni solo ultimi 20 log per esercizio
-          if(es.storico.length>20) es.storico=es.storico.slice(-20);
-        }
-      });
-    });
+
+  // Evita duplicati nella stessa sessione (stesso esercizio stesso giorno)
+  const idx=allenamentiLog[data].esercizi.findIndex(e=>
+    e.id===(nome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'')) ||
+    e.nome.toLowerCase()===nome.toLowerCase()
+  );
+  const entry={ id: nome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,''), nome, serie, reps, peso, timestamp:Date.now() };
+  if(idx>=0){
+    allenamentiLog[data].esercizi[idx]=entry;
+    console.log('[FM:Allenamenti] Aggiornato (no duplicato):',nome);
+  } else {
+    allenamentiLog[data].esercizi.push(entry);
+    console.log('[FM:Allenamenti] Registrato:',nome,serie+'x'+reps,'@'+peso+'kg');
   }
+
+  // Aggiorna storico nell'esercizio della scheda attiva — matching robusto con ID
+  const es = findEsercizioInScheda(nome);
+  if(es){
+    if(!es.storico) es.storico=[];
+    // Evita duplicati nello storico (stesso giorno stessa sessione)
+    const giaInStorico = es.storico.find(s=>s.data===data&&s.peso===peso&&s.reps===reps);
+    if(!giaInStorico){
+      es.storico.push({data, peso, reps, serie});
+      if(es.storico.length>20) es.storico=es.storico.slice(-20);
+      console.log('[FM:Storico] Aggiunto a',es.nome,'storico len:',es.storico.length);
+    } else {
+      console.log('[FM:Storico] Duplicato ignorato per',es.nome);
+    }
+  }
+
   appStats.sessions=(appStats.sessions||0)+1;
   refreshStats(); saveAll();
   showToast('✅ Allenamento registrato!');
-  console.log('[FM:Allenamenti] Registrato:',nome,serie+'x'+reps,'@'+peso+'kg');
 }
 
-// Aggiorna peso/reps di un esercizio nella scheda attiva
+// Aggiorna peso/reps di un esercizio nella scheda attiva — matching robusto con ID
 function eseguiUpdateScheda(nome, newPeso, newReps, msgId){
   if(!schedaAttiva?.sezioni){ showToast('⚠️ Nessuna scheda attiva'); return; }
-  let trovato=false;
-  schedaAttiva.sezioni.forEach(sez=>{
-    sez.esercizi.forEach(es=>{
-      if(es.nome.toLowerCase()===nome.toLowerCase()){
-        es.peso=newPeso; es.reps=newReps; trovato=true;
-        console.log('[FM:Scheda] Aggiornato:',nome,'→',newPeso+'kg x'+newReps);
-      }
-    });
-  });
-  if(trovato){
+  const es = findEsercizioInScheda(nome);
+  if(es){
+    const vecchioPeso = es.peso;
+    es.peso=newPeso; es.reps=newReps;
+    console.log('[FM:Scheda] Aggiornato:',es.nome,vecchioPeso+'kg →',newPeso+'kg x'+newReps);
     saveAll(); renderSchedaView();
-    showToast('✅ Scheda aggiornata: '+nome+' → '+newPeso+'kg');
+    showToast('✅ Scheda aggiornata: '+es.nome+' → '+newPeso+'kg');
   } else {
-    showToast('⚠️ Esercizio "'+nome+'" non trovato nella scheda');
+    console.warn('[FM:Scheda] Esercizio non trovato per update:',nome);
+    showToast('⚠️ Esercizio non trovato nella scheda. Verifica il nome.');
   }
 }
 
@@ -1615,8 +1736,8 @@ async function sendMsg(){
     removeTyping();
     if(reply){
       addAiMsg(reply);
-      // Salva progressioni rilevate nel testo utente
-      detectEsalvaProgressioni(text, reply);
+      // Log allenamento e pasti ora gestiti dai tag AI + bottoni conferma
+      // detectEsalvaProgressioni rimossa per evitare duplicazioni con eseguiRegistraAllenamento
     } else {
       addAiMsg('Non ho ricevuto una risposta valida. Riprova tra un secondo.');
     }
@@ -1664,54 +1785,40 @@ function attivaSessione(sez){
   showToast('💪 Sessione '+sez.nome+' avviata!');
 }
 
-// ── Rileva progressioni nel testo e aggiorna storico esercizi ──
+// ── detectEsalvaProgressioni — mantenuta solo per compatibilità sessione attiva ──
+// NON più chiamata da sendMsg. Il log ufficiale avviene tramite eseguiRegistraAllenamento.
+// Usata solo internamente da chiudiSessione per aggiornare il log di sessione.
 function detectEsalvaProgressioni(text, aiReply){
-  if(!schedaAttiva?.sezioni?.length) return;
+  if(!schedaAttiva?.sezioni?.length||!sessioneAttiva) return;
   const s=text.toLowerCase();
 
-  // Pattern: "ho fatto 4x8 a 85" o "4 serie 8 reps 85 chili" o "panca 90kg" etc.
-  // Cerca prima il nome esercizio nel messaggio
   schedaAttiva.sezioni.forEach(sez=>{
     sez.esercizi.forEach(es=>{
-      const nomeKey=es.nome.toLowerCase().split(' ')[0]; // prima parola (es "panca")
-      if(!s.includes(nomeKey)&&!s.includes(es.nome.toLowerCase())) return;
+      // Matching robusto: nome completo o id — mai solo prima parola
+      const nomeMatch = s.includes(es.nome.toLowerCase()) ||
+                        (es.id && s.includes(es.id.replace(/_/g,' ')));
+      if(!nomeMatch) return;
 
-      // Cerca peso
       const pesoMatch=text.match(/(\d{1,3}(?:[.,]\d{1,2})?)\s*(?:kg|chili|kili)/i);
-      // Cerca serie x reps
       const sxrMatch=text.match(/(\d{1,2})\s*[x×]\s*(\d{1,2})/i)||text.match(/(\d)\s*serie.*?(\d{1,2})\s*rep/i);
 
       if(pesoMatch||sxrMatch){
         const newPeso=pesoMatch?parseFloat(pesoMatch[1].replace(',','.')):null;
         const newSerie=sxrMatch?parseInt(sxrMatch[1]):null;
         const newReps=sxrMatch?parseInt(sxrMatch[2]):null;
-
-        // Aggiorna storico
-        if(!es.storico) es.storico=[];
-        const entry={
-          data: todayStr(),
-          peso: newPeso||es.peso||0,
-          reps: newReps||es.reps||0,
-          serie: newSerie||es.serie||0,
-          note: ''
-        };
-        es.storico.push(entry);
-
-        // Aggiorna peso base se in progressione
-        if(newPeso&&newPeso>=(es.peso||0)){
-          es.peso=newPeso;
-          console.log('[FM:Progressione] '+es.nome+' → '+newPeso+'kg salvato');
-        }
-
-        // Aggiorna sessione attiva log
+        // Aggiorna solo log di sessione — storico reale aggiornato da eseguiRegistraAllenamento
         if(sessioneAttiva){
           const inLog=sessioneAttiva.log.find(l=>l.nome===es.nome);
-          if(!inLog) sessioneAttiva.log.push({nome:es.nome,serie:entry.serie,reps:entry.reps,peso:entry.peso});
+          if(!inLog) sessioneAttiva.log.push({
+            nome:es.nome, id:es.id,
+            serie:newSerie||es.serie||0,
+            reps:newReps||es.reps||0,
+            peso:newPeso||es.peso||0
+          });
         }
       }
     });
   });
-  saveAll();
 }
 
 // ── Fine sessione: salva in allenamentiLog ──
@@ -1818,6 +1925,27 @@ function deleteScheda(){
   console.log('[FM:Scheda] Cancellata');
 }
 
+// ── Trova un esercizio nella scheda per nome o id — matching robusto ──
+// Usa l'id stabile se disponibile, fallback su nome completo normalizzato.
+// MAI usare solo la prima parola del nome.
+function findEsercizioInScheda(nomeInput){
+  if(!schedaAttiva?.sezioni) return null;
+  const nomeNorm = nomeInput.toLowerCase().trim();
+  const idNorm   = nomeNorm.replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  for(const sez of schedaAttiva.sezioni){
+    for(const es of sez.esercizi){
+      // Match per id (prioritario — stabile)
+      if(es.id && es.id === idNorm) return es;
+      // Match per nome completo normalizzato
+      if(es.nome.toLowerCase().trim() === nomeNorm) return es;
+      // Match parziale solo se il nome input è contenuto nel nome esercizio (non viceversa)
+      // Evita falsi positivi: "panca" matcha "panca piana" ma non "panca inclinata" se è diverso
+      if(es.nome.toLowerCase().startsWith(nomeNorm) && nomeNorm.length >= 4) return es;
+    }
+  }
+  return null;
+}
+
 // Chiede all'AI di suggerire una scheda — non la salva automaticamente
 // L'AI suggerisce, l'utente poi usa il builder per crearla ufficialmente
 function askAiScheda(){
@@ -1828,311 +1956,250 @@ function askAiScheda(){
 }
 
 // ══════════════════════════════════════════════════════════════════
-// BUILDER — sistema principale per la scheda
+// BUILDER — step-by-step, una schermata alla volta
+// Nessun modale sovrapposto. Focus singolo per ogni step.
 // ══════════════════════════════════════════════════════════════════
 
-/*
- * Database esercizi ampliato per gruppo muscolare.
- * Struttura: { gruppo: [esercizi...] }
- * "Altro esercizio" sempre in fondo per input manuale.
- */
 const ES_DB={
-  Petto:['Panca piana bilanciere','Panca inclinata manubri','Panca declinata','Croci manubri','Croci ai cavi','Chest press','Pec deck','Dip petto','Pullover','Altro esercizio'],
-  Schiena:['Lat machine presa larga','Lat machine presa stretta','Rematore bilanciere','Rematore manubrio','Rematore cavo basso','Pulley triangolo','Trazioni pronazione','Trazioni supinazione','Face pull','Stacco da terra','Stacco rumeno','Altro esercizio'],
-  Gambe:['Squat bilanciere','Squat goblet','Leg press','Affondi camminati','Affondi bulgari','Leg extension','Leg curl sdraiato','Leg curl seduto','Calf raise in piedi','Calf raise seduto','Hip thrust','Good morning','Altro esercizio'],
-  Spalle:['Military press bilanciere','Military press manubri','Arnold press','Alzate laterali manubri','Alzate laterali cavo','Alzate frontali','Alzate posteriori','Face pull spalle','Tirate al mento','Shrug','Altro esercizio'],
-  Braccia:['Curl bilanciere','Curl manubri alternati','Curl concentrato','Curl cavo basso','Curl martello','Push-down cavo','French press','Dip tricipiti','Estensione overhead','Kickback','Altro esercizio'],
-  Addome:['Crunch classico','Crunch inverso','Plank','Side plank','Leg raise','Russian twist','Ab wheel','Cable crunch','Mountain climber','Hollow body','Altro esercizio'],
-  Cardio:['Tapis roulant','Cyclette','Ellittica','Vogatore','Salto con la corda','Stepper','HIIT intervalli','Camminata veloce','Altro esercizio']
+  Petto:   ['Panca piana bilanciere','Panca inclinata manubri','Panca declinata','Croci manubri','Croci ai cavi','Chest press','Pec deck','Dip petto','Pullover','Altro esercizio'],
+  Schiena: ['Lat machine presa larga','Lat machine presa stretta','Rematore bilanciere','Rematore manubrio','Pulley triangolo','Trazioni pronazione','Trazioni supinazione','Face pull','Stacco da terra','Stacco rumeno','Altro esercizio'],
+  Gambe:   ['Squat bilanciere','Leg press','Affondi camminati','Affondi bulgari','Leg extension','Leg curl sdraiato','Calf raise in piedi','Hip thrust','Romanian deadlift','Altro esercizio'],
+  Spalle:  ['Military press bilanciere','Military press manubri','Arnold press','Alzate laterali manubri','Alzate laterali cavo','Alzate frontali','Alzate posteriori','Tirate al mento','Shrug','Altro esercizio'],
+  Braccia: ['Curl bilanciere','Curl manubri alternati','Curl concentrato','Curl martello','Push-down cavo','French press','Dip tricipiti','Estensione overhead','Kickback','Altro esercizio'],
+  Addome:  ['Crunch classico','Crunch inverso','Plank','Side plank','Leg raise','Russian twist','Ab wheel','Mountain climber','Hollow body','Altro esercizio'],
+  Cardio:  ['Tapis roulant','Cyclette','Ellittica','Vogatore','Salto con la corda','HIIT intervalli','Camminata veloce','Altro esercizio']
 };
 
-/*
- * Sezioni predefinite con nome leggibile e descrizione gruppi coinvolti.
- * Rende il builder intuitivo anche per chi non conosce i termini tecnici.
- */
 const SEZ_PRESETS=[
-  {nome:'Push',    desc:'Petto · Spalle · Tricipiti'},
-  {nome:'Pull',    desc:'Schiena · Bicipiti'},
-  {nome:'Legs',    desc:'Gambe · Glutei · Polpacci'},
-  {nome:'Upper',   desc:'Parte superiore'},
-  {nome:'Lower',   desc:'Parte inferiore'},
+  {nome:'Push',     desc:'Petto · Spalle · Tricipiti'},
+  {nome:'Pull',     desc:'Schiena · Bicipiti'},
+  {nome:'Legs',     desc:'Gambe · Glutei · Polpacci'},
+  {nome:'Upper',    desc:'Parte superiore del corpo'},
+  {nome:'Lower',    desc:'Parte inferiore del corpo'},
   {nome:'Full Body',desc:'Corpo intero'},
-  {nome:'Scheda A',desc:'Prima sessione'},
-  {nome:'Scheda B',desc:'Seconda sessione'},
-  {nome:'Scheda C',desc:'Terza sessione'},
+  {nome:'Scheda A', desc:'Prima sessione settimanale'},
+  {nome:'Scheda B', desc:'Seconda sessione settimanale'},
+  {nome:'Scheda C', desc:'Terza sessione settimanale'},
 ];
 
 const GRUPPI=[
-  {n:'Petto',   e:'🫀'}, {n:'Schiena', e:'🏋️'},
-  {n:'Gambe',   e:'🦵'}, {n:'Spalle',  e:'🎯'},
-  {n:'Braccia', e:'💪'}, {n:'Addome',  e:'⬛'},
-  {n:'Cardio',  e:'❤️'}
+  {n:'Petto',  e:'🫀'},{n:'Schiena',e:'🏋️'},
+  {n:'Gambe',  e:'🦵'},{n:'Spalle', e:'🎯'},
+  {n:'Braccia',e:'💪'},{n:'Addome', e:'⬛'},
+  {n:'Cardio', e:'❤️'}
 ];
 
-function openBuilder(){
-  closeModal('mSchedaChoice');
-  // Se scheda già esistente: vai diretto al builder per modificarla
-  if(schedaAttiva?.sezioni?.length){
-    openBuilderDiretto();
-    return;
-  }
-  // Prima volta: mostra selettore tipo scheda
-  showModal('mBuilderTipo');
+// ── Navigazione step ──
+function builderGoStep(n){
+  document.querySelectorAll('.bstep').forEach(s=>s.classList.remove('active'));
+  document.getElementById('bStep'+n).classList.add('active');
+  // Render contestuale al step
+  if(n===0) b0Render();
+  if(n===1) b1Render();
+  if(n===2) b2Render();
+  if(n===3) b3Render();
+  console.log('[FM:Builder] Step →',n);
 }
 
-function openBuilderDiretto(){
-  closeModal('mBuilderTipo');
-  closeModal('mBuilderPersonalizzata');
+// ── Step 0: panoramica scheda ──
+function b0Render(){
+  const body=document.getElementById('b0Body');
+  if(builderData.sezioni.length===0){
+    body.innerHTML=`<div class="b0-empty">
+      <div class="b0-empty-ico">📋</div>
+      <div class="b0-empty-title">NESSUNA SEZIONE</div>
+      <div class="b0-empty-sub">Tocca "+ Aggiungi sezione" per iniziare.<br>Puoi creare Push/Pull/Legs, Scheda A/B o un nome personalizzato.</div>
+    </div>`;
+    return;
+  }
+  body.innerHTML = builderData.sezioni.map((sez,si)=>{
+    const count=sez.esercizi.length;
+    const preset=SEZ_PRESETS.find(p=>p.nome===sez.nome);
+    return `<div class="bsez-card" onclick="bSezIdx=${si};builderGoStep(2)">
+      <div class="bsez-card-top">
+        <div class="bsez-card-name">${esc(sez.nome)}</div>
+        <div class="bsez-card-count">${count} esercizi ›</div>
+      </div>
+      <div class="bsez-card-desc">${preset?preset.desc:sez.esercizi.map(e=>e.nome).join(', ')||'Tocca per aggiungere esercizi'}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Step 1: scegli nome sezione ──
+function b1Render(){
+  document.getElementById('b1Custom').value='';
+  document.getElementById('b1Presets').innerHTML=SEZ_PRESETS.map(p=>`
+    <div class="bsez-preset" id="bp_${p.nome.replace(/ /g,'_')}" onclick="b1Pick('${p.nome}')">
+      <div class="bsez-preset-name">${p.nome}</div>
+      <div class="bsez-preset-desc">${p.desc}</div>
+    </div>`).join('');
+}
+
+function b1Pick(nome){
+  document.querySelectorAll('.bsez-preset').forEach(c=>c.classList.remove('sel'));
+  const el=document.getElementById('bp_'+nome.replace(/ /g,'_'));
+  if(el) el.classList.add('sel');
+  document.getElementById('b1Custom').value=nome;
+}
+
+function builderConfirmSez(){
+  const nome=(document.getElementById('b1Custom').value||'').trim();
+  if(!nome){ showToast('Inserisci un nome per la sezione'); return; }
+  builderData.sezioni.push({nome, esercizi:[]});
+  bSezIdx=builderData.sezioni.length-1;
+  console.log('[FM:Builder] Sezione aggiunta:',nome);
+  builderGoStep(2);
+}
+
+// ── Step 2: lista esercizi sezione ──
+function b2Render(){
+  const sez=builderData.sezioni[bSezIdx];
+  if(!sez) return;
+  document.getElementById('b2SezNome').textContent=sez.nome;
+  const body=document.getElementById('b2Body');
+  if(sez.esercizi.length===0){
+    body.innerHTML=`<div style="text-align:center;padding:40px 16px;color:var(--mt)">
+      <div style="font-size:36px;margin-bottom:12px">🏋️</div>
+      <div style="font-size:14px;line-height:1.7">Nessun esercizio ancora.<br>Tocca "+ Aggiungi esercizio" per iniziare.</div>
+    </div>
+    <button class="btn btn-b" style="margin-top:8px;color:var(--rd);border-color:rgba(255,59,48,.25)" onclick="b0DeleteSez()">Elimina questa sezione</button>`;
+    return;
+  }
+  body.innerHTML = sez.esercizi.map((es,ei)=>`
+    <div class="bes-row" onclick="bSezIdx=${bSezIdx};bEsIdx=${ei};builderGoStep(6)">
+      <div class="bes-row-info">
+        <div class="bes-row-name">${esc(es.nome)}</div>
+        <div class="bes-row-det">${es.serie}×${es.reps}${es.peso?' · '+es.peso+'kg':''}</div>
+      </div>
+      <div class="bes-row-arr">›</div>
+    </div>`).join('')+
+    `<button class="btn btn-b" style="margin-top:16px;color:var(--rd);border-color:rgba(255,59,48,.25)" onclick="b0DeleteSez()">Elimina sezione "${esc(sez.nome)}"</button>`;
+}
+
+function b0DeleteSez(){
+  if(!confirm('Eliminare la sezione "'+builderData.sezioni[bSezIdx].nome+'" con tutti i suoi esercizi?')) return;
+  builderData.sezioni.splice(bSezIdx,1);
+  bSezIdx=null;
+  builderGoStep(0);
+}
+
+// ── Step 3: scegli gruppo muscolare ──
+function b3Render(){
+  document.getElementById('b3Gruppi').innerHTML=GRUPPI.map(g=>`
+    <div class="bgrp-card" onclick="bGruppo='${g.n}';builderGoStep(4)">
+      <div class="bgrp-ico">${g.e}</div>
+      <div class="bgrp-name">${g.n}</div>
+    </div>`).join('');
+}
+
+// ── Step 4: scegli esercizio ──
+function builderGoStep4Render(){
+  document.getElementById('b4Gruppo').textContent=bGruppo;
+  document.getElementById('b4Lista').innerHTML=(ES_DB[bGruppo]||[]).map(es=>`
+    <div class="bes-pick" onclick="b4Pick('${esc(es)}')">
+      <span class="bes-pick-name">${esc(es)}</span>
+      <span class="bes-pick-arr">›</span>
+    </div>`).join('');
+}
+
+function b4Pick(nome){
+  if(nome==='Altro esercizio'){
+    const c=prompt('Nome esercizio personalizzato:');
+    if(!c?.trim()) return;
+    bEsNome=c.trim();
+  } else {
+    bEsNome=nome;
+  }
+  document.getElementById('b5EsNome').textContent=bEsNome;
+  document.getElementById('b5Gruppo').textContent=bGruppo;
+  document.getElementById('b5S').value='';
+  document.getElementById('b5R').value='';
+  document.getElementById('b5P').value='';
+  document.getElementById('b5Rec').value='90';
+  builderGoStep(5);
+}
+
+// ── Step 5: dettagli esercizio (aggiunta) ──
+function builderConfirmEs(){
+  const serie=parseInt(document.getElementById('b5S').value)||4;
+  const reps =parseInt(document.getElementById('b5R').value)||8;
+  const peso =parseFloat(document.getElementById('b5P').value)||0;
+  const rec  =parseInt(document.getElementById('b5Rec').value)||90;
+  const id   =bEsNome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  builderData.sezioni[bSezIdx].esercizi.push({id,gruppo:bGruppo,nome:bEsNome,serie,reps,peso,recupero:rec,storico:[]});
+  console.log('[FM:Builder] Aggiunto:',bEsNome,serie+'x'+reps,'@'+peso+'kg');
+  showToast('✅ '+bEsNome+' aggiunto');
+  builderGoStep(2);
+}
+
+// ── Step 6: modifica esercizio esistente ──
+function builderGoStep6Render(){
+  const es=builderData.sezioni[bSezIdx]?.esercizi[bEsIdx];
+  if(!es) return;
+  document.getElementById('b6EsNome').textContent=es.nome;
+  document.getElementById('b6Gruppo').textContent=es.gruppo||'';
+  document.getElementById('b6S').value=es.serie;
+  document.getElementById('b6R').value=es.reps;
+  document.getElementById('b6P').value=es.peso||'';
+  document.getElementById('b6Rec').value=es.recupero||90;
+}
+
+function builderConfirmEdit(){
+  const es=builderData.sezioni[bSezIdx].esercizi[bEsIdx];
+  es.serie   =parseInt(document.getElementById('b6S').value)||es.serie;
+  es.reps    =parseInt(document.getElementById('b6R').value)||es.reps;
+  es.peso    =parseFloat(document.getElementById('b6P').value)||0;
+  es.recupero=parseInt(document.getElementById('b6Rec').value)||90;
+  console.log('[FM:Builder] Modificato:',es.nome);
+  builderGoStep(2);
+}
+
+function builderDeleteEs(){
+  const es=builderData.sezioni[bSezIdx].esercizi[bEsIdx];
+  if(!confirm('Eliminare "'+es.nome+'"?')) return;
+  builderData.sezioni[bSezIdx].esercizi.splice(bEsIdx,1);
+  bEsIdx=null;
+  builderGoStep(2);
+}
+
+// Aggancio render al cambio step — Step 4 e 6 richiedono render esplicito
+const _origBuilderGoStep=builderGoStep;
+function builderGoStep(n){
+  document.querySelectorAll('.bstep').forEach(s=>s.classList.remove('active'));
+  document.getElementById('bStep'+n).classList.add('active');
+  if(n===0) b0Render();
+  else if(n===1) b1Render();
+  else if(n===2) b2Render();
+  else if(n===3) b3Render();
+  else if(n===4) builderGoStep4Render();
+  else if(n===6) builderGoStep6Render();
+  console.log('[FM:Builder] Step →',n);
+}
+
+// ── Apri / Chiudi / Salva ──
+function openBuilder(){
+  closeModal('mSchedaChoice');
   builderData=schedaAttiva?JSON.parse(JSON.stringify(schedaAttiva)):{origine:'utente',sezioni:[]};
-  renderBuilder();
+  bSezIdx=null; bEsIdx=null; bGruppo=''; bEsNome='';
   document.getElementById('builderScreen').classList.add('active');
+  builderGoStep(0);
   console.log('[FM:Builder] Aperto. Sezioni:',builderData.sezioni.length);
 }
 
-function applicaTipoScheda(tipo){
-  closeModal('mBuilderTipo');
-  const tipi={
-    ppl:[{nome:'Push',desc:'Petto · Spalle · Tricipiti'},{nome:'Pull',desc:'Schiena · Bicipiti'},{nome:'Legs',desc:'Gambe · Glutei · Polpacci'}],
-    ul:[{nome:'Upper',desc:'Parte superiore'},{nome:'Lower',desc:'Parte inferiore'}],
-    fb:[{nome:'Full Body',desc:'Corpo intero'}]
-  };
-  const sezioni=tipi[tipo];
-  builderData={origine:'utente',sezioni:sezioni.map(s=>({nome:s.nome,esercizi:[]}))};
-  renderBuilder();
-  document.getElementById('builderScreen').classList.add('active');
-  showToast('✅ Struttura creata! Aggiungi gli esercizi.');
-  console.log('[FM:Builder] Tipo',tipo,'applicato:',sezioni.length,'sezioni');
+function closeBuilder(){
+  document.getElementById('builderScreen').classList.remove('active');
 }
-
-function applicaTipoPersonalizzata(n){
-  closeModal('mBuilderPersonalizzata');
-  const lettere=['A','B','C','D','E'];
-  builderData={origine:'utente',sezioni:Array.from({length:n},(_,i)=>({nome:'Scheda '+lettere[i],esercizi:[]}))};
-  renderBuilder();
-  document.getElementById('builderScreen').classList.add('active');
-  showToast('✅ '+n+' sezioni create! Aggiungi gli esercizi.');
-  console.log('[FM:Builder] Personalizzata:',n,'sezioni');
-}
-
-function closeBuilder(){ document.getElementById('builderScreen').classList.remove('active'); }
 
 function saveBuilder(){
   if(builderData.sezioni.length===0){ showToast('⚠️ Aggiungi almeno una sezione'); return; }
   if(builderData.sezioni.every(s=>s.esercizi.length===0)){ showToast('⚠️ Aggiungi almeno un esercizio'); return; }
-  schedaAttiva={...builderData,origine:'utente'};
+  schedaAttiva={...builderData, origine:'utente'};
   normalizeExerciseIds(schedaAttiva);
   saveAll(); closeBuilder(); renderSchedaView();
   showToast('✅ Scheda salvata!');
-  console.log('[FM:Builder] Salvato:',schedaAttiva.sezioni.length,'sezioni');
+  console.log('[FM:Builder] Salvato:',schedaAttiva.sezioni.length,'sezioni',
+    schedaAttiva.sezioni.reduce((a,s)=>a+s.esercizi.length,0),'esercizi');
 }
-
-function renderBuilder(){
-  const body=document.getElementById('builderBody');
-  if(builderData.sezioni.length===0){
-    body.innerHTML=`<div style="text-align:center;padding:44px 16px"><div style="font-size:42px;margin-bottom:14px">📋</div><div style="font-size:15px;font-weight:600;color:#ddd;margin-bottom:8px">Nessuna sezione ancora</div><div style="font-size:13px;color:var(--mt);line-height:1.6">Tocca "+ Aggiungi sezione" in basso</div></div>`;
-    return;
-  }
-  let html='';
-  builderData.sezioni.forEach((sez,si)=>{
-    const preset=SEZ_PRESETS.find(p=>p.nome===sez.nome);
-    html+=`<div class="bsez"><div class="bsez-hdr"><div><div class="bsez-name">${esc(sez.nome)}</div>${preset?`<div class="bsez-desc">${preset.desc}</div>`:''}</div><button class="btn-sm btn-sm-a" onclick="startAddEs(${si})" style="font-size:13px;padding:8px 14px">+ Esercizio</button><button class="btn-sm btn-sm-b" onclick="removeSez(${si})" style="padding:8px 12px">✕</button></div>`;
-    if(sez.esercizi.length===0) html+=`<div class="builder-empty">Tocca "+ Esercizio" per aggiungere</div>`;
-    else sez.esercizi.forEach((es,ei)=>{
-      const det=esDettaglio(es);
-      const tipo=es.tipo||getTipoEs(es.nome,es.gruppo||'');
-      const recStr=(tipo!=='cardio'&&es.recupero)?`<div class="bes-rec">rec. ${es.recupero}s</div>`:'';
-      html+=`<div class="bes-card"><div class="bes-info"><div class="bes-name">${esc(es.nome)}</div><div class="bes-det">${det}</div>${recStr}</div><div class="bes-actions"><button class="bes-btn" onclick="openEditEs(${si},${ei})">✏️</button><button class="bes-btn" onclick="removeEs(${si},${ei})">🗑️</button></div></div>`;
-    });
-    html+=`</div>`;
-  });
-  body.innerHTML=html;
-}
-
-function esDettaglio(es){
-  const tipo=es.tipo||getTipoEs(es.nome,es.gruppo||'');
-  if(tipo==='cardio'){
-    const parts=[];
-    if(es.minuti) parts.push(es.minuti+'min');
-    if(es.km) parts.push(es.km+'km');
-    if(es.velocita) parts.push(es.velocita+'km/h');
-    if(es.pendenza) parts.push('pendenza '+es.pendenza+'%');
-    return parts.length?parts.join(' · '):'nessun parametro';
-  }
-  if(tipo==='bodyweight'){
-    return `${es.serie||'?'}×${es.reps||'?'}${es.reps>=30?' sec':' reps'}`;
-  }
-  return `${es.serie||'?'}×${es.reps||'?'}${es.peso?' · '+es.peso+'kg':''}`;
-}
-function openAddSez(){
-  const el=document.getElementById('sezPresets');
-  el.innerHTML=SEZ_PRESETS.map(p=>`<div class="chip" id="sp_${p.nome.replace(/ /g,'_')}" onclick="pickSezPreset('${p.nome}','${p.desc}')">${p.nome}<br><small style="font-size:9px;opacity:.7">${p.desc}</small></div>`).join('');
-  document.getElementById('sezNameIn').value='';
-  showModal('mAddSez');
-}
-
-function pickSezPreset(nome,desc){
-  document.querySelectorAll('#sezPresets .chip').forEach(c=>c.classList.remove('sel'));
-  document.getElementById('sp_'+nome.replace(/ /g,'_')).classList.add('sel');
-  document.getElementById('sezNameIn').value=nome;
-}
-
-function clearSezPresets(){ document.querySelectorAll('#sezPresets .chip').forEach(c=>c.classList.remove('sel')); }
-
-function confirmAddSez(){
-  const nome=document.getElementById('sezNameIn').value.trim();
-  if(!nome){ showToast('Inserisci un nome'); return; }
-  builderData.sezioni.push({nome,esercizi:[]});
-  closeModal('mAddSez'); renderBuilder();
-  console.log('[FM:Builder] Sezione aggiunta:',nome);
-}
-
-function removeSez(si){ if(!confirm(`Rimuovere "${builderData.sezioni[si].nome}"?`)) return; builderData.sezioni.splice(si,1); renderBuilder(); }
-
-function startAddEs(si){
-  builderSezIdx=si; builderGruppo=''; builderEsNome='';
-  document.getElementById('addEs1Title').textContent='AGGIUNGI — '+builderData.sezioni[si].nome.toUpperCase();
-  document.getElementById('gruppoGrid').innerHTML=GRUPPI.map(g=>`<div onclick="pickGruppo('${g.n}')" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:14px 11px;cursor:pointer;text-align:center"><div style="font-size:22px;margin-bottom:6px">${g.e}</div><div style="font-size:13px;font-weight:600;color:#ddd">${g.n}</div></div>`).join('');
-  showModal('mAddEs1');
-}
-
-function pickGruppo(g){
-  builderGruppo=g; closeModal('mAddEs1');
-  document.getElementById('addEs2Title').textContent=g.toUpperCase();
-  document.getElementById('esLista').innerHTML=(ES_DB[g]||[]).map(es=>`<div onclick="pickEsercizio('${esc(es)}')" style="background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:13px 15px;cursor:pointer;display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;font-weight:500;color:#ddd">${esc(es)}</span><span style="color:var(--mt);font-size:17px">›</span></div>`).join('');
-  showModal('mAddEs2');
-}
-
-// ── Classificazione tipo esercizio ──
-// 'cardio'    → minuti, km, velocità, pendenza
-// 'bodyweight'→ serie, reps (o secondi), no peso
-// 'weighted'  → serie, reps, kg, recupero (default)
-
-const ES_TIPO = {
-  cardio: ['Tapis roulant','Cyclette','Ellittica','Vogatore','Salto con la corda','Stepper','HIIT intervalli','Camminata veloce'],
-  bodyweight: ['Trazioni pronazione','Trazioni supinazione','Dip petto','Dip tricipiti','Plank','Side plank','Hollow body','Mountain climber','Push-up','Crunch classico','Crunch inverso','Leg raise','Russian twist','Ab wheel','Cable crunch'],
-};
-
-function getTipoEs(nome, gruppo){
-  if(gruppo==='Cardio') return 'cardio';
-  if(ES_TIPO.cardio.includes(nome)) return 'cardio';
-  if(ES_TIPO.bodyweight.includes(nome)) return 'bodyweight';
-  if(gruppo==='Addome') return 'bodyweight';
-  return 'weighted';
-}
-
-const fi='width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:13px 15px;color:var(--tx);font-family:"DM Sans",sans-serif;font-size:18px;outline:none;-webkit-appearance:none;text-align:center;';
-
-function renderEsFields(tipo, vals, prefix){
-  if(tipo==='cardio'){
-    return `
-    <div class="info-box" style="margin-bottom:14px">🏃 Esercizio cardio — inserisci i parametri che usi.</div>
-    <div class="r2" style="margin-bottom:10px">
-      <div class="fg" style="margin-bottom:0"><label class="fl">Minuti</label><input style="${fi}" id="${prefix}Min" type="number" inputmode="numeric" placeholder="30" value="${vals.minuti||''}"></div>
-      <div class="fg" style="margin-bottom:0"><label class="fl">Km (opz.)</label><input style="${fi}" id="${prefix}Km" type="number" inputmode="decimal" step="0.1" placeholder="5" value="${vals.km||''}"></div>
-    </div>
-    <div class="r2" style="margin-bottom:20px">
-      <div class="fg" style="margin-bottom:0"><label class="fl">Velocità (km/h)</label><input style="${fi}" id="${prefix}Vel" type="number" inputmode="decimal" step="0.5" placeholder="8" value="${vals.velocita||''}"></div>
-      <div class="fg" style="margin-bottom:0"><label class="fl">Pendenza (%)</label><input style="${fi}" id="${prefix}Pend" type="number" inputmode="decimal" step="0.5" placeholder="0" value="${vals.pendenza||''}"></div>
-    </div>`;
-  }
-  if(tipo==='bodyweight'){
-    return `
-    <div class="info-box" style="margin-bottom:14px">🤸 Corpo libero — nessun peso da inserire.</div>
-    <div class="r2" style="margin-bottom:10px">
-      <div class="fg" style="margin-bottom:0"><label class="fl">Serie</label><input style="${fi}" id="${prefix}S" type="number" inputmode="numeric" placeholder="3" value="${vals.serie||''}"></div>
-      <div class="fg" style="margin-bottom:0"><label class="fl">Reps / Sec</label><input style="${fi}" id="${prefix}R" type="number" inputmode="numeric" placeholder="10" value="${vals.reps||''}"></div>
-    </div>
-    <div style="margin-bottom:20px">
-      <div class="fg" style="margin-bottom:0"><label class="fl">Recupero (sec)</label><input style="${fi}" id="${prefix}Rec" type="number" inputmode="numeric" placeholder="60" value="${vals.recupero||60}"></div>
-    </div>`;
-  }
-  // weighted (default)
-  return `
-    <div class="r2" style="margin-bottom:10px">
-      <div class="fg" style="margin-bottom:0"><label class="fl">Serie</label><input style="${fi}" id="${prefix}S" type="number" inputmode="numeric" placeholder="4" value="${vals.serie||''}"></div>
-      <div class="fg" style="margin-bottom:0"><label class="fl">Reps</label><input style="${fi}" id="${prefix}R" type="number" inputmode="numeric" placeholder="8" value="${vals.reps||''}"></div>
-    </div>
-    <div class="r2" style="margin-bottom:20px">
-      <div class="fg" style="margin-bottom:0"><label class="fl">Peso (kg)</label><input style="${fi}" id="${prefix}P" type="number" inputmode="decimal" placeholder="0" value="${vals.peso||''}"></div>
-      <div class="fg" style="margin-bottom:0"><label class="fl">Rec. (sec)</label><input style="${fi}" id="${prefix}Rec" type="number" inputmode="numeric" placeholder="90" value="${vals.recupero||90}"></div>
-    </div>`;
-}
-
-function leggiCampiEs(tipo, prefix){
-  const g=id=>document.getElementById(id);
-  if(tipo==='cardio'){
-    return {
-      tipo:'cardio',
-      minuti: parseInt(g(prefix+'Min')?.value)||0,
-      km: parseFloat(g(prefix+'Km')?.value)||0,
-      velocita: parseFloat(g(prefix+'Vel')?.value)||0,
-      pendenza: parseFloat(g(prefix+'Pend')?.value)||0,
-      serie:1, reps:0, peso:0, recupero:0
-    };
-  }
-  if(tipo==='bodyweight'){
-    return {
-      tipo:'bodyweight',
-      serie: parseInt(g(prefix+'S')?.value)||3,
-      reps: parseInt(g(prefix+'R')?.value)||10,
-      peso:0,
-      recupero: parseInt(g(prefix+'Rec')?.value)||60
-    };
-  }
-  return {
-    tipo:'weighted',
-    serie: parseInt(g(prefix+'S')?.value)||4,
-    reps: parseInt(g(prefix+'R')?.value)||8,
-    peso: parseFloat(g(prefix+'P')?.value)||0,
-    recupero: parseInt(g(prefix+'Rec')?.value)||90
-  };
-}
-
-function pickEsercizio(nome){
-  if(nome==='Altro esercizio'){ const c=prompt('Nome esercizio:'); if(!c?.trim()) return; builderEsNome=c.trim(); }
-  else builderEsNome=nome;
-  closeModal('mAddEs2');
-  const tipo=getTipoEs(builderEsNome, builderGruppo);
-  document.getElementById('addEs3Nome').textContent=builderEsNome;
-  document.getElementById('addEs3Gruppo').textContent=builderGruppo;
-  document.getElementById('addEs3Fields').innerHTML=renderEsFields(tipo,{},'es');
-  document.getElementById('mAddEs3').dataset.tipo=tipo;
-  showModal('mAddEs3');
-}
-
-function confirmAddEs(){
-  const tipo=document.getElementById('mAddEs3').dataset.tipo||'weighted';
-  const vals=leggiCampiEs(tipo,'es');
-  const id=builderEsNome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
-  builderData.sezioni[builderSezIdx].esercizi.push({
-    id, gruppo:builderGruppo, nome:builderEsNome, storico:[], ...vals
-  });
-  closeModal('mAddEs3'); renderBuilder();
-  console.log('[FM:Builder] Aggiunto:',builderEsNome,'tipo:',tipo);
-}
-
-function removeEs(si,ei){ builderData.sezioni[si].esercizi.splice(ei,1); renderBuilder(); }
-
-function openEditEs(si,ei){
-  editSi=si; editEi=ei;
-  const es=builderData.sezioni[si].esercizi[ei];
-  const tipo=es.tipo||getTipoEs(es.nome,es.gruppo||'');
-  document.getElementById('editEsNome').textContent=es.nome;
-  document.getElementById('editEsGruppo').textContent=es.gruppo||'';
-  document.getElementById('editEs3Fields').innerHTML=renderEsFields(tipo,es,'edit');
-  document.getElementById('mEditEs').dataset.tipo=tipo;
-  showModal('mEditEs');
-}
-
-function confirmEditEs(){
-  const tipo=document.getElementById('mEditEs').dataset.tipo||'weighted';
-  const vals=leggiCampiEs(tipo,'edit');
-  const es=builderData.sezioni[editSi].esercizi[editEi];
-  Object.assign(es, vals);
-  closeModal('mEditEs'); renderBuilder();
-  console.log('[FM:Builder] Modificato:',es.nome,'tipo:',tipo);
-}
-
 // ══════════════════════════════════════════════════════════════════
 // DIETA
 // ══════════════════════════════════════════════════════════════════
