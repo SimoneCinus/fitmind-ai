@@ -772,8 +772,21 @@ textarea.fi{resize:none;height:76px}
 // ══════════════════════════════════════════════════════════════════
 const PROXY_URL         = 'https://fitmind-proxy.simo-simone.workers.dev/';
 const AI_MODEL          = 'claude-sonnet-4-5';
-const STORAGE_VERSION   = 3;    // v3 = architettura consolidata, scheda unica
 const RECENT_CHAT_LIMIT = 40;   // messaggi inviati all'AI (cronologia visibile intatta)
+
+/*
+ * STORAGE VERSIONING
+ * ─────────────────────────────────────────────────────────────────
+ * Incrementare STORAGE_VERSION ad ogni cambiamento strutturale dei dati.
+ * Aggiungere la migrazione corrispondente in runMigrations().
+ *
+ * v1 — formato originale (nessun id messaggi, scheda piatta)
+ * v2 — id/timestamp messaggi, scheda a sezioni (fm_scheda_v2)
+ * v3 — architettura consolidata, chiavi unificate, builder step-by-step
+ *
+ * Futuro v4 — workout history completo, progressioni AI, evoluzione obiettivo
+ */
+const STORAGE_VERSION = 3;
 
 // ══════════════════════════════════════════════════════════════════
 // STRUTTURE DATI — documentate per evoluzione futura
@@ -861,18 +874,20 @@ let pendingDeleteId = null;
 let obStep = 0;
 
 // ══════════════════════════════════════════════════════════════════
-// STORAGE — chiavi unificate
+// STORAGE — versioning + migrazioni per versione
 // ══════════════════════════════════════════════════════════════════
+
+// Chiavi localStorage v3 (definitive)
 const LS = {
-  user:    'fm_user',
-  chat:    'fm_chat',
-  stats:   'fm_stats',
-  scheda:  'fm_scheda_v2',
-  dieta:   'fm_dieta_v2',
-  alim:    'fm_alim_v2',
-  allenamenti: 'fm_allenamenti_v3',  // workout history (struttura pronta, non ancora usata)
-  firstRun:'fm_first_run',
-  version: 'fm_version'
+  version:     'fm_storage_version',
+  user:        'fm_user',
+  chat:        'fm_chat',
+  stats:       'fm_stats',
+  scheda:      'fm_scheda_v2',
+  dieta:       'fm_dieta_v2',
+  alim:        'fm_alim_v2',
+  allenamenti: 'fm_allenamenti_v3',
+  firstRun:    'fm_first_run'
 };
 
 function saveAll(){
@@ -892,94 +907,150 @@ function saveAll(){
   }
 }
 
+// Parser sicuro — non crasha mai, usa fallback
+function safeParse(raw, fallback){
+  if(!raw) return fallback;
+  try{ return JSON.parse(raw) || fallback; }
+  catch(e){ return fallback; }
+}
+
 function loadAll(){
   try{
     const u = localStorage.getItem(LS.user);
     if(!u) return false;
 
-    const storedVersion = parseInt(localStorage.getItem(LS.version)||'1');
-    console.log('[FM:Storage] Versione trovata:', storedVersion, '→ attuale:', STORAGE_VERSION);
+    // Versione: controlla chiave nuova (v3) e vecchia (v2 usava 'fm_version')
+    const storedVersion = parseInt(
+      localStorage.getItem(LS.version) ||
+      localStorage.getItem('fm_version') ||
+      '1'
+    );
+    console.log('[FM:Storage] Versione trovata:', storedVersion, '→ corrente:', STORAGE_VERSION);
 
-    userData         = JSON.parse(u)||{};
-    chatHistory      = JSON.parse(localStorage.getItem(LS.chat)||'[]');
-    appStats         = JSON.parse(localStorage.getItem(LS.stats)||'{}');
-    dietaAttiva      = JSON.parse(localStorage.getItem(LS.dieta)||'{"origine":null,"target":{}}');
-    alimentazioneLog = JSON.parse(localStorage.getItem(LS.alim)||'{}');
-    allenamentiLog   = JSON.parse(localStorage.getItem(LS.allenamenti)||'{}');
-
-    let needsSave = false;
-
-    // ── MIGRAZIONE CHAT: aggiunge id/timestamp se mancanti ──
-    if(migrateChatMessages()) needsSave = true;
-
-    // ── MIGRAZIONE SCHEDA: unifica tutti i formati → schedaAttiva ──
-    if(migrateScheda()) needsSave = true;
-
-    // ── NORMALIZZA ID ESERCIZI: prepara workout history ──
-    if(schedaAttiva && normalizeExerciseIds(schedaAttiva)) needsSave = true;
+    // Carica dati con parser sicuro
+    userData         = safeParse(localStorage.getItem(LS.user),        {});
+    chatHistory      = safeParse(localStorage.getItem(LS.chat),        []);
+    appStats         = safeParse(localStorage.getItem(LS.stats),       {});
+    dietaAttiva      = safeParse(localStorage.getItem(LS.dieta),       {origine:null,target:{}});
+    alimentazioneLog = safeParse(localStorage.getItem(LS.alim),        {});
+    allenamentiLog   = safeParse(localStorage.getItem(LS.allenamenti), {});
 
     // Normalizza appStats
     if(!appStats.weightHistory) appStats.weightHistory = [];
-    if(!appStats.sessions) appStats.sessions = 0;
+    if(!appStats.sessions)      appStats.sessions = 0;
 
-    if(needsSave || storedVersion < STORAGE_VERSION){
-      console.log('[FM:Migration] Migrazione completata → v'+STORAGE_VERSION);
-      saveAll();
+    // Esegui migrazioni solo se versione inferiore a quella corrente
+    if(storedVersion < STORAGE_VERSION){
+      runMigrations(storedVersion);
+      saveAll(); // riscrive tutto con chiavi e versione corrette
+    } else {
+      // Versione corrente: normalizza silenziosamente
+      if(schedaAttiva) normalizeExerciseIds(schedaAttiva);
     }
 
-    console.log('[FM:Storage] Caricato:', userData.nome||'anonimo');
+    console.log('[FM:Storage] Caricato:', userData.nome||'anonimo',
+      '| chat:', chatHistory.length, 'msg',
+      '| scheda:', schedaAttiva ? (schedaAttiva.sezioni?.length||0)+' sez' : 'nessuna');
     return true;
   } catch(e){
-    console.error('[FM:Storage] Errore caricamento:', e);
+    console.error('[FM:Storage] Errore critico:', e);
     return false;
   }
 }
 
-// ── Migrazione chat: id + timestamp ──
-function migrateChatMessages(){
-  let changed = false;
-  chatHistory = chatHistory.map(m=>{
-    if(!m.id||!m.timestamp){ changed=true; return {...m, id:genMsgId(), timestamp:Date.now()}; }
-    return m;
-  });
-  if(changed) console.log('[FM:Migration] Chat messages → v2.1 (id+timestamp)');
-  return changed;
+// ── Sistema migrazioni — aggiungere un blocco per ogni nuova versione ──
+function runMigrations(fromVersion){
+  console.log('[FM:Migration] Avvio da v'+fromVersion+' → v'+STORAGE_VERSION);
+
+  // Backup in memoria prima di qualsiasi migrazione
+  // Se qualcosa va storto, ripristina i dati originali
+  const backup = {
+    userData:         JSON.parse(JSON.stringify(userData)),
+    chatHistory:      JSON.parse(JSON.stringify(chatHistory)),
+    appStats:         JSON.parse(JSON.stringify(appStats)),
+    schedaAttiva:     schedaAttiva ? JSON.parse(JSON.stringify(schedaAttiva)) : null,
+    dietaAttiva:      JSON.parse(JSON.stringify(dietaAttiva)),
+    alimentazioneLog: JSON.parse(JSON.stringify(alimentazioneLog)),
+    allenamentiLog:   JSON.parse(JSON.stringify(allenamentiLog))
+  };
+
+  try{
+    if(fromVersion < 2) _migrateV1toV2();
+    if(fromVersion < 3) _migrateV2toV3();
+    // Futuro: if(fromVersion < 4) _migrateV3toV4();
+    console.log('[FM:Migration] Completate → v'+STORAGE_VERSION);
+  } catch(e){
+    // Rollback — ripristina dati pre-migrazione
+    console.error('[FM:Migration] ERRORE — rollback ai dati originali:', e);
+    userData         = backup.userData;
+    chatHistory      = backup.chatHistory;
+    appStats         = backup.appStats;
+    schedaAttiva     = backup.schedaAttiva;
+    dietaAttiva      = backup.dietaAttiva;
+    alimentazioneLog = backup.alimentazioneLog;
+    allenamentiLog   = backup.allenamentiLog;
+    showToast('⚠️ Migrazione fallita — dati ripristinati');
+  }
 }
 
-// ── Migrazione scheda: unifica TUTTI i formati legacy in schedaAttiva ──
-// Formati supportati: fm_scheda (testo), fm_scheda_attiva (lista piatta), fm_scheda_v2 (sezioni)
-function migrateScheda(){
-  // 1. Prova il formato corrente v2
-  const raw = localStorage.getItem(LS.scheda);
-  if(raw){
-    const parsed = JSON.parse(raw);
-    if(parsed && parsed.sezioni){
-      schedaAttiva = parsed;
-      return false; // già nel formato corretto
+// v1→v2: aggiunge id/timestamp ai messaggi, converte scheda lista piatta → sezioni
+function _migrateV1toV2(){
+  console.log('[FM:Migration] v1→v2');
+  chatHistory = chatHistory.map(m=>
+    (!m.id||!m.timestamp) ? {...m, id:genMsgId(), timestamp:Date.now()} : m
+  );
+  if(schedaAttiva?.esercizi && !schedaAttiva.sezioni){
+    schedaAttiva = {origine:schedaAttiva.origine||'utente', sezioni:[{nome:'Scheda', esercizi:schedaAttiva.esercizi}]};
+  }
+}
+
+// v2→v3: recupera dati da chiavi legacy, normalizza id esercizi, pulisce chiavi obsolete
+function _migrateV2toV3(){
+  console.log('[FM:Migration] v2→v3');
+
+  // Chat legacy
+  if(!chatHistory.length){
+    for(const k of ['fm_chat_v2','fm_messages']){
+      const r=localStorage.getItem(k);
+      if(r){ chatHistory=safeParse(r,[]); localStorage.removeItem(k); break; }
     }
-    // Lista piatta → sezioni
-    if(parsed && parsed.esercizi && !parsed.sezioni){
-      schedaAttiva = { origine: parsed.origine||'utente', sezioni:[{ nome:'Scheda', esercizi: parsed.esercizi }] };
-      console.log('[FM:Migration] Scheda lista piatta → sezioni');
-      // Rimuovi vecchie chiavi legacy
-      localStorage.removeItem('fm_scheda_attiva');
-      return true;
+  }
+
+  // Scheda legacy
+  if(!schedaAttiva){
+    for(const k of ['fm_scheda_attiva','fm_scheda_v3']){
+      const r=localStorage.getItem(k);
+      if(r){
+        const p=safeParse(r,null);
+        if(p?.sezioni){ schedaAttiva=p; localStorage.removeItem(k); break; }
+        if(p?.esercizi){ schedaAttiva={origine:'utente',sezioni:[{nome:'Scheda',esercizi:p.esercizi}]}; localStorage.removeItem(k); break; }
+      }
+    }
+    localStorage.removeItem('fm_scheda'); // testuale — non recuperabile
+  }
+
+  // Dieta legacy
+  if(!dietaAttiva?.target?.kcal){
+    for(const k of ['fm_dieta_attiva','fm_dieta']){
+      const r=localStorage.getItem(k);
+      if(r){
+        const p=safeParse(r,null);
+        if(p){ dietaAttiva=p.target?p:{origine:'utente',target:p}; localStorage.removeItem(k); break; }
+      }
     }
   }
-  // 2. Prova il vecchio formato fm_scheda_attiva
-  const rawOld = localStorage.getItem('fm_scheda_attiva');
-  if(rawOld){
-    const parsed = JSON.parse(rawOld);
-    if(parsed && parsed.sezioni){ schedaAttiva = parsed; localStorage.removeItem('fm_scheda_attiva'); return true; }
-    if(parsed && parsed.esercizi){ schedaAttiva = { origine:'utente', sezioni:[{nome:'Scheda', esercizi:parsed.esercizi}] }; localStorage.removeItem('fm_scheda_attiva'); return true; }
+
+  // Alimentazione legacy
+  if(!Object.keys(alimentazioneLog).length){
+    const r=localStorage.getItem('fm_alimentazione_log');
+    if(r){ alimentazioneLog=safeParse(r,{}); localStorage.removeItem('fm_alimentazione_log'); }
   }
-  // 3. Formato testuale fm_scheda — scartato, non convertibile in struttura affidabile
-  const rawText = localStorage.getItem('fm_scheda');
-  if(rawText){
-    localStorage.removeItem('fm_scheda');
-    console.log('[FM:Migration] Rimossa scheda testuale legacy (fm_scheda)');
-  }
-  return false;
+
+  // Pulisci chiave versione vecchia
+  localStorage.removeItem('fm_version');
+
+  // Normalizza id esercizi
+  if(schedaAttiva) normalizeExerciseIds(schedaAttiva);
 }
 
 // ── Normalizza id esercizi — stabile per workout history ──
@@ -2232,19 +2303,47 @@ function saveDietaTarget(){
 // ══════════════════════════════════════════════════════════════════
 function confirmReset(){ showModal('mReset1'); }
 function confirmReset2(){ closeModal('mReset1'); setTimeout(()=>showModal('mReset2'),200); }
+
 function execReset(){
   closeModal('mReset2');
-  try{ localStorage.clear(); } catch(e){}
-  userData={};chatHistory=[];appStats={streak:0,sessions:0,lastActive:null,lastWeight:null,weightHistory:[]};
-  schedaAttiva=null;dietaAttiva={origine:null,target:{kcal:null,proteine:null,carbo:null,grassi:null}};
-  alimentazioneLog={};allenamentiLog={};builderData={sezioni:[]};obStep=0;pendingDeleteId=null;
+
+  // ⚠️ MAI usare localStorage.clear() — elimina SOLO le chiavi FitMind
+  // Questo protegge dati di altre app/estensioni sullo stesso dominio
+  const FM_KEYS = [
+    LS.version, LS.user, LS.chat, LS.stats,
+    LS.scheda, LS.dieta, LS.alim, LS.allenamenti, LS.firstRun,
+    // Legacy — rimuovi anche queste per pulizia completa
+    'fm_version','fm_scheda_attiva','fm_scheda','fm_scheda_v3',
+    'fm_dieta_attiva','fm_dieta','fm_alimentazione_log',
+    'fm_chat_v2','fm_messages','fm_first_run'
+  ];
+
+  try{
+    FM_KEYS.forEach(k=>{ try{ localStorage.removeItem(k); } catch(e){} });
+    console.log('[FM:Reset] Rimosse', FM_KEYS.length, 'chiavi localStorage');
+  } catch(e){
+    console.error('[FM:Reset] Errore pulizia localStorage:', e);
+  }
+
+  // Reset stato in memoria
+  userData         = {};
+  chatHistory      = [];
+  appStats         = {streak:0, sessions:0, lastActive:null, lastWeight:null, weightHistory:[]};
+  schedaAttiva     = null;
+  dietaAttiva      = {origine:null, target:{kcal:null,proteine:null,carbo:null,grassi:null}};
+  alimentazioneLog = {};
+  allenamentiLog   = {};
+  builderData      = {sezioni:[]};
+  obStep           = 0;
+  pendingDeleteId  = null;
+
   setTimeout(()=>{
     document.getElementById('app').classList.remove('active');
     document.getElementById('builderScreen').classList.remove('active');
     document.getElementById('chatMsgs').innerHTML=`<div class="msg"><div class="av ai">FM</div><div><div class="bubble">Ciao! Sono pronto 💪</div></div></div>`;
     document.getElementById('onboarding').classList.add('active');
     renderObStep();
-    console.log('[FM] Reset completato');
+    console.log('[FM:Reset] Completato');
   },300);
 }
 
