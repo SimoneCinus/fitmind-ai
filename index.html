@@ -203,7 +203,7 @@ textarea.fi{resize:none;height:76px}
 .bstep{display:none;flex-direction:column;height:100dvh;overflow:hidden;animation:bstepIn .22s ease}
 .bstep.active{display:flex}
 @keyframes bstepIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
-.bstep-hdr{padding:50px 18px 16px;flex-shrink:0;display:flex;align-items:center;
+.bstep-hdr{padding:52px 18px 12px;flex-shrink:0;display:flex;align-items:center;
   justify-content:space-between;border-bottom:1px solid var(--bd)}
 .bback-btn{width:40px;height:40px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);
   font-size:20px;cursor:pointer;color:#ddd;outline:none;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -213,12 +213,12 @@ textarea.fi{resize:none;height:76px}
 .bsave-btn{background:var(--ac);color:#000;border:none;border-radius:10px;
   padding:9px 16px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;cursor:pointer;outline:none}
 .bsave-btn:active{opacity:.8}
-.bstep-body{flex:1;overflow-y:auto;padding:22px 18px 16px;scrollbar-width:none}
+.bstep-body{flex:1;overflow-y:auto;padding:18px 18px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .bstep-body::-webkit-scrollbar{display:none}
-.bstep-hint{font-size:14px;color:#aaa;margin-bottom:22px;line-height:1.6}
-.bstep-footer{padding:14px 18px 30px;flex-shrink:0;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:8px}
+.bstep-hint{font-size:14px;color:#aaa;margin-bottom:18px;line-height:1.6}
+.bstep-footer{padding:10px 18px 24px;flex-shrink:0;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:8px}
 /* Input numerici grandi — ottimizzati per mobile */
-.bnum{font-size:22px;text-align:center;padding:16px;font-family:'JetBrains Mono',monospace;font-weight:600;letter-spacing:1px}
+.bnum{font-size:26px;text-align:center;padding:18px;font-family:'JetBrains Mono',monospace;font-weight:600;letter-spacing:1px}
 /* Card sezione nella preview (step 0) */
 .bsez-card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;
   padding:16px 18px;margin-bottom:12px;cursor:pointer;transition:border-color .15s}
@@ -228,32 +228,32 @@ textarea.fi{resize:none;height:76px}
 .bsez-card-count{font-size:11px;color:var(--mt);letter-spacing:1px}
 .bsez-card-desc{font-size:12px;color:#666}
 /* Riga esercizio nella lista sezione (step 2) */
-.bes-row{background:var(--s2);border:1px solid var(--bd);border-radius:13px;
-  padding:15px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.bes-row{background:var(--s2);border:1px solid var(--bd);border-radius:14px;
+  padding:18px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer}
 .bes-row:active{opacity:.75}
 .bes-row-info{flex:1}
-.bes-row-name{font-size:15px;font-weight:600;color:#fff;margin-bottom:3px}
+.bes-row-name{font-size:16px;font-weight:600;color:#fff;margin-bottom:4px}
 .bes-row-det{font-size:13px;color:var(--ac);font-family:'JetBrains Mono',monospace}
-.bes-row-arr{font-size:20px;color:var(--mt);flex-shrink:0}
+.bes-row-arr{font-size:22px;color:var(--mt);flex-shrink:0}
 /* Card gruppo muscolare (step 3) */
-.bgrp-card{background:var(--s2);border:1.5px solid var(--bd);border-radius:14px;
-  padding:20px 12px;cursor:pointer;text-align:center;transition:all .15s}
+.bgrp-card{background:var(--s2);border:1.5px solid var(--bd);border-radius:16px;
+  padding:24px 12px;cursor:pointer;text-align:center;transition:all .15s}
 .bgrp-card:active{border-color:var(--ac);background:rgba(200,241,53,.08)}
-.bgrp-ico{font-size:28px;margin-bottom:8px}
-.bgrp-name{font-size:13px;font-weight:600;color:#ddd}
+.bgrp-ico{font-size:32px;margin-bottom:10px}
+.bgrp-name{font-size:14px;font-weight:600;color:#ddd}
 /* Card esercizio nel picker (step 4) */
-.bes-pick{background:var(--s2);border:1px solid var(--bd);border-radius:13px;
-  padding:16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all .15s;margin-bottom:8px}
+.bes-pick{background:var(--s2);border:1px solid var(--bd);border-radius:14px;
+  padding:18px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all .15s;margin-bottom:10px}
 .bes-pick:active{border-color:var(--ac)}
-.bes-pick-name{font-size:14px;font-weight:500;color:#ddd}
-.bes-pick-arr{font-size:18px;color:var(--mt)}
+.bes-pick-name{font-size:15px;font-weight:500;color:#ddd}
+.bes-pick-arr{font-size:20px;color:var(--mt)}
 /* Preset sezione nel picker (step 1) */
-.bsez-preset{background:var(--s2);border:1px solid var(--bd);border-radius:13px;
-  padding:15px 16px;cursor:pointer;transition:all .15s}
+.bsez-preset{background:var(--s2);border:1px solid var(--bd);border-radius:14px;
+  padding:18px 16px;cursor:pointer;transition:all .15s}
 .bsez-preset:active{border-color:var(--ac)}
 .bsez-preset.sel{border-color:var(--ac);background:rgba(200,241,53,.07)}
-.bsez-preset-name{font-size:15px;font-weight:700;color:#fff;margin-bottom:3px}
-.bsez-preset-desc{font-size:12px;color:#777}
+.bsez-preset-name{font-size:16px;font-weight:700;color:#fff;margin-bottom:5px}
+.bsez-preset-desc{font-size:13px;color:#777}
 /* Empty state builder */
 .b0-empty{text-align:center;padding:48px 16px}
 .b0-empty-ico{font-size:46px;margin-bottom:14px}
