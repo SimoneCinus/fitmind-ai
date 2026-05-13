@@ -146,6 +146,7 @@ textarea.fi{resize:none;height:76px}
 .ai-btn-pasto{background:rgba(200,241,53,.15);border:1px solid rgba(200,241,53,.4);color:var(--ac)}
 .ai-btn-allenamento{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.4);color:var(--bl)}
 .ai-btn-scheda{background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.4);color:var(--ac2)}
+.ai-btn-save-scheda{background:rgba(200,241,53,.15);border:1px solid rgba(200,241,53,.5);color:var(--ac);font-weight:700}
 .typing-row{display:flex;gap:4px;padding:3px 0}
 .tdot{width:5px;height:5px;background:var(--mt);border-radius:50%;animation:tb 1.2s infinite}
 .tdot:nth-child(2){animation-delay:.2s}.tdot:nth-child(3){animation-delay:.4s}
@@ -199,7 +200,7 @@ textarea.fi{resize:none;height:76px}
 .chart-title{font-size:13px;font-weight:600}.chart-period{font-size:10px;color:var(--mt);letter-spacing:1px}
 
 /* ── BUILDER STEP-BY-STEP ── */
-#builderScreen{background:var(--bg);position:relative}
+#builderScreen{background:var(--bg);position:fixed;inset:0;z-index:50;max-width:480px;margin:0 auto}
 .bstep{display:none;flex-direction:column;height:100dvh;overflow:hidden;animation:bstepIn .22s ease}
 .bstep.active{display:flex}
 @keyframes bstepIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
@@ -768,6 +769,52 @@ textarea.fi{resize:none;height:76px}
 'use strict';
 
 // ══════════════════════════════════════════════════════════════════
+// FITMIND AI v2.2 — Sistema AI stateful con memoria reale
+// ══════════════════════════════════════════════════════════════════
+//
+// ⚠️ TODO ARCHITETTURALI — da affrontare prima della v3
+// ─────────────────────────────────────────────────────────────────
+//
+// 1. MODULARIZZAZIONE (priorità media — quando si supera ~3000 righe)
+//    Il file è monolitico: UI + AI + storage + parser + builder tutto insieme.
+//    Piano futuro:
+//    - fitmind-storage.js   → loadAll, saveAll, migrazioni
+//    - fitmind-ai.js        → buildSystemPrompt, callAI, tag parser
+//    - fitmind-scheda.js    → builder, renderSchedaView, esercizi
+//    - fitmind-alim.js      → alimentazioneLog, savePasto, filtri
+//    - fitmind-ui.js        → chat, scroll, modal, tabs
+//    Richiede: hosting con build step (Vite/Parcel) o GitHub Pages con workflow
+//
+// 2. NLP FRAGILE (priorità bassa — monitorare con i log)
+//    Il filtro falsi positivi è regex-based → fragile su frasi complesse.
+//    Soluzione futura: classificatore leggero lato AI
+//    Trigger: >20% blocchi classificati come 'other_pattern' nei log.
+//
+// 3. PROMPT PESANTEZZA (priorità alta — monitorare ora)
+//    FitMind.promptSize() > 2500 tokens → attivare Layer 2 (summary compresso)
+//    Non aggiungere sezioni al prompt senza rimuoverne altre.
+//
+// 4. CONFLITTI TEMPORALI (priorità futura — prossimo grande tema)
+//    Ora che il sistema ricorda, aggiorna e aggrega, emergeranno:
+//    - Correzione dato vecchio: utente dice "ieri avevo sbagliato il peso"
+//    - Modifica manuale scheda dopo progressione AI confermata
+//    - Allenamento retrodatato: "ieri ho dimenticato di loggare"
+//    - Cambio obiettivo: cosa succede allo storico macro del periodo precedente?
+//    - Rollback scheda: "quella progressione era troppo ottimistica, torna a 80kg"
+//
+//    REGOLA ARCHITETTRALE GIÀ APPLICATA (non violare mai):
+//    ✅ Solo azioni utente confermate cambiano stato
+//    ❌ Il testo AI NON cambia mai stato direttamente
+//    ✅ Se i dati non ci sono → "dati insufficienti", mai inventare
+//    ✅ onboarding ≠ stato attuale (lastWeight > userData.peso)
+//
+//    Piano futuro per conflitti temporali:
+//    - Ogni write allo stato include timestamp
+//    - Stato "pending" per modifiche non ancora confermate
+//    - Possibilità di override manuale con log dell'override
+// ─────────────────────────────────────────────────────────────────
+
+// ══════════════════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════════════════
 const PROXY_URL         = 'https://fitmind-proxy.simo-simone.workers.dev/';
@@ -1166,16 +1213,82 @@ function showToast(msg,dur=3000){
 // CALCOLI NUTRIZIONALI
 // ══════════════════════════════════════════════════════════════════
 function calcTargets(){
-  if(dietaAttiva.target?.proteine) return dietaAttiva.target;
-  const u=userData;
-  const p=parseFloat(u.peso)||80, a=parseFloat(u.altezza)||175, et=parseFloat(u.eta)||30;
-  const male=u.sesso==='M';
-  const bmr=male?(10*p+6.25*a-5*et+5):(10*p+6.25*a-5*et-161);
-  const act={sedentario:1.2,leggero:1.375,moderato:1.55,fisico:1.725}[u.lavoro]||1.375;
-  const trn={2:.1,3:.15,4:.2,5:.25,6:.3}[u.giorni]||.15;
-  const tdee=Math.round(bmr*(act+trn));
-  const pf=u.livello==='avanzato'?2.2:u.livello==='intermedio'?2.0:1.8;
-  return{ kcal:tdee, proteine:Math.round(p*pf), carbo:Math.round((tdee*.45)/4), grassi:Math.round((tdee*.25)/9) };
+  // Se l'utente ha inserito target manuali completi, usa quelli
+  if(dietaAttiva.target?.kcal && dietaAttiva.target?.proteine) return dietaAttiva.target;
+
+  const u = userData;
+  // FONTE DI VERITà PESO: lastWeight (aggiornato in chat) ha priorità su userData.peso (onboarding)
+  const pesoKg = parseFloat(appStats.lastWeight || u.peso) || 80;
+  const altCm  = parseFloat(u.altezza) || 175;
+  const etaAnn = parseFloat(u.eta)     || 30;
+  const male   = u.sesso === 'M';
+
+  // BMR (Mifflin-St Jeor)
+  const bmr = male
+    ? (10*pesoKg + 6.25*altCm - 5*etaAnn + 5)
+    : (10*pesoKg + 6.25*altCm - 5*etaAnn - 161);
+
+  // Moltiplicatore attività + allenamento
+  const actMult = {sedentario:1.2,leggero:1.375,moderato:1.55,fisico:1.725}[u.lavoro] || 1.375;
+  const trnMult = {2:.10,3:.15,4:.20,5:.25,6:.30}[u.giorni] || .15;
+  const tdee = Math.round(bmr * (actMult + trnMult));
+
+  // Massa magra stimata — usata per proteine (più precisa del peso totale)
+  let grassoPerc = parseFloat(u.grasso);
+  if(!grassoPerc || isNaN(grassoPerc)){
+    // Stima % grasso da BMI (formula Deurenberg) se non inserito
+    const bmi = pesoKg / ((altCm/100)**2);
+    grassoPerc = male
+      ? (1.20*bmi + 0.23*etaAnn - 16.2)
+      : (1.20*bmi + 0.23*etaAnn - 5.4);
+    grassoPerc = Math.min(Math.max(grassoPerc, 5), 55);
+  }
+  const massaMagra = pesoKg * (1 - grassoPerc/100);
+
+  let kcal, proteine, carbo, grassi;
+  const ob = u.obiettivo || 'mantenimento';
+
+  if(ob === 'dimagrimento'){
+    // Deficit moderato -500 kcal — sostenibile nel tempo, preserva massa magra
+    kcal     = Math.max(Math.round(tdee - 500), male ? 1500 : 1200);
+    // Proteine sulla massa magra — proteggono il muscolo in deficit
+    proteine = Math.round(massaMagra * 2.2);
+    grassi   = Math.round((kcal * 0.25) / 9);
+    carbo    = Math.round((kcal - (proteine*4) - (grassi*9)) / 4);
+
+  } else if(ob === 'massa'){
+    // Surplus moderato +275 kcal — minimizza accumulo grasso
+    kcal     = Math.round(tdee + 275);
+    proteine = Math.round(pesoKg * 2.0);
+    grassi   = Math.round((kcal * 0.22) / 9);
+    carbo    = Math.round((kcal - (proteine*4) - (grassi*9)) / 4);
+
+  } else if(ob === 'ricomposizione'){
+    // Mantenimento calorico — proteine alte per ricomposizione
+    kcal     = tdee;
+    proteine = Math.round(massaMagra * 2.2);
+    grassi   = Math.round((kcal * 0.25) / 9);
+    carbo    = Math.round((kcal - (proteine*4) - (grassi*9)) / 4);
+
+  } else if(ob === 'forza'){
+    // Lieve surplus +175 kcal — carbo alti per performance
+    kcal     = Math.round(tdee + 175);
+    proteine = Math.round(pesoKg * 1.8);
+    grassi   = Math.round((kcal * 0.22) / 9);
+    carbo    = Math.round((kcal - (proteine*4) - (grassi*9)) / 4);
+
+  } else {
+    // Mantenimento
+    kcal     = tdee;
+    proteine = Math.round(massaMagra * 1.8);
+    grassi   = Math.round((kcal * 0.25) / 9);
+    carbo    = Math.round((kcal - (proteine*4) - (grassi*9)) / 4);
+  }
+
+  // Sanity check — carbo mai negativi, minimo 50g
+  carbo = Math.max(carbo, 50);
+
+  return { kcal, proteine, carbo, grassi };
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1397,31 +1510,35 @@ function buildWeeklySummary(){
 let sessioneAttiva = null; // { sezNome, esercizi:[{nome,serie,reps,peso}], esIdx:0, log:[] }
 
 function buildSchedaCtxCompleto(){
-  if(!schedaAttiva?.sezioni?.length) return 'Nessuna scheda attiva.';
-  return schedaAttiva.sezioni.map(sez=>{
-    const esStr = sez.esercizi.map(e=>{
-      let s = `${e.nome}`;
-      const tipo=e.tipo||getTipoEs(e.nome,e.gruppo||'');
-      if(tipo==='cardio'){
-        if(e.minuti) s+=` ${e.minuti}min`;
-        if(e.km) s+=` ${e.km}km`;
-        if(e.velocita) s+=` @${e.velocita}km/h`;
-        if(e.pendenza) s+=` pendenza${e.pendenza}%`;
-      } else if(tipo==='bodyweight'){
-        s+=` ${e.serie}x${e.reps}`;
-      } else {
-        s+=` ${e.serie}x${e.reps}`;
-        if(e.peso) s+=` @${e.peso}kg`;
-        if(e.recupero) s+=` rec${e.recupero}s`;
-      }
-      if(e.storico?.length){
-        const ult = e.storico.slice(-3);
-        s += ` | storico: ${ult.map(h=>`${h.data||'?'} ${h.peso||'?'}kg×${h.reps||'?'}`).join(', ')}`;
-      }
-      return s;
-    }).join('\n    ');
-    return `[${sez.nome}]\n    ${esStr}`;
-  }).join('\n');
+  try{
+    if(!schedaAttiva?.sezioni?.length) return 'Nessuna scheda attiva.';
+    return schedaAttiva.sezioni.map(sez=>{
+      const esStr = (sez.esercizi||[]).map(e=>{
+        try{
+          let s = `${e.nome||'?'}`;
+          // Tipo esercizio — con fallback sicuro
+          const tipo = (e.tipo || (typeof getTipoEs==='function' ? getTipoEs(e.nome||'',e.gruppo||'') : 'weighted')) || 'weighted';
+          if(tipo==='cardio'){
+            if(e.minuti) s+=` ${e.minuti}min`;
+            if(e.km) s+=` ${e.km}km`;
+          } else {
+            if(e.serie && e.reps) s+=` ${e.serie}x${e.reps}`;
+            if(e.peso) s+=` @${e.peso}kg`;
+            if(e.recupero) s+=` rec${e.recupero}s`;
+          }
+          if(e.storico?.length){
+            const ult = e.storico.slice(-3);
+            s += ` | storico: ${ult.map(h=>`${h.data||'?'} ${h.peso||'?'}kg×${h.reps||'?'}`).join(', ')}`;
+          }
+          return s;
+        } catch(eInner){ return e.nome||'esercizio'; }
+      }).join('\n    ');
+      return `[${sez.nome}]\n    ${esStr}`;
+    }).join('\n');
+  } catch(e){
+    console.error('[FM:Scheda] buildSchedaCtxCompleto crash:', e.message);
+    return 'Scheda presente ma non leggibile.';
+  }
 }
 
 function buildSystemPrompt(){
@@ -1473,11 +1590,16 @@ Escludi esercizi: ${u.escludiex||'nessuno'}
 Obiettivo: ${u.obiettivo||'?'} | Tempistica: ${u.tempistica||'?'}
 Motivazione: ${u.motivazione||'?'}
 
-━━━ METABOLISMO & TARGET NUTRIZIONALI ━━━
-BMR stimato: ~${Math.round(bmr)} kcal | TDEE stimato: ~${tdee} kcal
-TARGET GIORNALIERO: ~${t.kcal||'?'} kcal | Proteine: ~${t.proteine||'?'}g | Carboidrati: ~${t.carbo||'?'}g | Grassi: ~${t.grassi||'?'}g
-${u.obiettivo==='massa'?'STRATEGIA: Surplus +200/300 kcal. Priorità: proteine primo, carbo timing intorno workout, grassi saturi moderati.':u.obiettivo==='dimagrimento'?'STRATEGIA: Deficit -400/500 kcal. Priorità: proteine alte (protezione massa magra), deficit progressivo, refeed settimanale se streak >10gg.':u.obiettivo==='ricomposizione'?'STRATEGIA: Kcal mantenimento. Cycling carbo: più nei giorni workout, meno nei rest day. Proteine costantemente alte.':u.obiettivo==='forza'?'STRATEGIA: Lieve surplus +150/200 kcal. Carbo alti per performance, proteine moderate-alte, creatina consigliata.':'STRATEGIA: Mantenimento. Qualità > quantità. Focus micronutrienti e idratazione.'}
-Acqua target: ~${Math.round(p*0.033*10)/10}L/die (basale) + 0.5/0.7L per ogni ora di allenamento intenso
+━━━ TARGET NUTRIZIONALI ━━━
+${dietaAttiva.target?.kcal
+  ? `FONTE: inseriti manualmente dall'utente — usa QUESTI valori, ignora qualsiasi calcolo alternativo.
+TARGET: ${t.kcal} kcal | Proteine: ${t.proteine||'?'}g | Carboidrati: ${t.carbo||'?'}g | Grassi: ${t.grassi||'?'}g`
+  : `FONTE: calcolati dal profilo (nessun target manuale inserito).
+BMR: ~${Math.round(bmr)} kcal | TDEE: ~${tdee} kcal
+TARGET STIMATO: ~${t.kcal} kcal | Proteine: ~${t.proteine}g | Carboidrati: ~${t.carbo}g | Grassi: ~${t.grassi}g`
+}
+${u.obiettivo==='massa'?'STRATEGIA: Surplus +200/300 kcal. Proteine prima, carbo attorno al workout.':u.obiettivo==='dimagrimento'?'STRATEGIA: Deficit -400/500 kcal. Proteine alte per proteggere la massa magra.':u.obiettivo==='ricomposizione'?'STRATEGIA: Kcal mantenimento. Carbo ciclici: più nei giorni workout, meno nei rest day.':u.obiettivo==='forza'?'STRATEGIA: Lieve surplus +150/200 kcal. Carbo alti per performance.':'STRATEGIA: Mantenimento. Qualità > quantità.'}
+Acqua: ~${Math.round(p*0.033*10)/10}L/die + 0.5L per ogni ora di allenamento
 
 ━━━ DIARIO ALIMENTARE OGGI — MEMORIA REALE ━━━
 ${buildAlimContesto()}
@@ -1485,6 +1607,10 @@ ${buildAlimContesto()}
 ⚠️ REGOLA OBBLIGATORIA: Se il diario mostra pasti già registrati, USALI sempre.
 NON chiedere di nuovo cosa ha mangiato se è già nel diario.
 Esempio corretto: "Hai già fatto colazione con [X] e lo spuntino con [Y]. A pranzo ti servono ancora circa Z grammi di proteine."
+
+━━━ RIEPILOGO SETTIMANA ━━━
+${(()=>{ try{ return buildWeeklySummary()||'Dati insufficienti per il riepilogo settimanale.'; }catch(e){ return 'N/D'; } })()}
+⚠️ REGOLA: Usa questo riepilogo per osservazioni su pattern settimanali. NON inventare trend non presenti nei dati.
 
 ━━━ SCHEDA ATTIVA (con storico progressioni) ━━━
 ${buildSchedaCtxCompleto()}
@@ -1512,11 +1638,11 @@ I messaggi utente includono [Giorno Data - Ora]. Usalo per contestualizzare: pas
 14. SUGGERISCI integratori solo se realmente utili, con dosaggi precisi
 
 ━━━ SISTEMA TAG — OBBLIGATORIO ━━━
-Alla fine di OGNI risposta dove rilevi un pasto, un esercizio o una progressione, aggiungi il tag corrispondente.
+Alla fine di OGNI risposta dove rilevi un pasto, un esercizio, una progressione o generi una scheda, aggiungi il tag corrispondente.
 Il tag è invisibile all'utente — viene intercettato dall'app automaticamente.
 NON spiegare il tag, NON menzionarlo, aggiungilo semplicemente in fondo alla risposta.
 
-FORMAT TAG (uno per risposta, solo se pertinente):
+FORMAT TAG (solo se pertinente):
 
 PASTO RILEVATO → aggiungi esattamente:
 [LOG_PASTO:tipo:contenuto]
@@ -1528,16 +1654,29 @@ ESERCIZIO RILEVATO → aggiungi esattamente:
 esempio: [LOG_ALLENAMENTO:panca piana:4:8:80]
 Se più esercizi nella stessa risposta, aggiungi un tag per ognuno.
 
-PROPOSTA AGGIORNAMENTO SCHEDA → aggiungi esattamente:
-[UPDATE_SCHEDA:nome_esercizio:nuovo_peso_kg:reps]
+PROGRESSIONE RILEVATA (peso o reps migliorati rispetto alla scheda) → aggiungi esattamente:
+[UPDATE_SCHEDA:nome_esercizio:nuovo_peso_kg:nuove_reps]
 esempio: [UPDATE_SCHEDA:panca piana:82.5:8]
-Usalo SOLO quando hai evidenza di progressione (almeno 2 sessioni allo stesso peso con buona forma).
+Usalo quando l'utente dice esplicitamente che ha fatto più peso o più reps di quanto in scheda.
+NON usarlo su supposizioni — solo su dati concreti detti dall'utente.
+
+GENERAZIONE SCHEDA COMPLETA → quando generi una scheda di allenamento completa, aggiungi OBBLIGATORIAMENTE alla fine della risposta il tag con la struttura JSON.
+Formato esatto (rispetta PRECISAMENTE questa struttura, nessuna variazione):
+[SAVE_SCHEDA:{"sezioni":[{"nome":"Push","esercizi":[{"gruppo":"Petto","nome":"Panca piana bilanciere","serie":4,"reps":8,"peso":0,"recupero":90},{"gruppo":"Spalle","nome":"Military press manubri","serie":3,"reps":10,"peso":0,"recupero":90}]},{"nome":"Pull","esercizi":[{"gruppo":"Schiena","nome":"Lat machine presa larga","serie":4,"reps":10,"peso":0,"recupero":90}]}]}]
+
+REGOLE CRITICHE PER IL JSON:
+- Usa SOLO virgolette doppie "
+- Nessuno spazio o newline dentro il JSON del tag
+- peso:0 se non specificato dall'utente
+- recupero sempre in secondi (90 = 90 secondi)
+- Il tag DEVE essere l'ultima riga della risposta
+- Se generi una scheda con 3 sezioni, includi TUTTE e 3 nel JSON
 
 REGOLE TAG:
-- Aggiungi il tag SOLO se hai dati concreti dall'utente (non su supposizioni)
-- Un solo [LOG_ALLENAMENTO] per esercizio menzionato
+- Aggiungi il tag SOLO se hai dati concreti dall'utente
 - Mai aggiungere tag se l'utente parla di intenzioni future ("farò", "vorrei")
-- Il tag va sempre nell'ultima riga della risposta, dopo tutto il testo`;
+- Il tag va sempre nell'ultima riga della risposta, dopo tutto il testo
+- Un solo [SAVE_SCHEDA] per risposta, solo quando hai generato una scheda completa`;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1762,8 +1901,22 @@ function addUserMsg(text){
   scrollToBottom();
   chatHistory.push({id,role:'user',content:`${nowTimestamp()} ${text}`,timestamp:ts});
 
+  // Rileva aggiornamento peso dal messaggio utente — molto più affidabile che dal testo AI
+  // Pattern: "oggi peso 82", "stamattina 81.5kg", "mi sono pesato: 83"
+  const pesoMatch = text.match(/(?:peso|pesavo|pesato|sono a)\s*[:=]?\s*(\d{2,3}(?:[.,]\d{1,2})?)\s*kg/i)
+    || text.match(/(\d{2,3}(?:[.,]\d{1,2})?)\s*kg\b.*(?:peso|bascula|bilancia)/i);
+  if(pesoMatch){
+    const nuovoPeso = pesoMatch[1].replace(',','.');
+    const pesoNum = parseFloat(nuovoPeso);
+    if(pesoNum >= 30 && pesoNum <= 300){ // sanity check
+      appStats.lastWeight = nuovoPeso;
+      appStats.weightHistory.push({date:todayStr(), val:pesoNum});
+      console.log('[FM:Stats] Peso aggiornato da utente:', nuovoPeso+'kg');
+      refreshStats(); saveAll();
+    }
+  }
+
   // Layer 2 — salva pasto da keyword nel testo (fallback se AI non mette il tag)
-  // Il layer 1 (tag AI + bottone) ha priorità e salva con più precisione
   const tipoPasto = detectPasto(text);
   if(tipoPasto) savePastoFromText(text);
 
@@ -1821,6 +1974,47 @@ function addAiMsg(text){
     cleanText=cleanText.replace(m[0],'');
   });
 
+  // SAVE_SCHEDA — cerca il tag con regex robusta che gestisce spazi e newline
+  const saveSchedaMatch = text.match(/\[SAVE_SCHEDA:([\s\S]*?)\](?:\s*)$/m)
+    || text.match(/\[SAVE_SCHEDA:(\{[\s\S]*?\})\]/);
+  console.log('[FM:Scheda] Cerca SAVE_SCHEDA:', !!saveSchedaMatch, '| len testo:', text.length);
+  if(saveSchedaMatch){
+    console.log('[FM:Scheda] Tag trovato, JSON len:', saveSchedaMatch[1].length);
+    try{
+      // Pulizia aggressiva JSON prima del parsing
+      let jsonStr = saveSchedaMatch[1].trim();
+      // Rimuovi newline e tab
+      jsonStr = jsonStr.replace(/[\n\r\t]/g,' ');
+      // Rimuovi spazi multipli
+      jsonStr = jsonStr.replace(/\s+/g,' ');
+      // Sostituisci virgolette tipografiche con quelle standard
+      jsonStr = jsonStr.replace(/[""]/g,'"').replace(/['']/g,"'");
+      // Rimuovi virgole finali prima di } e ]
+      jsonStr = jsonStr.replace(/,\s*}/g,'}').replace(/,\s*]/g,']');
+      // Assicura che il JSON inizi con {
+      const startIdx = jsonStr.indexOf('{');
+      if(startIdx > 0) jsonStr = jsonStr.substring(startIdx);
+
+      console.log('[FM:Scheda] JSON pulito:', jsonStr.substring(0,100)+'...');
+      const parsed = JSON.parse(jsonStr);
+      if(parsed?.sezioni?.length){
+        actions.push({
+          type:'save_scheda',
+          label:'✅ Salva questa scheda',
+          sublabel:`${parsed.sezioni.length} sezioni · ${parsed.sezioni.reduce((a,s)=>a+s.esercizi.length,0)} esercizi`,
+          cls:'ai-btn-save-scheda',
+          fn:()=>{ eseguiSalvaSchedaAI(parsed, id); }
+        });
+        console.log('[FM:Scheda] SAVE_SCHEDA tag rilevato:', parsed.sezioni.length,'sezioni');
+      }
+    } catch(e){
+      console.error('[FM:Scheda] SAVE_SCHEDA JSON parse fallito:', e.message);
+      console.error('[FM:Scheda] JSON ricevuto (primi 300 char):', saveSchedaMatch[1].substring(0,300));
+      showToast('⚠️ Errore nel salvataggio. Riprova chiedendo di generare la scheda nuovamente.');
+    }
+    cleanText=cleanText.replace(saveSchedaMatch[0],'');
+  }
+
   cleanText=cleanText.trim();
 
   // ── RENDER MESSAGGIO ──
@@ -1844,11 +2038,10 @@ function addAiMsg(text){
   // Salva in history il testo COMPLETO con tag (per contesto AI futuro)
   chatHistory.push({id,role:'assistant',content:text,timestamp:ts});
 
-  // Auto-detect peso corporeo
-  const pm=cleanText.match(/(\d{2,3}(?:[.,]\d)?)\s*kg/i);
-  if(pm&&cleanText.toLowerCase().match(/peso|registr|aggiorn/)){ appStats.lastWeight=pm[1].replace(',','.'); appStats.weightHistory.push({date:todayStr(),val:parseFloat(appStats.lastWeight)}); refreshStats(); }
-  // Auto-detect sessione completata
-  if(cleanText.toLowerCase().match(/registrat|ottima sessione|completat/)){ appStats.sessions=(appStats.sessions||0)+1; refreshStats(); }
+  // RIMOSSO: auto-detect peso e sessioni dal testo AI — troppo fragile, genera falsi positivi.
+  // Il peso si aggiorna SOLO quando l'utente lo dice esplicitamente in chat (rilevato in addUserMsg).
+  // Le sessioni si incrementano SOLO dal bottone "✅ Registro allenamento" (eseguiRegistraAllenamento).
+
   saveAll();
 }
 
@@ -1913,6 +2106,40 @@ function eseguiRegistraAllenamento(nome, serie, reps, peso, msgId){
   appStats.sessions=(appStats.sessions||0)+1;
   refreshStats(); saveAll();
   showToast('✅ Allenamento registrato!');
+}
+
+// Salva scheda generata dall'AI dopo conferma utente
+function eseguiSalvaSchedaAI(parsed, msgId){
+  try{
+    // Normalizza struttura — aggiunge id e storico a ogni esercizio
+    const scheda = {
+      origine: 'ai',
+      sezioni: parsed.sezioni.map(sez=>({
+        nome: sez.nome,
+        esercizi: (sez.esercizi||[]).map(es=>({
+          id:       (es.nome||'').toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,''),
+          gruppo:   es.gruppo || '',
+          nome:     es.nome || '',
+          serie:    parseInt(es.serie)||4,
+          reps:     parseInt(es.reps)||8,
+          peso:     parseFloat(es.peso)||0,
+          recupero: parseInt(es.recupero)||90,
+          storico:  []
+        }))
+      }))
+    };
+    schedaAttiva = scheda;
+    saveAll();
+    renderSchedaView();
+    // Vai alla tab scheda per mostrare il risultato
+    switchTab('scheda', document.querySelectorAll('.tab')[1]);
+    showToast('✅ Scheda salvata! Vai alla tab Scheda.');
+    console.log('[FM:Scheda] Salvata da AI:', scheda.sezioni.length,'sezioni',
+      scheda.sezioni.reduce((a,s)=>a+s.esercizi.length,0),'esercizi');
+  } catch(e){
+    console.error('[FM:Scheda] Errore salvataggio scheda AI:', e.message);
+    showToast('⚠️ Errore nel salvataggio. Riprova.');
+  }
 }
 
 // Aggiorna peso/reps di un esercizio nella scheda attiva — matching robusto con ID
@@ -2224,6 +2451,30 @@ function findEsercizioInScheda(nomeInput){
     }
   }
   return null;
+}
+
+// Determina tipo esercizio da nome e gruppo — usato per formattare il contesto AI
+function getTipoEs(nome, gruppo){
+  const g = (gruppo||'').toLowerCase();
+  const n = (nome||'').toLowerCase();
+  if(g==='cardio'||n.match(/tapis|cyclette|ellittica|vogatore|corsa|camminata|hiit/)) return 'cardio';
+  if(n.match(/plank|crunch|leg raise|russian|hollow|mountain/)) return 'bodyweight';
+  return 'weighted';
+}
+
+// Formatta dettagli esercizio per la visualizzazione nella scheda
+function esDettaglio(es){
+  const tipo = es.tipo || getTipoEs(es.nome||'', es.gruppo||'');
+  if(tipo==='cardio'){
+    let s='';
+    if(es.minuti) s+=es.minuti+'min';
+    if(es.km) s+=' '+es.km+'km';
+    return s||'cardio';
+  }
+  let s='';
+  if(es.serie&&es.reps) s=`${es.serie}×${es.reps}`;
+  if(es.peso) s+=` · ${es.peso}kg`;
+  return s||'—';
 }
 
 // Chiede all'AI di suggerire una scheda — non la salva automaticamente
