@@ -138,15 +138,6 @@ textarea.fi{resize:none;height:76px}
 .msg-del-btn{background:rgba(255,59,48,.12);border:1px solid rgba(255,59,48,.25);
   border-radius:100px;padding:3px 9px;font-size:10px;color:var(--rd);cursor:pointer}
 .msg-del-btn:active{background:rgba(255,59,48,.3)}
-/* Bottoni azione AI — registro pasto, allenamento, aggiorna scheda */
-.ai-action-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.ai-action-btn{padding:8px 16px;border-radius:100px;border:none;cursor:pointer;
-  font-size:13px;font-weight:600;transition:all .2s;display:flex;align-items:center;gap:6px}
-.ai-action-btn:active{transform:scale(.96);opacity:.8}
-.ai-btn-pasto{background:rgba(200,241,53,.15);border:1px solid rgba(200,241,53,.4);color:var(--ac)}
-.ai-btn-allenamento{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.4);color:var(--bl)}
-.ai-btn-scheda{background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.4);color:var(--ac2)}
-.ai-btn-save-scheda{background:rgba(200,241,53,.15);border:1px solid rgba(200,241,53,.5);color:var(--ac);font-weight:700}
 .typing-row{display:flex;gap:4px;padding:3px 0}
 .tdot{width:5px;height:5px;background:var(--mt);border-radius:50%;animation:tb 1.2s infinite}
 .tdot:nth-child(2){animation-delay:.2s}.tdot:nth-child(3){animation-delay:.4s}
@@ -199,75 +190,36 @@ textarea.fi{resize:none;height:76px}
 .chart-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .chart-title{font-size:13px;font-weight:600}.chart-period{font-size:10px;color:var(--mt);letter-spacing:1px}
 
-/* ── BUILDER STEP-BY-STEP ── */
-#builderScreen{background:var(--bg);position:fixed;inset:0;z-index:50;max-width:480px;margin:0 auto}
-.bstep{display:none;flex-direction:column;height:100dvh;overflow:hidden;animation:bstepIn .22s ease}
-.bstep.active{display:flex}
-@keyframes bstepIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
-.bstep-hdr{padding:44px 16px 10px;flex-shrink:0;display:flex;align-items:center;
-  justify-content:space-between;border-bottom:1px solid var(--bd)}
-.bback-btn{width:36px;height:36px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);
-  font-size:18px;cursor:pointer;color:#ddd;outline:none;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.bback-btn:active{opacity:.7}
-.bstep-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;
-  color:#fff;text-align:center;flex:1;padding:0 6px}
-.bsave-btn{background:var(--ac);color:#000;border:none;border-radius:10px;
-  padding:8px 14px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer;outline:none}
-.bsave-btn:active{opacity:.8}
-.bstep-body{flex:1;overflow-y:auto;padding:14px 16px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.bstep-body::-webkit-scrollbar{display:none}
-.bstep-hint{font-size:13px;color:#aaa;margin-bottom:14px;line-height:1.5}
-.bstep-footer{padding:8px 16px 20px;flex-shrink:0;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:8px}
-/* Input numerici grandi — ottimizzati per mobile */
-.bnum{font-size:26px;text-align:center;padding:18px;font-family:'JetBrains Mono',monospace;font-weight:600;letter-spacing:1px}
-/* Card sezione nella preview (step 0) */
-.bsez-card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;
-  padding:16px 18px;margin-bottom:12px;cursor:pointer;transition:border-color .15s}
-.bsez-card:active{border-color:var(--ac)}
-.bsez-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.bsez-card-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--ac)}
-.bsez-card-count{font-size:11px;color:var(--mt);letter-spacing:1px}
-.bsez-card-desc{font-size:12px;color:#666}
-/* Riga esercizio nella lista sezione (step 2) */
-.bes-row{background:var(--s2);border:1px solid var(--bd);border-radius:14px;
-  padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer}
-.bes-row:active{opacity:.75}
-.bes-row-info{flex:1}
-.bes-row-name{font-size:15px;font-weight:600;color:#fff;margin-bottom:3px}
-.bes-row-det{font-size:13px;color:var(--ac);font-family:'JetBrains Mono',monospace}
-.bes-row-arr{font-size:20px;color:var(--mt);flex-shrink:0}
-/* Card gruppo muscolare (step 3) */
-.bgrp-card{background:var(--s2);border:1.5px solid var(--bd);border-radius:14px;
-  padding:18px 10px;cursor:pointer;text-align:center;transition:all .15s}
-.bgrp-card:active{border-color:var(--ac);background:rgba(200,241,53,.08)}
-.bgrp-ico{font-size:28px;margin-bottom:8px}
-.bgrp-name{font-size:13px;font-weight:600;color:#ddd}
-/* Card esercizio nel picker (step 4) */
-.bes-pick{background:var(--s2);border:1px solid var(--bd);border-radius:13px;
-  padding:14px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all .15s;margin-bottom:8px}
-.bes-pick:active{border-color:var(--ac)}
-.bes-pick-name{font-size:14px;font-weight:500;color:#ddd}
-.bes-pick-arr{font-size:18px;color:var(--mt)}
-/* Preset sezione nel picker (step 1) */
-.bsez-preset{background:var(--s2);border:1px solid var(--bd);border-radius:13px;
-  padding:14px 16px;cursor:pointer;transition:all .15s}
-.bsez-preset:active{border-color:var(--ac)}
-.bsez-preset.sel{border-color:var(--ac);background:rgba(200,241,53,.07)}
-.bsez-preset-name{font-size:15px;font-weight:700;color:#fff;margin-bottom:3px}
-.bsez-preset-desc{font-size:12px;color:#777}
-/* Empty state builder */
-.b0-empty{text-align:center;padding:48px 16px}
-.b0-empty-ico{font-size:46px;margin-bottom:14px}
-.b0-empty-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--dm);margin-bottom:8px}
-.b0-empty-sub{font-size:13px;color:var(--mt);line-height:1.7}
+/* ── BUILDER ── */
+#builderScreen{background:var(--bg)}
+.builder-hdr{padding:50px 18px 12px;flex-shrink:0;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--bd)}
+.builder-body{flex:1;overflow-y:auto;padding:16px 18px 20px;scrollbar-width:none}
+.builder-body::-webkit-scrollbar{display:none}
+.builder-footer{padding:11px 18px 28px;flex-shrink:0;border-top:1px solid var(--bd)}
+.bsez{margin-bottom:22px}
+.bsez-hdr{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.bsez-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--ac);flex:1;line-height:1.1}
+.bsez-desc{font-size:11px;color:var(--mt);margin-bottom:10px;padding-left:2px}
+.bes-card{background:var(--s1);border:1px solid var(--bd);border-radius:13px;
+  padding:13px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
+.bes-info{flex:1}
+.bes-name{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px}
+.bes-det{font-size:13px;color:var(--ac);font-family:'JetBrains Mono',monospace;font-weight:600}
+.bes-rec{font-size:11px;color:var(--mt);margin-top:2px}
+.bes-actions{display:flex;gap:7px;flex-shrink:0;padding-top:1px}
+.bes-btn{background:var(--s2);border:1px solid var(--bd);border-radius:8px;
+  padding:7px 11px;font-size:12px;cursor:pointer;color:#ccc}
+.bes-btn:active{opacity:.7}
+.builder-empty{background:var(--s1);border:1px dashed var(--bd);border-radius:12px;
+  padding:15px;text-align:center;color:var(--mt);font-size:13px}
 
 /* ── MODALS ── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:100;
   align-items:flex-end;justify-content:center}
 .overlay.open{display:flex}
 .sheet{width:100%;max-width:480px;background:var(--s1);border-radius:22px 22px 0 0;
-  padding:20px 22px 44px;animation:up .3s ease;max-height:92vh;min-height:60vh;
-  overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  padding:20px 22px 40px;animation:up .3s ease;max-height:88vh;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none}
 .sheet::-webkit-scrollbar{display:none}
 @keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .handle{width:38px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 20px}
@@ -466,156 +418,22 @@ textarea.fi{resize:none;height:76px}
   </div>
 </div>
 
-<!-- BUILDER SCHEDA — step-by-step, una schermata alla volta -->
+<!-- BUILDER SCHEDA -->
 <div id="builderScreen" class="screen">
-
-  <!-- Step 0: Panoramica scheda + preview -->
-  <div id="bStep0" class="bstep active">
-    <div class="bstep-hdr">
-      <button onclick="closeBuilder()" class="bback-btn">←</button>
-      <div class="bstep-title">LA MIA SCHEDA</div>
-      <button onclick="saveBuilder()" class="bsave-btn">SALVA</button>
+  <div class="builder-hdr">
+    <button onclick="closeBuilder()" style="width:38px;height:38px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);font-size:19px;cursor:pointer;flex-shrink:0;color:#ddd;outline:none">←</button>
+    <div style="flex:1;margin-left:4px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:2px;color:#fff">COSTRUISCI SCHEDA</div>
+      <div style="font-size:11px;color:#777;margin-top:1px">Aggiungi sezioni ed esercizi</div>
     </div>
-    <div class="bstep-body" id="b0Body"></div>
-    <div class="bstep-footer">
-      <button class="btn btn-a" onclick="builderGoStep(1)">+ Aggiungi sezione</button>
-    </div>
+    <button onclick="saveBuilder()" style="background:var(--ac);color:#000;border:none;border-radius:12px;padding:10px 18px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;cursor:pointer;flex-shrink:0;outline:none">SALVA</button>
   </div>
-
-  <!-- Step 1: Scegli nome sezione -->
-  <div id="bStep1" class="bstep">
-    <div class="bstep-hdr">
-      <button onclick="builderGoStep(0)" class="bback-btn">←</button>
-      <div class="bstep-title">NUOVA SEZIONE</div>
-      <div></div>
-    </div>
-    <div class="bstep-body">
-      <div class="bstep-hint">Scegli un tipo o scrivi il nome che preferisci.</div>
-      <div id="b1Presets" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
-      <div class="fg">
-        <label class="fl">Oppure scrivi un nome personalizzato</label>
-        <input class="fi" id="b1Custom" placeholder="Es: Scheda A, Braccia, Cardio..." style="font-size:16px;padding:15px">
-      </div>
-    </div>
-    <div class="bstep-footer">
-      <button class="btn btn-a" onclick="builderConfirmSez()">CONTINUA →</button>
-      <button class="btn btn-b" onclick="builderGoStep(0)">Annulla</button>
-    </div>
+  <div class="builder-body" id="builderBody"></div>
+  <div class="builder-footer">
+    <button class="btn-ghost" onclick="showModal('mAddSez')">
+      <span style="font-size:18px">+</span> Aggiungi sezione
+    </button>
   </div>
-
-  <!-- Step 2: Lista esercizi sezione corrente -->
-  <div id="bStep2" class="bstep">
-    <div class="bstep-hdr">
-      <button onclick="builderGoStep(0)" class="bback-btn">←</button>
-      <div class="bstep-title" id="b2SezNome">PUSH</div>
-      <div></div>
-    </div>
-    <div class="bstep-body" id="b2Body"></div>
-    <div class="bstep-footer">
-      <button class="btn btn-a" onclick="builderGoStep(3)">+ Aggiungi esercizio</button>
-      <button class="btn btn-b" onclick="builderGoStep(0)">← Torna alla scheda</button>
-    </div>
-  </div>
-
-  <!-- Step 3: Scegli gruppo muscolare -->
-  <div id="bStep3" class="bstep">
-    <div class="bstep-hdr">
-      <button onclick="builderGoStep(2)" class="bback-btn">←</button>
-      <div class="bstep-title">GRUPPO MUSCOLARE</div>
-      <div></div>
-    </div>
-    <div class="bstep-body">
-      <div class="bstep-hint">Quale gruppo vuoi allenare in questo esercizio?</div>
-      <div id="b3Gruppi" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
-    </div>
-  </div>
-
-  <!-- Step 4: Scegli esercizio -->
-  <div id="bStep4" class="bstep">
-    <div class="bstep-hdr">
-      <button onclick="builderGoStep(3)" class="bback-btn">←</button>
-      <div class="bstep-title" id="b4Gruppo">PETTO</div>
-      <div></div>
-    </div>
-    <div class="bstep-body">
-      <div class="bstep-hint">Scegli l'esercizio.</div>
-      <div id="b4Lista" style="display:flex;flex-direction:column;gap:10px"></div>
-    </div>
-  </div>
-
-  <!-- Step 5: Dettagli esercizio (serie, reps, peso, rec) -->
-  <div id="bStep5" class="bstep">
-    <div class="bstep-hdr">
-      <button onclick="builderGoStep(4)" class="bback-btn">←</button>
-      <div class="bstep-title" id="b5EsNome" style="font-size:16px;letter-spacing:1px">ESERCIZIO</div>
-      <div></div>
-    </div>
-    <div class="bstep-body">
-      <div class="bstep-hint" id="b5Gruppo" style="margin-bottom:24px"></div>
-      <div class="r2" style="margin-bottom:14px">
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Serie</label>
-          <input class="fi bnum" id="b5S" type="number" inputmode="numeric" placeholder="4">
-        </div>
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Reps</label>
-          <input class="fi bnum" id="b5R" type="number" inputmode="numeric" placeholder="8">
-        </div>
-      </div>
-      <div class="r2" style="margin-bottom:14px">
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Peso (kg)</label>
-          <input class="fi bnum" id="b5P" type="number" inputmode="decimal" placeholder="0">
-        </div>
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Recupero (sec)</label>
-          <input class="fi bnum" id="b5Rec" type="number" inputmode="numeric" placeholder="90">
-        </div>
-      </div>
-      <div class="info-box" style="margin-top:8px">💡 Puoi sempre modificare questi valori dalla scheda.</div>
-    </div>
-    <div class="bstep-footer">
-      <button class="btn btn-a" onclick="builderConfirmEs()">AGGIUNGI ESERCIZIO</button>
-      <button class="btn btn-b" onclick="builderGoStep(4)">← Cambia esercizio</button>
-    </div>
-  </div>
-
-  <!-- Step 6: Modifica esercizio esistente -->
-  <div id="bStep6" class="bstep">
-    <div class="bstep-hdr">
-      <button onclick="builderGoStep(2)" class="bback-btn">←</button>
-      <div class="bstep-title" id="b6EsNome" style="font-size:16px;letter-spacing:1px">MODIFICA</div>
-      <div></div>
-    </div>
-    <div class="bstep-body">
-      <div class="bstep-hint" id="b6Gruppo" style="margin-bottom:24px"></div>
-      <div class="r2" style="margin-bottom:14px">
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Serie</label>
-          <input class="fi bnum" id="b6S" type="number" inputmode="numeric">
-        </div>
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Reps</label>
-          <input class="fi bnum" id="b6R" type="number" inputmode="numeric">
-        </div>
-      </div>
-      <div class="r2" style="margin-bottom:14px">
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Peso (kg)</label>
-          <input class="fi bnum" id="b6P" type="number" inputmode="decimal">
-        </div>
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Recupero (sec)</label>
-          <input class="fi bnum" id="b6Rec" type="number" inputmode="numeric">
-        </div>
-      </div>
-    </div>
-    <div class="bstep-footer">
-      <button class="btn btn-a" onclick="builderConfirmEdit()">SALVA MODIFICHE</button>
-      <button class="btn btn-b" style="color:var(--rd);border-color:rgba(255,59,48,.3)" onclick="builderDeleteEs()">Elimina esercizio</button>
-    </div>
-  </div>
-
 </div>
 
 <!-- ══ MODALS ══ -->
@@ -747,6 +565,69 @@ textarea.fi{resize:none;height:76px}
 </div>
 
 <!-- Builder: aggiungi sezione -->
+<div class="overlay" id="mAddSez">
+  <div class="sheet"><div class="handle"></div>
+    <div class="sh-title">NUOVA SEZIONE</div>
+    <div class="sh-sub">Scegli un preset o scrivi un nome personalizzato.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px" id="sezPresets"></div>
+    <input class="fi" id="sezNameIn" placeholder="Nome personalizzato..." style="margin-bottom:16px" oninput="clearSezPresets()">
+    <button class="btn btn-a" onclick="confirmAddSez()">CREA SEZIONE</button>
+    <button class="btn btn-b" onclick="closeModal('mAddSez')">Annulla</button>
+  </div>
+</div>
+
+<!-- Builder: step 1 gruppo muscolare -->
+<div class="overlay" id="mAddEs1">
+  <div class="sheet"><div class="handle"></div>
+    <div class="sh-title" id="addEs1Title">AGGIUNGI ESERCIZIO</div>
+    <div class="sh-sub" style="margin-bottom:16px">Scegli il gruppo muscolare</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="gruppoGrid"></div>
+  </div>
+</div>
+
+<!-- Builder: step 2 esercizio -->
+<div class="overlay" id="mAddEs2">
+  <div class="sheet"><div class="handle"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px">
+      <button onclick="closeModal('mAddEs2');showModal('mAddEs1')" style="width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);font-size:16px;cursor:pointer;color:#ddd;outline:none">←</button>
+      <div class="sh-title" id="addEs2Title" style="margin-bottom:0">GRUPPO</div>
+    </div>
+    <div class="sh-sub" style="margin-bottom:14px">Scegli l'esercizio</div>
+    <div id="esLista" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
+<!-- Builder: step 3 dettagli -->
+<div class="overlay" id="mAddEs3">
+  <div class="sheet"><div class="handle"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="closeModal('mAddEs3');showModal('mAddEs2')" style="width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);font-size:16px;cursor:pointer;color:#ddd;outline:none">←</button>
+      <div>
+        <div class="sh-title" id="addEs3Nome" style="margin-bottom:0;font-size:20px">Esercizio</div>
+        <div style="font-size:11px;color:#777;margin-top:2px" id="addEs3Gruppo"></div>
+      </div>
+    </div>
+    <!-- Campi dinamici in base al tipo esercizio -->
+    <div id="addEs3Fields"></div>
+    <button class="btn btn-a" onclick="confirmAddEs()">AGGIUNGI ESERCIZIO</button>
+    <button class="btn btn-b" onclick="closeModal('mAddEs3');showModal('mAddEs2')">← Cambia esercizio</button>
+  </div>
+</div>
+
+<!-- Builder: modifica esercizio -->
+<div class="overlay" id="mEditEs">
+  <div class="sheet"><div class="handle"></div>
+    <div class="sh-title">MODIFICA ESERCIZIO</div>
+    <div style="background:var(--s2);border-radius:10px;padding:10px 13px;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:600;color:#fff" id="editEsNome"></div>
+      <div style="font-size:11px;color:#777;margin-top:2px" id="editEsGruppo"></div>
+    </div>
+    <div id="editEs3Fields"></div>
+    <button class="btn btn-a" onclick="confirmEditEs()">SALVA MODIFICHE</button>
+    <button class="btn btn-b" onclick="closeModal('mEditEs')">Annulla</button>
+  </div>
+</div>
+
 <!-- Eliminazione messaggio -->
 <div class="overlay" id="mDeleteMsg">
   <div class="sheet"><div class="handle"></div>
@@ -769,140 +650,49 @@ textarea.fi{resize:none;height:76px}
 'use strict';
 
 // ══════════════════════════════════════════════════════════════════
-// FITMIND AI v2.2 — Sistema AI stateful con memoria reale
-// ══════════════════════════════════════════════════════════════════
-//
-// ⚠️ TODO ARCHITETTURALI — da affrontare prima della v3
-// ─────────────────────────────────────────────────────────────────
-//
-// 1. MODULARIZZAZIONE (priorità media — quando si supera ~3000 righe)
-//    Il file è monolitico: UI + AI + storage + parser + builder tutto insieme.
-//    Piano futuro:
-//    - fitmind-storage.js   → loadAll, saveAll, migrazioni
-//    - fitmind-ai.js        → buildSystemPrompt, callAI, tag parser
-//    - fitmind-scheda.js    → builder, renderSchedaView, esercizi
-//    - fitmind-alim.js      → alimentazioneLog, savePasto, filtri
-//    - fitmind-ui.js        → chat, scroll, modal, tabs
-//    Richiede: hosting con build step (Vite/Parcel) o GitHub Pages con workflow
-//
-// 2. NLP FRAGILE (priorità bassa — monitorare con i log)
-//    Il filtro falsi positivi è regex-based → fragile su frasi complesse.
-//    Soluzione futura: classificatore leggero lato AI
-//    Trigger: >20% blocchi classificati come 'other_pattern' nei log.
-//
-// 3. PROMPT PESANTEZZA (priorità alta — monitorare ora)
-//    FitMind.promptSize() > 2500 tokens → attivare Layer 2 (summary compresso)
-//    Non aggiungere sezioni al prompt senza rimuoverne altre.
-//
-// 4. CONFLITTI TEMPORALI (priorità futura — prossimo grande tema)
-//    Ora che il sistema ricorda, aggiorna e aggrega, emergeranno:
-//    - Correzione dato vecchio: utente dice "ieri avevo sbagliato il peso"
-//    - Modifica manuale scheda dopo progressione AI confermata
-//    - Allenamento retrodatato: "ieri ho dimenticato di loggare"
-//    - Cambio obiettivo: cosa succede allo storico macro del periodo precedente?
-//    - Rollback scheda: "quella progressione era troppo ottimistica, torna a 80kg"
-//
-//    REGOLA ARCHITETTRALE GIÀ APPLICATA (non violare mai):
-//    ✅ Solo azioni utente confermate cambiano stato
-//    ❌ Il testo AI NON cambia mai stato direttamente
-//    ✅ Se i dati non ci sono → "dati insufficienti", mai inventare
-//    ✅ onboarding ≠ stato attuale (lastWeight > userData.peso)
-//
-//    Piano futuro per conflitti temporali:
-//    - Ogni write allo stato include timestamp
-//    - Stato "pending" per modifiche non ancora confermate
-//    - Possibilità di override manuale con log dell'override
-// ─────────────────────────────────────────────────────────────────
-
-// ══════════════════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════════════════
 const PROXY_URL         = 'https://fitmind-proxy.simo-simone.workers.dev/';
 const AI_MODEL          = 'claude-sonnet-4-5';
-const RECENT_CHAT_LIMIT = 40;
+const STORAGE_VERSION   = 3;    // v3 = architettura consolidata, scheda unica
+const RECENT_CHAT_LIMIT = 10;   // ridotto da 20: memoria vive nei dati strutturati
 
-/*
- * DEBUG MODE — attivabile da console browser con: FitMind.debug(true)
- * Mostra: tag AI rilevati, pasti salvati, filtri bloccati,
- *         matching esercizi, memoria passata al prompt, storage.
- * NON attivo in produzione — zero overhead per utenti normali.
- */
-let DEBUG_MODE = false;
-
-function dbg(category, ...args){
-  if(!DEBUG_MODE) return;
-  console.log(`[FM:DBG:${category}]`, ...args);
-}
-
-// API pubblica debug — usabile dalla console browser
-window.FitMind = {
-  debug: (on=true) => {
-    DEBUG_MODE = on;
-    console.log('[FM] Debug mode:', on ? '✅ ON' : '❌ OFF');
-    if(on){
-      console.log('[FM] Stato corrente:', {
-        utente:        userData.nome,
-        chat:          chatHistory.length + ' messaggi',
-        scheda:        schedaAttiva ? schedaAttiva.sezioni?.length + ' sezioni' : 'nessuna',
-        pastiOggi:     alimentazioneLog[todayStr()] || 'nessuno',
-        dieta:         dietaAttiva,
-        stats:         appStats,
-        storageVersion:localStorage.getItem(LS.version)
-      });
-    }
-  },
-  stato: () => {
-    if(!DEBUG_MODE){ console.warn('[FM] Attiva prima il debug: FitMind.debug(true)'); return; }
-    console.log('[FM] Stato:', {userData, chatHistory, schedaAttiva, dietaAttiva, alimentazioneLog, appStats});
-  },
-  // prompt() — solo in debug mode: espone struttura interna e regole AI
-  prompt: () => {
-    if(!DEBUG_MODE){ console.warn('[FM] FitMind.prompt() disponibile solo in debug mode. Usa: FitMind.debug(true)'); return; }
-    try{
-      const p = buildSystemPrompt();
-      // Misura dimensione prompt — monitorare se supera ~3000 chars
-      const chars = p.length;
-      const stima_tokens = Math.round(chars / 4);
-      console.log(`[FM] Prompt size: ${chars} chars | ~${stima_tokens} tokens`);
-      if(stima_tokens > 2500) console.warn('[FM] ⚠️ Prompt grande — considera di ridurre lo storico');
-      console.log('[FM] System prompt:\n', p);
-    } catch(e){
-      console.error('[FM] Errore buildSystemPrompt:', e.message);
-    }
-  },
-  pasti:  () => {
-    if(!DEBUG_MODE){ console.warn('[FM] Attiva prima il debug: FitMind.debug(true)'); return; }
-    console.log('[FM] Alimentazione log:', alimentazioneLog);
-  },
-  scheda: () => {
-    if(!DEBUG_MODE){ console.warn('[FM] Attiva prima il debug: FitMind.debug(true)'); return; }
-    console.log('[FM] Scheda attiva:', schedaAttiva);
-  },
-  // Misura dimensione prompt senza stamparlo — sicuro anche in produzione
-  promptSize: () => {
-    try{
-      const p = buildSystemPrompt();
-      const chars = p.length;
-      const stima_tokens = Math.round(chars / 4);
-      console.log(`[FM] Prompt size: ${chars} chars | ~${stima_tokens} tokens | messaggi: ${Math.min(chatHistory.length, RECENT_CHAT_LIMIT)}`);
-      if(stima_tokens > 2500) console.warn('[FM] ⚠️ Prompt grande');
-    } catch(e){ console.error('[FM] Errore:', e.message); }
+// ── StorageAdapter v1 — astrazione minimale su localStorage ──
+// Tutto il codice esistente continua a usare localStorage direttamente (compatibile).
+// Questo adapter è pronto per usi futuri (IndexedDB, cloud sync).
+const StorageAdapter = {
+  get(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } },
+  set(key,val){ try{ localStorage.setItem(key,typeof val==='string'?val:JSON.stringify(val)); return true; }catch(e){ return false; } },
+  remove(key){ try{ localStorage.removeItem(key); return true; }catch(e){ return false; } },
+  snapshot(){
+    const s={};
+    try{ Object.keys(localStorage).filter(k=>k.startsWith('fm_')).forEach(k=>{s[k]=localStorage.getItem(k);}); }catch(e){}
+    return s;
   }
 };
 
-/*
- * STORAGE VERSIONING
- * ─────────────────────────────────────────────────────────────────
- * Incrementare STORAGE_VERSION ad ogni cambiamento strutturale dei dati.
- * Aggiungere la migrazione corrispondente in runMigrations().
- *
- * v1 — formato originale (nessun id messaggi, scheda piatta)
- * v2 — id/timestamp messaggi, scheda a sezioni (fm_scheda_v2)
- * v3 — architettura consolidata, chiavi unificate, builder step-by-step
- *
- * Futuro v4 — workout history completo, progressioni AI, evoluzione obiettivo
- */
-const STORAGE_VERSION = 3;
+// ── DataQualityScore — "dato presente" != "dato affidabile" ──
+// Ogni dato ha un livello di affidabilità usato dall'AI per calibrare la fiducia.
+const QualityScore = {
+  ONBOARDING_MANUAL:    0.85,
+  USER_EXPLICIT:        0.90,
+  CHECKIN_CONFIRMED:    0.95,
+  DETERMINISTIC_PARSER: 0.80,
+  AI_EXTRACTION:        0.60,
+  CORRECTED_ONCE:       0.70,
+  CORRECTED_TWICE:      0.50,
+  DEFAULT:              0.75,
+  forSource(src){ return this[(src||'DEFAULT').toUpperCase().replace(/[^A-Z0-9]/g,'_')]||this.DEFAULT; }
+};
+
+// ── Validator — valida prima di salvare ──
+// Append-only + dati invalidi = corruzione permanente.
+const Validator = {
+  weight(v){ if(v===null||v===undefined) return true; const n=parseFloat(v); return !isNaN(n)&&n>=20&&n<=400; },
+  reps(v){ const n=parseInt(v); return !isNaN(n)&&n>=1&&n<=200; },
+  serie(v){ const n=parseInt(v); return !isNaN(n)&&n>=1&&n<=20; },
+  confidence(v){ return v===null||v===undefined||(typeof v==='number'&&v>=0&&v<=1); }
+};
 
 // ══════════════════════════════════════════════════════════════════
 // STRUTTURE DATI — documentate per evoluzione futura
@@ -977,11 +767,8 @@ let builderData   = { sezioni:[] };
 let builderSezIdx = null;
 let builderGruppo = '';
 let builderEsNome = '';
-// Stato builder (non globale all'app — solo durante la sessione builder)
-let bSezIdx   = null;  // indice sezione corrente
-let bEsIdx    = null;  // indice esercizio in modifica
-let bGruppo   = '';
-let bEsNome   = '';
+let editSi = null;
+let editEi = null;
 
 // Delete messaggio
 let pendingDeleteId = null;
@@ -990,32 +777,30 @@ let pendingDeleteId = null;
 let obStep = 0;
 
 // ══════════════════════════════════════════════════════════════════
-// STORAGE — versioning + migrazioni per versione
+// STORAGE — chiavi unificate
 // ══════════════════════════════════════════════════════════════════
-
-// Chiavi localStorage v3 (definitive)
 const LS = {
-  version:     'fm_storage_version',
-  user:        'fm_user',
-  chat:        'fm_chat',
-  stats:       'fm_stats',
-  scheda:      'fm_scheda_v2',
-  dieta:       'fm_dieta_v2',
-  alim:        'fm_alim_v2',
-  allenamenti: 'fm_allenamenti_v3',
-  firstRun:    'fm_first_run'
+  user:    'fm_user',
+  chat:    'fm_chat',
+  stats:   'fm_stats',
+  scheda:  'fm_scheda_v2',
+  dieta:   'fm_dieta_v2',
+  alim:    'fm_alim_v2',
+  allenamenti: 'fm_allenamenti_v3',  // workout history (struttura pronta, non ancora usata)
+  firstRun:'fm_first_run',
+  version: 'fm_version'
 };
 
 function saveAll(){
   try{
-    localStorage.setItem(LS.version,     String(STORAGE_VERSION));
-    localStorage.setItem(LS.user,        JSON.stringify(userData));
-    localStorage.setItem(LS.chat,        JSON.stringify(chatHistory));
-    localStorage.setItem(LS.stats,       JSON.stringify(appStats));
-    localStorage.setItem(LS.scheda,      JSON.stringify(schedaAttiva));
-    localStorage.setItem(LS.dieta,       JSON.stringify(dietaAttiva));
-    localStorage.setItem(LS.alim,        JSON.stringify(alimentazioneLog));
-    localStorage.setItem(LS.allenamenti, JSON.stringify(allenamentiLog));
+    StorageAdapter.set(LS.version,     String(STORAGE_VERSION));
+    StorageAdapter.set(LS.user,        JSON.stringify(userData));
+    StorageAdapter.set(LS.chat,        JSON.stringify(chatHistory));
+    StorageAdapter.set(LS.stats,       JSON.stringify(appStats));
+    StorageAdapter.set(LS.scheda,      JSON.stringify(schedaAttiva));
+    StorageAdapter.set(LS.dieta,       JSON.stringify(dietaAttiva));
+    StorageAdapter.set(LS.alim,        JSON.stringify(alimentazioneLog));
+    StorageAdapter.set(LS.allenamenti, JSON.stringify(allenamentiLog));
     console.log('[FM:Storage] Salvato v'+STORAGE_VERSION, new Date().toLocaleTimeString());
   } catch(e){
     console.error('[FM:Storage] Errore salvataggio:', e);
@@ -1023,150 +808,93 @@ function saveAll(){
   }
 }
 
-// Parser sicuro — non crasha mai, usa fallback
-function safeParse(raw, fallback){
-  if(!raw) return fallback;
-  try{ return JSON.parse(raw) || fallback; }
-  catch(e){ return fallback; }
-}
-
 function loadAll(){
   try{
-    const u = localStorage.getItem(LS.user);
+    const u = StorageAdapter.get(LS.user);
     if(!u) return false;
 
-    // Versione: controlla chiave nuova (v3) e vecchia (v2 usava 'fm_version')
-    const storedVersion = parseInt(
-      localStorage.getItem(LS.version) ||
-      localStorage.getItem('fm_version') ||
-      '1'
-    );
-    console.log('[FM:Storage] Versione trovata:', storedVersion, '→ corrente:', STORAGE_VERSION);
+    const storedVersion = parseInt(StorageAdapter.get(LS.version)||'1');
+    console.log('[FM:Storage] Versione trovata:', storedVersion, '→ attuale:', STORAGE_VERSION);
 
-    // Carica dati con parser sicuro
-    userData         = safeParse(localStorage.getItem(LS.user),        {});
-    chatHistory      = safeParse(localStorage.getItem(LS.chat),        []);
-    appStats         = safeParse(localStorage.getItem(LS.stats),       {});
-    dietaAttiva      = safeParse(localStorage.getItem(LS.dieta),       {origine:null,target:{}});
-    alimentazioneLog = safeParse(localStorage.getItem(LS.alim),        {});
-    allenamentiLog   = safeParse(localStorage.getItem(LS.allenamenti), {});
+    userData         = JSON.parse(u)||{};
+    chatHistory      = JSON.parse(StorageAdapter.get(LS.chat)||'[]');
+    appStats         = JSON.parse(StorageAdapter.get(LS.stats)||'{}');
+    dietaAttiva      = JSON.parse(StorageAdapter.get(LS.dieta)||'{"origine":null,"target":{}}');
+    alimentazioneLog = JSON.parse(StorageAdapter.get(LS.alim)||'{}');
+    allenamentiLog   = JSON.parse(StorageAdapter.get(LS.allenamenti)||'{}');
+
+    let needsSave = false;
+
+    // ── MIGRAZIONE CHAT: aggiunge id/timestamp se mancanti ──
+    if(migrateChatMessages()) needsSave = true;
+
+    // ── MIGRAZIONE SCHEDA: unifica tutti i formati → schedaAttiva ──
+    if(migrateScheda()) needsSave = true;
+
+    // ── NORMALIZZA ID ESERCIZI: prepara workout history ──
+    if(schedaAttiva && normalizeExerciseIds(schedaAttiva)) needsSave = true;
 
     // Normalizza appStats
     if(!appStats.weightHistory) appStats.weightHistory = [];
-    if(!appStats.sessions)      appStats.sessions = 0;
+    if(!appStats.sessions) appStats.sessions = 0;
 
-    // Esegui migrazioni solo se versione inferiore a quella corrente
-    if(storedVersion < STORAGE_VERSION){
-      runMigrations(storedVersion);
-      saveAll(); // riscrive tutto con chiavi e versione corrette
-    } else {
-      // Versione corrente: normalizza silenziosamente
-      if(schedaAttiva) normalizeExerciseIds(schedaAttiva);
+    if(needsSave || storedVersion < STORAGE_VERSION){
+      console.log('[FM:Migration] Migrazione completata → v'+STORAGE_VERSION);
+      saveAll();
     }
 
-    console.log('[FM:Storage] Caricato:', userData.nome||'anonimo',
-      '| chat:', chatHistory.length, 'msg',
-      '| scheda:', schedaAttiva ? (schedaAttiva.sezioni?.length||0)+' sez' : 'nessuna');
+    console.log('[FM:Storage] Caricato:', userData.nome||'anonimo');
     return true;
   } catch(e){
-    console.error('[FM:Storage] Errore critico:', e);
+    console.error('[FM:Storage] Errore caricamento:', e);
     return false;
   }
 }
 
-// ── Sistema migrazioni — aggiungere un blocco per ogni nuova versione ──
-function runMigrations(fromVersion){
-  console.log('[FM:Migration] Avvio da v'+fromVersion+' → v'+STORAGE_VERSION);
-
-  // Backup in memoria prima di qualsiasi migrazione
-  // Se qualcosa va storto, ripristina i dati originali
-  const backup = {
-    userData:         JSON.parse(JSON.stringify(userData)),
-    chatHistory:      JSON.parse(JSON.stringify(chatHistory)),
-    appStats:         JSON.parse(JSON.stringify(appStats)),
-    schedaAttiva:     schedaAttiva ? JSON.parse(JSON.stringify(schedaAttiva)) : null,
-    dietaAttiva:      JSON.parse(JSON.stringify(dietaAttiva)),
-    alimentazioneLog: JSON.parse(JSON.stringify(alimentazioneLog)),
-    allenamentiLog:   JSON.parse(JSON.stringify(allenamentiLog))
-  };
-
-  try{
-    if(fromVersion < 2) _migrateV1toV2();
-    if(fromVersion < 3) _migrateV2toV3();
-    // Futuro: if(fromVersion < 4) _migrateV3toV4();
-    console.log('[FM:Migration] Completate → v'+STORAGE_VERSION);
-  } catch(e){
-    // Rollback — ripristina dati pre-migrazione
-    console.error('[FM:Migration] ERRORE — rollback ai dati originali:', e);
-    userData         = backup.userData;
-    chatHistory      = backup.chatHistory;
-    appStats         = backup.appStats;
-    schedaAttiva     = backup.schedaAttiva;
-    dietaAttiva      = backup.dietaAttiva;
-    alimentazioneLog = backup.alimentazioneLog;
-    allenamentiLog   = backup.allenamentiLog;
-    showToast('⚠️ Migrazione fallita — dati ripristinati');
-  }
+// ── Migrazione chat: id + timestamp ──
+function migrateChatMessages(){
+  let changed = false;
+  chatHistory = chatHistory.map(m=>{
+    if(!m.id||!m.timestamp){ changed=true; return {...m, id:genMsgId(), timestamp:Date.now()}; }
+    return m;
+  });
+  if(changed) console.log('[FM:Migration] Chat messages → v2.1 (id+timestamp)');
+  return changed;
 }
 
-// v1→v2: aggiunge id/timestamp ai messaggi, converte scheda lista piatta → sezioni
-function _migrateV1toV2(){
-  console.log('[FM:Migration] v1→v2');
-  chatHistory = chatHistory.map(m=>
-    (!m.id||!m.timestamp) ? {...m, id:genMsgId(), timestamp:Date.now()} : m
-  );
-  if(schedaAttiva?.esercizi && !schedaAttiva.sezioni){
-    schedaAttiva = {origine:schedaAttiva.origine||'utente', sezioni:[{nome:'Scheda', esercizi:schedaAttiva.esercizi}]};
-  }
-}
-
-// v2→v3: recupera dati da chiavi legacy, normalizza id esercizi, pulisce chiavi obsolete
-function _migrateV2toV3(){
-  console.log('[FM:Migration] v2→v3');
-
-  // Chat legacy
-  if(!chatHistory.length){
-    for(const k of ['fm_chat_v2','fm_messages']){
-      const r=localStorage.getItem(k);
-      if(r){ chatHistory=safeParse(r,[]); localStorage.removeItem(k); break; }
+// ── Migrazione scheda: unifica TUTTI i formati legacy in schedaAttiva ──
+// Formati supportati: fm_scheda (testo), fm_scheda_attiva (lista piatta), fm_scheda_v2 (sezioni)
+function migrateScheda(){
+  // 1. Prova il formato corrente v2
+  const raw = StorageAdapter.get(LS.scheda);
+  if(raw){
+    const parsed = JSON.parse(raw);
+    if(parsed && parsed.sezioni){
+      schedaAttiva = parsed;
+      return false; // già nel formato corretto
+    }
+    // Lista piatta → sezioni
+    if(parsed && parsed.esercizi && !parsed.sezioni){
+      schedaAttiva = { origine: parsed.origine||'utente', sezioni:[{ nome:'Scheda', esercizi: parsed.esercizi }] };
+      console.log('[FM:Migration] Scheda lista piatta → sezioni');
+      StorageAdapter.remove('fm_scheda_attiva');
+      return true;
     }
   }
-
-  // Scheda legacy
-  if(!schedaAttiva){
-    for(const k of ['fm_scheda_attiva','fm_scheda_v3']){
-      const r=localStorage.getItem(k);
-      if(r){
-        const p=safeParse(r,null);
-        if(p?.sezioni){ schedaAttiva=p; localStorage.removeItem(k); break; }
-        if(p?.esercizi){ schedaAttiva={origine:'utente',sezioni:[{nome:'Scheda',esercizi:p.esercizi}]}; localStorage.removeItem(k); break; }
-      }
-    }
-    localStorage.removeItem('fm_scheda'); // testuale — non recuperabile
+  // 2. Prova il vecchio formato fm_scheda_attiva
+  const rawOld = StorageAdapter.get('fm_scheda_attiva');
+  if(rawOld){
+    const parsed = JSON.parse(rawOld);
+    if(parsed && parsed.sezioni){ schedaAttiva = parsed; StorageAdapter.remove('fm_scheda_attiva'); return true; }
+    if(parsed && parsed.esercizi){ schedaAttiva = { origine:'utente', sezioni:[{nome:'Scheda', esercizi:parsed.esercizi}] }; StorageAdapter.remove('fm_scheda_attiva'); return true; }
   }
-
-  // Dieta legacy
-  if(!dietaAttiva?.target?.kcal){
-    for(const k of ['fm_dieta_attiva','fm_dieta']){
-      const r=localStorage.getItem(k);
-      if(r){
-        const p=safeParse(r,null);
-        if(p){ dietaAttiva=p.target?p:{origine:'utente',target:p}; localStorage.removeItem(k); break; }
-      }
-    }
+  // 3. Formato testuale fm_scheda — scartato, non convertibile
+  const rawText = StorageAdapter.get('fm_scheda');
+  if(rawText){
+    StorageAdapter.remove('fm_scheda');
+    console.log('[FM:Migration] Rimossa scheda testuale legacy (fm_scheda)');
   }
-
-  // Alimentazione legacy
-  if(!Object.keys(alimentazioneLog).length){
-    const r=localStorage.getItem('fm_alimentazione_log');
-    if(r){ alimentazioneLog=safeParse(r,{}); localStorage.removeItem('fm_alimentazione_log'); }
-  }
-
-  // Pulisci chiave versione vecchia
-  localStorage.removeItem('fm_version');
-
-  // Normalizza id esercizi
-  if(schedaAttiva) normalizeExerciseIds(schedaAttiva);
+  return false;
 }
 
 // ── Normalizza id esercizi — stabile per workout history ──
@@ -1213,332 +941,116 @@ function showToast(msg,dur=3000){
 // CALCOLI NUTRIZIONALI
 // ══════════════════════════════════════════════════════════════════
 function calcTargets(){
-  // Se l'utente ha inserito target manuali completi, usa quelli
-  if(dietaAttiva.target?.kcal && dietaAttiva.target?.proteine) return dietaAttiva.target;
-
-  const u = userData;
-  // FONTE DI VERITà PESO: lastWeight (aggiornato in chat) ha priorità su userData.peso (onboarding)
-  const pesoKg = parseFloat(appStats.lastWeight || u.peso) || 80;
-  const altCm  = parseFloat(u.altezza) || 175;
-  const etaAnn = parseFloat(u.eta)     || 30;
-  const male   = u.sesso === 'M';
-
-  // BMR (Mifflin-St Jeor)
-  const bmr = male
-    ? (10*pesoKg + 6.25*altCm - 5*etaAnn + 5)
-    : (10*pesoKg + 6.25*altCm - 5*etaAnn - 161);
-
-  // Moltiplicatore attività + allenamento
-  const actMult = {sedentario:1.2,leggero:1.375,moderato:1.55,fisico:1.725}[u.lavoro] || 1.375;
-  const trnMult = {2:.10,3:.15,4:.20,5:.25,6:.30}[u.giorni] || .15;
-  const tdee = Math.round(bmr * (actMult + trnMult));
-
-  // Massa magra stimata — usata per proteine (più precisa del peso totale)
-  let grassoPerc = parseFloat(u.grasso);
-  if(!grassoPerc || isNaN(grassoPerc)){
-    // Stima % grasso da BMI (formula Deurenberg) se non inserito
-    const bmi = pesoKg / ((altCm/100)**2);
-    grassoPerc = male
-      ? (1.20*bmi + 0.23*etaAnn - 16.2)
-      : (1.20*bmi + 0.23*etaAnn - 5.4);
-    grassoPerc = Math.min(Math.max(grassoPerc, 5), 55);
-  }
-  const massaMagra = pesoKg * (1 - grassoPerc/100);
-
-  let kcal, proteine, carbo, grassi;
-  const ob = u.obiettivo || 'mantenimento';
-
-  if(ob === 'dimagrimento'){
-    // Deficit moderato -500 kcal — sostenibile nel tempo, preserva massa magra
-    kcal     = Math.max(Math.round(tdee - 500), male ? 1500 : 1200);
-    // Proteine sulla massa magra — proteggono il muscolo in deficit
-    proteine = Math.round(massaMagra * 2.2);
-    grassi   = Math.round((kcal * 0.25) / 9);
-    carbo    = Math.round((kcal - (proteine*4) - (grassi*9)) / 4);
-
-  } else if(ob === 'massa'){
-    // Surplus moderato +275 kcal — minimizza accumulo grasso
-    kcal     = Math.round(tdee + 275);
-    proteine = Math.round(pesoKg * 2.0);
-    grassi   = Math.round((kcal * 0.22) / 9);
-    carbo    = Math.round((kcal - (proteine*4) - (grassi*9)) / 4);
-
-  } else if(ob === 'ricomposizione'){
-    // Mantenimento calorico — proteine alte per ricomposizione
-    kcal     = tdee;
-    proteine = Math.round(massaMagra * 2.2);
-    grassi   = Math.round((kcal * 0.25) / 9);
-    carbo    = Math.round((kcal - (proteine*4) - (grassi*9)) / 4);
-
-  } else if(ob === 'forza'){
-    // Lieve surplus +175 kcal — carbo alti per performance
-    kcal     = Math.round(tdee + 175);
-    proteine = Math.round(pesoKg * 1.8);
-    grassi   = Math.round((kcal * 0.22) / 9);
-    carbo    = Math.round((kcal - (proteine*4) - (grassi*9)) / 4);
-
-  } else {
-    // Mantenimento
-    kcal     = tdee;
-    proteine = Math.round(massaMagra * 1.8);
-    grassi   = Math.round((kcal * 0.25) / 9);
-    carbo    = Math.round((kcal - (proteine*4) - (grassi*9)) / 4);
-  }
-
-  // Sanity check — carbo mai negativi, minimo 50g
-  carbo = Math.max(carbo, 50);
-
-  return { kcal, proteine, carbo, grassi };
+  if(dietaAttiva.target?.proteine) return dietaAttiva.target;
+  const u=userData;
+  const p=parseFloat(u.peso)||80, a=parseFloat(u.altezza)||175, et=parseFloat(u.eta)||30;
+  const male=u.sesso==='M';
+  const bmr=male?(10*p+6.25*a-5*et+5):(10*p+6.25*a-5*et-161);
+  const act={sedentario:1.2,leggero:1.375,moderato:1.55,fisico:1.725}[u.lavoro]||1.375;
+  const trn={2:.1,3:.15,4:.2,5:.25,6:.3}[u.giorni]||.15;
+  const tdee=Math.round(bmr*(act+trn));
+  const pf=u.livello==='avanzato'?2.2:u.livello==='intermedio'?2.0:1.8;
+  return{ kcal:tdee, proteine:Math.round(p*pf), carbo:Math.round((tdee*.45)/4), grassi:Math.round((tdee*.25)/9) };
 }
 
 // ══════════════════════════════════════════════════════════════════
-// ALIMENTAZIONE — dual layer: tag AI (primario) + keyword utente (fallback)
+// ALIMENTAZIONE
 // ══════════════════════════════════════════════════════════════════
 function ensureGiorno(data){
   if(!alimentazioneLog[data]) alimentazioneLog[data]={colazione:[],pranzo:[],cena:[],spuntini:[]};
   return alimentazioneLog[data];
 }
 
-// Riconosce tipo pasto dal testo
+// Identifica tipo pasto — evita falsi positivi richiedendo parole chiave specifiche
 function detectPasto(t){
   const s=t.toLowerCase();
-  if(s.match(/\bcolazione\b|cappuccino|cornetto|avena|latte.*mattina|stamattina.*mangiato|ho fatto colazione/)) return 'colazione';
-  if(s.match(/\bpranzo\b|ho pranzato|a pranzo|mezzogiorno/)) return 'pranzo';
-  if(s.match(/\bcena\b|ho cenato|a cena|stasera.*mangiato|ieri sera/)) return 'cena';
-  if(s.match(/\bspuntino\b|\bmerenda\b/)) return 'spuntini';
+  if(s.match(/\bcolazione\b|cappuccino|cornetto|avena|yogurt.*matt|matt.*mangiato/)) return 'colazione';
+  if(s.match(/\bpranzo\b|ho pranzato|a pranzo/)) return 'pranzo';
+  if(s.match(/\bcena\b|ho cenato|a cena|ieri sera/)) return 'cena';
+  if(s.match(/\bspuntino\b|merenda/)) return 'spuntini';
   return null;
 }
 
-// Salva pasto dal testo utente (layer 2 — fallback se AI non mette il tag)
-function savePastoFromText(testo){
-  // ── FILTRO FALSI POSITIVI ──
-  // Blocca frasi che menzionano pasti ma NON sono un log reale.
-  // Meglio non salvare nulla che salvare dati sporchi.
-  const t = testo.toLowerCase();
-  const isFalsoPositivo =
-    t.match(/non ho mangiato|niente colazione|colazione saltata|pranzo saltato|cena saltata|ho saltato|non mangio|non mangiavo|mangiavo prima|mangiavo ieri|mangiavo di solito|mangiavo sempre|di solito mangio|prima mangiavo|peggio di|meglio di|rispetto a|ma oggi|invece oggi|domani|domani mangio|domani farò|vorrei mangiare|penso di mangiare|potrei mangiare|dovresti mangiare|dovresti fare colazione/) ||
-    t.match(/ieri (a colazione|a pranzo|a cena|mangiavo|ho mangiato male|ho mangiato troppo|ho esagerato)/) ||
-    t.match(/settimana scorsa|il mese scorso|una volta|di solito|normalmente|in generale|tendenzialmente/);
+function isLogAlimentare(t){
+  const s=t.toLowerCase();
+  return !!(s.match(/ho mangiato|ho fatto colazione|ho pranzato|ho cenato|a pranzo ho|a cena ho|per colazione|per pranzo|per cena|spuntino:/));
+}
 
-  if(isFalsoPositivo){
-    console.log('[FM:FoodFilter] BLOCCATO:', {
-      testo:     testo.substring(0,80),
-      tipo:      detectPasto(testo) || 'non rilevato',
-      motivo:    t.match(/non ho mangiato|niente colazione|colazione saltata|pranzo saltato|cena saltata|ho saltato|non mangio/) ? 'negative_statement' :
-                 t.match(/mangiavo|mangiavo prima|mangiavo ieri|di solito|normalmente|tendenzialmente/) ? 'habitual_or_past' :
-                 t.match(/domani|vorrei|potrei|penso di|dovresti/) ? 'future_or_hypothetical' :
-                 t.match(/settimana scorsa|il mese scorso|una volta|in generale/) ? 'generic_reference' :
-                 t.match(/peggio di|meglio di|rispetto a|invece oggi|ma oggi/) ? 'comparison' :
-                 'other_pattern',
-      timestamp: new Date().toLocaleTimeString()
-    });
-    return;
-  }
+function gestisciRifIeri(t){
+  const m=t.toLowerCase().match(/stess[ao]\s+(colazione|pranzo|cena|spuntino)\s+di\s+ieri/i);
+  if(!m) return false;
+  const tipo=m[1].toLowerCase()==='colazione'?'colazione':m[1].toLowerCase()==='pranzo'?'pranzo':m[1].toLowerCase()==='cena'?'cena':'spuntini';
+  const ieri=alimentazioneLog[yesterdayStr()];
+  if(ieri?.[tipo]?.length){ ensureGiorno(todayStr())[tipo]=[...ieri[tipo]]; saveAll(); return true; }
+  return false;
+}
 
-  const rifIeri=testo.toLowerCase().match(/stess[ao]\s+(colazione|pranzo|cena|spuntino)\s+di\s+ieri/i);
-  if(rifIeri){
-    const tipoKey=rifIeri[1].toLowerCase()==='spuntino'?'spuntini':rifIeri[1].toLowerCase();
-    const ieri=alimentazioneLog[yesterdayStr()];
-    if(ieri?.[tipoKey]?.length){ ensureGiorno(todayStr())[tipoKey]=[...ieri[tipoKey]]; saveAll(); refreshDietaUI(); console.log('[FM:Alim] Copiato',tipoKey,'da ieri'); }
-    return;
-  }
+function savePasto(testo){
+  if(gestisciRifIeri(testo)){ refreshDietaUI(); return; }
   const tipo=detectPasto(testo);
   if(!tipo) return;
   const dataRef=testo.toLowerCase().includes('ieri sera')?yesterdayStr():todayStr();
-  let contenuto=testo.replace(/\b(ho mangiato|ho fatto colazione|ho pranzato|ho cenato|a pranzo ho|a cena ho|per colazione|per pranzo|per cena|spuntino:|oggi|ieri sera|ieri|stamattina|ti scrivo|ecco|questi sono)\b/gi,'').replace(/^\s*[:—\-,]\s*/,'').trim();
+  let contenuto=testo.replace(/ho mangiato|ho fatto colazione|ho pranzato|ho cenato|a pranzo ho|a cena ho|per colazione|per pranzo|per cena|spuntino:|oggi|ieri sera|ieri|stamattina/gi,'').replace(/^\s*[:—\-,]\s*/,'').trim();
   if(!contenuto||contenuto.length<3) contenuto=testo.trim();
   const g=ensureGiorno(dataRef);
-  if(!g[tipo].includes(contenuto)){
-    g[tipo].push(contenuto);
-    console.log('[FM:Alim] Salvato (keyword)', tipo+'('+dataRef+'):', contenuto);
-    dbg('FOOD_SAVE', {layer:'keyword', tipo, contenuto, data:dataRef});
-    saveAll(); refreshDietaUI();
-  }
+  if(!g[tipo].includes(contenuto)){ g[tipo].push(contenuto); console.log('[FM:Alim] Salvato',tipo,'('+dataRef+'):',contenuto); saveAll(); refreshDietaUI(); }
 }
 
-// Salva pasto da tag AI (layer 1 — primario)
-function eseguiRegistraPasto(tipo,contenuto,msgId){
-  const tipoKey=tipo==='spuntino'?'spuntini':tipo;
-  const g=ensureGiorno(todayStr());
-  if(!g[tipoKey].includes(contenuto)){
-    g[tipoKey].push(contenuto);
-    console.log('[FM:Alim] Salvato (tag AI)', tipoKey+':', contenuto);
-    dbg('FOOD_SAVE', {layer:'ai_tag', tipo:tipoKey, contenuto});
-    saveAll(); refreshDietaUI();
-    showToast('✅ '+tipoKey.charAt(0).toUpperCase()+tipoKey.slice(1)+' registrata!');
-  }
-}
-
-// Riepilogo pasti per il system prompt — SEMPRE completo, SEMPRE aggiornato
 function buildAlimContesto(){
-  const oggi=alimentazioneLog[todayStr()]||null;
-  const ieri=alimentazioneLog[yesterdayStr()]||null;
-  const fmt=g=>{
-    if(!g) return null;
+  const oggi=alimentazioneLog[todayStr()];
+  const ieri=alimentazioneLog[yesterdayStr()];
+  let ctx='';
+  if(oggi){
     const ps=[];
-    if(g.colazione?.length) ps.push('Colazione: '+g.colazione.join(', '));
-    if(g.pranzo?.length)    ps.push('Pranzo: '+g.pranzo.join(', '));
-    if(g.cena?.length)      ps.push('Cena: '+g.cena.join(', '));
-    if(g.spuntini?.length)  ps.push('Spuntini: '+g.spuntini.join(', '));
-    return ps.length?ps.join(' | '):null;
-  };
-  const oggiStr=fmt(oggi);
-  const ieriStr=fmt(ieri);
-  let ctx='— OGGI ('+todayStr()+'): '+(oggiStr||'nessun pasto registrato ancora');
-  if(ieriStr) ctx+='\n— IERI ('+yesterdayStr()+'): '+ieriStr;
+    if(oggi.colazione.length) ps.push('Col: '+oggi.colazione.join(', '));
+    if(oggi.pranzo.length)    ps.push('Pran: '+oggi.pranzo.join(', '));
+    if(oggi.cena.length)      ps.push('Cena: '+oggi.cena.join(', '));
+    if(oggi.spuntini.length)  ps.push('Spunt: '+oggi.spuntini.join(', '));
+    ctx='OGGI: '+(ps.length?ps.join(' | '):'nessun pasto registrato');
+  } else { ctx='OGGI: nessun pasto registrato'; }
+  if(ieri){
+    const ps=[];
+    if(ieri.colazione.length) ps.push('Col: '+ieri.colazione.join(', '));
+    if(ieri.pranzo.length)    ps.push('Pran: '+ieri.pranzo.join(', '));
+    if(ieri.cena.length)      ps.push('Cena: '+ieri.cena.join(', '));
+    if(ps.length) ctx+='\nIERI: '+ps.join(' | ');
+  }
   return ctx;
 }
 
-function gestisciRifIeri(){ return false; } // compatibilità
-
 // ══════════════════════════════════════════════════════════════════
-// WEEKLY SUMMARY — Layer 2 memory (skeleton, non ancora in uso)
-// Da collegare a buildSystemPrompt() quando promptSize() > 2500 tokens
+// AI CONTEXT
 // ══════════════════════════════════════════════════════════════════
-//
-// REGOLA: max 5-6 bullet. Breve, utile, orientato alle decisioni.
-// NON cronaca — pattern rilevanti per il coaching.
-//
-function buildWeeklySummary(){
-  const oggi = new Date();
-  const lines = [];
-
-  // ── Analisi proteine ultimi 7 giorni ──
-  let giorniSottoProteine = 0;
-  let giorniConDati = 0;
-  const targetProt = calcTargets().proteine || 0;
-  for(let i=1; i<=7; i++){
-    const d = new Date(oggi); d.setDate(d.getDate()-i);
-    const key = d.toISOString().split('T')[0];
-    const g = alimentazioneLog[key];
-    if(!g) continue;
-    giorniConDati++;
-    const tuttiPasti = [...(g.colazione||[]),...(g.pranzo||[]),...(g.cena||[]),...(g.spuntini||[])];
-    // Stima approssimativa: se meno di 2 pasti registrati → probabile sotto target
-    if(tuttiPasti.length < 2) giorniSottoProteine++;
-  }
-  if(giorniConDati >= 3 && giorniSottoProteine >= 3)
-    lines.push(`- Pasti registrati pochi giorni su ${giorniConDati} — possibile sotto target proteine`);
-
-  // ── Analisi allenamenti ultimi 7 giorni ──
-  let sessioniSettimana = 0;
-  for(let i=1; i<=7; i++){
-    const d = new Date(oggi); d.setDate(d.getDate()-i);
-    const key = d.toISOString().split('T')[0];
-    if(allenamentiLog[key]?.esercizi?.length) sessioniSettimana++;
-  }
-  if(sessioniSettimana > 0)
-    lines.push(`- ${sessioniSettimana} sessioni di allenamento nell'ultima settimana`);
-
-  // ── Trend peso ──
-  const wh = appStats.weightHistory || [];
-  if(wh.length >= 2){
-    const ultimo = wh[wh.length-1].val;
-    const penultimo = wh[wh.length-2].val;
-    const diff = (ultimo - penultimo).toFixed(1);
-    if(Math.abs(diff) < 0.5) lines.push('- Peso stabile');
-    else lines.push(`- Peso ${diff > 0 ? '+'+diff : diff}kg rispetto all'ultima misurazione`);
-  }
-
-  // ── Progressioni esercizi principali ──
-  if(schedaAttiva?.sezioni){
-    schedaAttiva.sezioni.forEach(sez=>{
-      sez.esercizi.forEach(es=>{
-        if(!es.storico || es.storico.length < 2) return;
-        const primo = es.storico[0].peso;
-        const ultimo = es.storico[es.storico.length-1].peso;
-        if(ultimo > primo)
-          lines.push(`- ${es.nome}: progressione ${primo}→${ultimo}kg`);
-      });
-    });
-  }
-
-  if(lines.length === 0) return null;
-  return 'RIEPILOGO SETTIMANA:\n' + lines.join('\n');
-}
-// TODO: collegare a buildSystemPrompt() come Layer 2
-// quando FitMind.promptSize() supera regolarmente 2500 tokens
-// ══════════════════════════════════════════════════════════════════
-//
-// MEMORY ARCHITECTURE — roadmap futura (non ancora implementata)
-// ─────────────────────────────────────────────────────────────────
-// Il context management è il vero collo di bottiglia di questa app.
-// Con crescita di storico, pasti, progressioni e chat, il prompt
-// esploderà. La soluzione è una memoria a 3 livelli:
-//
-// LAYER 1 — Context immediato (già implementato parzialmente)
-//   Ultimi RECENT_CHAT_LIMIT messaggi
-//   Pasti di oggi e ieri
-//   Allenamento sessione corrente
-//   → Cambia ad ogni messaggio
-//
-// LAYER 2 — Summary persistente (da implementare)
-//   Obiettivo attuale + fase (massa/cut/mantenimento)
-//   Trend peso ultimo mese
-//   Progressioni esercizi principali (es. panca: 70→80kg in 3 mesi)
-//   Aderenza media (es. 4/5 sessioni settimana)
-//   → Si aggiorna ogni settimana o al cambio obiettivo
-//   → Salvato in localStorage come testo compresso
-//
-// LAYER 3 — Long-term memory (da implementare)
-//   PR per esercizio principale
-//   Pattern alimentari ricorrenti
-//   Periodi di stop e ripresa
-//   → Si aggiorna raramente, max 1 volta al mese
-//   → Poche righe di testo — mai strutture JSON grandi
-//
-// ─────────────────────────────────────────────────────────────────
-// PRINCIPIO FONDAMENTALE — summary > dati grezzi
-// ─────────────────────────────────────────────────────────────────
-// Il formato corretto per il prompt futuro NON è:
-//   [{"giorno":"2026-05-01","pasto":"yogurt"},{"giorno":"..."}]
-//
-// MA è linguaggio naturale compresso:
-//   "Ultime 2 settimane: proteine spesso sotto target,
-//    miglioramento costante sulla panca, sonno irregolare,
-//    peso stabile. Aderenza allenamento: 4/5 sessioni."
-//
-// Motivo: l'AI ragiona meglio su pattern descritti che su log grezzi.
-// Un summary di 3 righe vale più di 200 righe di JSON.
-// ─────────────────────────────────────────────────────────────────
-// TRIGGER DI COMPRESSIONE
-//   FitMind.promptSize() > 2500 tokens → attivare Layer 2
-//   Non "mi sembra lungo" — metriche concrete.
-// ─────────────────────────────────────────────────────────────────
 
 // Sessione allenamento attiva: tiene traccia di quale scheda si sta eseguendo
 let sessioneAttiva = null; // { sezNome, esercizi:[{nome,serie,reps,peso}], esIdx:0, log:[] }
 
 function buildSchedaCtxCompleto(){
-  try{
-    if(!schedaAttiva?.sezioni?.length) return 'Nessuna scheda attiva.';
-    return schedaAttiva.sezioni.map(sez=>{
-      const esStr = (sez.esercizi||[]).map(e=>{
-        try{
-          let s = `${e.nome||'?'}`;
-          // Tipo esercizio — con fallback sicuro
-          const tipo = (e.tipo || (typeof getTipoEs==='function' ? getTipoEs(e.nome||'',e.gruppo||'') : 'weighted')) || 'weighted';
-          if(tipo==='cardio'){
-            if(e.minuti) s+=` ${e.minuti}min`;
-            if(e.km) s+=` ${e.km}km`;
-          } else {
-            if(e.serie && e.reps) s+=` ${e.serie}x${e.reps}`;
-            if(e.peso) s+=` @${e.peso}kg`;
-            if(e.recupero) s+=` rec${e.recupero}s`;
-          }
-          if(e.storico?.length){
-            const ult = e.storico.slice(-3);
-            s += ` | storico: ${ult.map(h=>`${h.data||'?'} ${h.peso||'?'}kg×${h.reps||'?'}`).join(', ')}`;
-          }
-          return s;
-        } catch(eInner){ return e.nome||'esercizio'; }
-      }).join('\n    ');
-      return `[${sez.nome}]\n    ${esStr}`;
-    }).join('\n');
-  } catch(e){
-    console.error('[FM:Scheda] buildSchedaCtxCompleto crash:', e.message);
-    return 'Scheda presente ma non leggibile.';
-  }
+  if(!schedaAttiva?.sezioni?.length) return 'Nessuna scheda attiva.';
+  return schedaAttiva.sezioni.map(sez=>{
+    const esStr = sez.esercizi.map(e=>{
+      let s = `${e.nome}`;
+      const tipo=e.tipo||getTipoEs(e.nome,e.gruppo||'');
+      if(tipo==='cardio'){
+        if(e.minuti) s+=` ${e.minuti}min`;
+        if(e.km) s+=` ${e.km}km`;
+        if(e.velocita) s+=` @${e.velocita}km/h`;
+        if(e.pendenza) s+=` pendenza${e.pendenza}%`;
+      } else if(tipo==='bodyweight'){
+        s+=` ${e.serie}x${e.reps}`;
+      } else {
+        s+=` ${e.serie}x${e.reps}`;
+        if(e.peso) s+=` @${e.peso}kg`;
+        if(e.recupero) s+=` rec${e.recupero}s`;
+      }
+      if(e.storico?.length){
+        const ult = e.storico.slice(-3);
+        s += ` | storico: ${ult.map(h=>`${h.data||'?'} ${h.peso||'?'}kg×${h.reps||'?'}`).join(', ')}`;
+      }
+      return s;
+    }).join('\n    ');
+    return `[${sez.nome}]\n    ${esStr}`;
+  }).join('\n');
 }
 
 function buildSystemPrompt(){
@@ -1590,27 +1102,14 @@ Escludi esercizi: ${u.escludiex||'nessuno'}
 Obiettivo: ${u.obiettivo||'?'} | Tempistica: ${u.tempistica||'?'}
 Motivazione: ${u.motivazione||'?'}
 
-━━━ TARGET NUTRIZIONALI ━━━
-${dietaAttiva.target?.kcal
-  ? `FONTE: inseriti manualmente dall'utente — usa QUESTI valori, ignora qualsiasi calcolo alternativo.
-TARGET: ${t.kcal} kcal | Proteine: ${t.proteine||'?'}g | Carboidrati: ${t.carbo||'?'}g | Grassi: ${t.grassi||'?'}g`
-  : `FONTE: calcolati dal profilo (nessun target manuale inserito).
-BMR: ~${Math.round(bmr)} kcal | TDEE: ~${tdee} kcal
-TARGET STIMATO: ~${t.kcal} kcal | Proteine: ~${t.proteine}g | Carboidrati: ~${t.carbo}g | Grassi: ~${t.grassi}g`
-}
-${u.obiettivo==='massa'?'STRATEGIA: Surplus +200/300 kcal. Proteine prima, carbo attorno al workout.':u.obiettivo==='dimagrimento'?'STRATEGIA: Deficit -400/500 kcal. Proteine alte per proteggere la massa magra.':u.obiettivo==='ricomposizione'?'STRATEGIA: Kcal mantenimento. Carbo ciclici: più nei giorni workout, meno nei rest day.':u.obiettivo==='forza'?'STRATEGIA: Lieve surplus +150/200 kcal. Carbo alti per performance.':'STRATEGIA: Mantenimento. Qualità > quantità.'}
-Acqua: ~${Math.round(p*0.033*10)/10}L/die + 0.5L per ogni ora di allenamento
+━━━ METABOLISMO & TARGET NUTRIZIONALI ━━━
+BMR stimato: ~${Math.round(bmr)} kcal | TDEE stimato: ~${tdee} kcal
+TARGET GIORNALIERO: ~${t.kcal||'?'} kcal | Proteine: ~${t.proteine||'?'}g | Carboidrati: ~${t.carbo||'?'}g | Grassi: ~${t.grassi||'?'}g
+${u.obiettivo==='massa'?'STRATEGIA: Surplus +200/300 kcal. Priorità: proteine primo, carbo timing intorno workout, grassi saturi moderati.':u.obiettivo==='dimagrimento'?'STRATEGIA: Deficit -400/500 kcal. Priorità: proteine alte (protezione massa magra), deficit progressivo, refeed settimanale se streak >10gg.':u.obiettivo==='ricomposizione'?'STRATEGIA: Kcal mantenimento. Cycling carbo: più nei giorni workout, meno nei rest day. Proteine costantemente alte.':u.obiettivo==='forza'?'STRATEGIA: Lieve surplus +150/200 kcal. Carbo alti per performance, proteine moderate-alte, creatina consigliata.':'STRATEGIA: Mantenimento. Qualità > quantità. Focus micronutrienti e idratazione.'}
+Acqua target: ~${Math.round(p*0.033*10)/10}L/die (basale) + 0.5/0.7L per ogni ora di allenamento intenso
 
-━━━ DIARIO ALIMENTARE OGGI — MEMORIA REALE ━━━
+━━━ DIARIO ALIMENTARE OGGI ━━━
 ${buildAlimContesto()}
-
-⚠️ REGOLA OBBLIGATORIA: Se il diario mostra pasti già registrati, USALI sempre.
-NON chiedere di nuovo cosa ha mangiato se è già nel diario.
-Esempio corretto: "Hai già fatto colazione con [X] e lo spuntino con [Y]. A pranzo ti servono ancora circa Z grammi di proteine."
-
-━━━ RIEPILOGO SETTIMANA ━━━
-${(()=>{ try{ return buildWeeklySummary()||'Dati insufficienti per il riepilogo settimanale.'; }catch(e){ return 'N/D'; } })()}
-⚠️ REGOLA: Usa questo riepilogo per osservazioni su pattern settimanali. NON inventare trend non presenti nei dati.
 
 ━━━ SCHEDA ATTIVA (con storico progressioni) ━━━
 ${buildSchedaCtxCompleto()}
@@ -1621,62 +1120,41 @@ Sessioni totali: ${appStats.sessions||0} | Streak: ${appStats.streak||0} gg | Pe
 ━━━ CONTESTO TEMPORALE ━━━
 I messaggi utente includono [Giorno Data - Ora]. Usalo per contestualizzare: pasti mattutini, allenamenti, recupero notturno.
 
+━━━ KNOWLEDGE BASE NUTRIZIONE (livello elite) ━━━
+PROTEINE: 1.6-2.2g/kg per ipertrofia (2.2-2.6g/kg in deficit). Fonti complete: pollo, uova, pesce, manzo, latticini, whey. Fonti vegetali: legumi+cereali, tofu, tempeh, seitan. Distribuzione: 20-40g per pasto ogni 3-4h per sintesi proteica ottimale (leucine threshold ~2.5g).
+CARBOIDRATI: Fonte energetica primaria. Pre-workout (90-120min prima): 40-60g complessi + 20-30g semplici. Post-workout: 40-80g ad alto indice glicemico per ricostituire glicogeno. Nei giorni di riposo: -20/30% quota carbo. Fibre: 25-35g/die.
+GRASSI: Min 0.8g/kg, preferibilmente 1g/kg. Omega-3 (pesce grasso, noci, semi di lino) fondamentali per riduzione infiammazione e recupero. Evitare grassi trans. Grassi saturi <10% kcal totali.
+TIMING: Colazione entro 1-2h dal risveglio, non saltarla se obiettivo ipertrofia. Finestra anabolica post-workout: 30-60min. Ultima proteina prima di dormire: caseina (yogurt greco, ricotta) per sintesi proteica notturna.
+MICRONUTRIENTI CRITICI: Vit.D (sole + integrazione 2000-4000UI/die in inverno), Magnesio (recupero muscolare, sonno), Zinco (testosterone, sistema immunitario), Ferro (donne), Creatina monoidrato 3-5g/die (sicura, efficace per forza e massa).
+IDRATAZIONE: -2% peso corporeo in acqua = -20% performance. Urine: giallo paglierino = buona idratazione. Bevande ipotonico/isotoniche durante allenamenti >60min intensi.
+
+━━━ KNOWLEDGE BASE TRAINING (livello elite) ━━━
+SOVRACCARICO PROGRESSIVO: Principio fondamentale. Ogni sessione: +peso, +reps, +serie, -recupero, o +densità. Non aumentare tutto insieme.
+PROGRESSIONE PESO: +2.5kg bilanciere quando completi tutte le serie con buona forma. +1kg manubri. Microcarichi (0.5-1.25kg) per esercizi plateau.
+RPE/RIR: Allenati a RPE 7-9 (RIR 1-3). Mai cedimento muscolare per ogni serie, massimo ultima serie. Cedimento costante → overtraining.
+VOLUME SETTIMANALE PER GRUPPO: Principiante: 8-10 serie. Intermedio: 12-16 serie. Avanzato: 16-22 serie. Incremento graduale 1-2 serie/settimana.
+RECUPERO TRA SERIE: Forza (<6 reps): 3-5 min. Ipertrofia (6-12): 60-120s. Resistenza (>15): 30-60s.
+FREQUENZA MUSCOLARE: Ogni muscolo 2x/settimana ottimale per ipertrofia. 1x/settimana funziona ma subottimale per intermedi/avanzati.
+SPLIT INTELLIGENTE: 2gg → Full Body. 3gg → PPL o Upper/Lower. 4gg → Upper/Lower x2 o PPL+Full. 5-6gg → PPL x2 o Bro split avanzato. MAI muscoli sinergici pesanti in giorni consecutivi (es: petto ieri, spalle/tricipiti oggi = errore).
+DELOAD: Ogni 4-8 settimane, -40-50% volume/intensità per 1 settimana. Obbligatorio, non opzionale.
+RISCALDAMENTO: 5-10min cardio leggero + mobilità articolare + serie di avvicinamento (50%, 70%, 85% del carico lavoro).
+DOLORI: Dolore articolare/tendineo → stop immediato. DOMS (indolenzimento muscolare 24-72h post) → normale, continua con movimenti leggeri.
+
 ━━━ REGOLE COMPORTAMENTALI ━━━
 1. SEMPRE specifico per questo utente — mai risposte generiche
 2. SESSIONE IN CORSO → guida esercizio per esercizio: nome, serie, reps, peso, note tecniche, poi chiedi il risultato
-3. PROGRESSIONE RILEVATA → commenta entusiasta (in proporzione al livello esigenza), suggerisci il prossimo target
-4. LOG PASTI → stima macro, confronta con target, indica mancanze o eccessi con tono costruttivo
+3. PROGRESSIONE RILEVATA → commenta entusiasta (in proporzione al livello esigenza), aggiorna mentalmente il record, suggerisci il prossimo target
+4. LOG PASTI → stima macro con probabilistic reasoning, confronta con target, indica mancanze o eccessi con tono costruttivo
 5. PASTO "LIBERO" (pizza, birra, dolce) → normalizza: "Un pasto non cambia nulla. Domani torniamo in carreggiata." MAI colpevolizzare
-6. BASSA PROTEINA GIORNALIERA → suggerisci integrazioni pratiche e veloci
+6. BASSA PROTEINA GIORNALIERA → suggerisci integrazioni pratiche e veloci (es: "aggiungi 200g yogurt greco = +17g proteine, 5 min")
 7. DOLORE/INFORTUNIO → priorità assoluta, ferma l'esercizio, proponi alternativa sicura
 8. STOP >5gg → ripresa graduale -30/40% volume prima settimana
-9. DISAGIO EMOTIVO → empatia prima, tecnica dopo
-10. RICHIESTE IRREALISTICHE → tempi reali con alternativa concreta
+9. DISAGIO EMOTIVO → empatia prima, tecnica dopo. Non ignorare mai il lato umano
+10. RICHIESTE IRREALISTICHE → tempi reali con spiegazione fisiologica, alternativa concreta
 11. UTENTE AGGRESSIVO → autorevolezza calma, no apologie servili
-12. COLLEGA alimentazione↔allenamento↔recupero↔sonno quando pertinente
-13. GENERAZIONE SCHEDA → rispetta split muscolare, adatta al numero di giorni
-14. SUGGERISCI integratori solo se realmente utili, con dosaggi precisi
-
-━━━ SISTEMA TAG — OBBLIGATORIO ━━━
-Alla fine di OGNI risposta dove rilevi un pasto, un esercizio, una progressione o generi una scheda, aggiungi il tag corrispondente.
-Il tag è invisibile all'utente — viene intercettato dall'app automaticamente.
-NON spiegare il tag, NON menzionarlo, aggiungilo semplicemente in fondo alla risposta.
-
-FORMAT TAG (solo se pertinente):
-
-PASTO RILEVATO → aggiungi esattamente:
-[LOG_PASTO:tipo:contenuto]
-dove tipo = colazione | pranzo | cena | spuntino
-esempio: [LOG_PASTO:colazione:yogurt greco 150g, cereali, caffè]
-
-ESERCIZIO RILEVATO → aggiungi esattamente:
-[LOG_ALLENAMENTO:nome_esercizio:serie:reps:peso_kg]
-esempio: [LOG_ALLENAMENTO:panca piana:4:8:80]
-Se più esercizi nella stessa risposta, aggiungi un tag per ognuno.
-
-PROGRESSIONE RILEVATA (peso o reps migliorati rispetto alla scheda) → aggiungi esattamente:
-[UPDATE_SCHEDA:nome_esercizio:nuovo_peso_kg:nuove_reps]
-esempio: [UPDATE_SCHEDA:panca piana:82.5:8]
-Usalo quando l'utente dice esplicitamente che ha fatto più peso o più reps di quanto in scheda.
-NON usarlo su supposizioni — solo su dati concreti detti dall'utente.
-
-GENERAZIONE SCHEDA COMPLETA → quando generi una scheda di allenamento completa, aggiungi OBBLIGATORIAMENTE alla fine della risposta il tag con la struttura JSON.
-Formato esatto (rispetta PRECISAMENTE questa struttura, nessuna variazione):
-[SAVE_SCHEDA:{"sezioni":[{"nome":"Push","esercizi":[{"gruppo":"Petto","nome":"Panca piana bilanciere","serie":4,"reps":8,"peso":0,"recupero":90},{"gruppo":"Spalle","nome":"Military press manubri","serie":3,"reps":10,"peso":0,"recupero":90}]},{"nome":"Pull","esercizi":[{"gruppo":"Schiena","nome":"Lat machine presa larga","serie":4,"reps":10,"peso":0,"recupero":90}]}]}]
-
-REGOLE CRITICHE PER IL JSON:
-- Usa SOLO virgolette doppie "
-- Nessuno spazio o newline dentro il JSON del tag
-- peso:0 se non specificato dall'utente
-- recupero sempre in secondi (90 = 90 secondi)
-- Il tag DEVE essere l'ultima riga della risposta
-- Se generi una scheda con 3 sezioni, includi TUTTE e 3 nel JSON
-
-REGOLE TAG:
-- Aggiungi il tag SOLO se hai dati concreti dall'utente
-- Mai aggiungere tag se l'utente parla di intenzioni future ("farò", "vorrei")
-- Il tag va sempre nell'ultima riga della risposta, dopo tutto il testo
-- Un solo [SAVE_SCHEDA] per risposta, solo quando hai generato una scheda completa`;
+12. COLLEGA alimentazione↔allenamento↔recupero↔sonno quando pertinente: sono un sistema unico
+13. GENERAZIONE SCHEDA → rispetta split muscolare (niente muscoli sinergici consecutivi), adatta al numero di giorni, distribuisci volume intelligentemente
+14. SUGGERISCI integratori solo se realmente utili per questo profilo specifico, con dosaggi precisi`;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1844,8 +1322,8 @@ function launchApp(){
   updateStreak();
   if(schedaAttiva) renderSchedaView();
   refreshDietaUI();
-  const firstRun=!localStorage.getItem(LS.firstRun);
-  if(firstRun&&!schedaAttiva){ localStorage.setItem(LS.firstRun,'1'); setTimeout(()=>showModal('mSchedaChoice'),1200); }
+  const firstRun=!StorageAdapter.get(LS.firstRun);
+  if(firstRun&&!schedaAttiva){ StorageAdapter.set(LS.firstRun,'1'); setTimeout(()=>showModal('mSchedaChoice'),1200); }
   const msgs=document.getElementById('chatMsgs');
   msgs.innerHTML='';
   if(chatHistory.length===0){
@@ -1898,150 +1376,25 @@ function addUserMsg(text){
   div.addEventListener('touchend',()=>clearTimeout(pt),{passive:true});
   div.addEventListener('touchmove',()=>clearTimeout(pt),{passive:true});
   document.getElementById('chatMsgs').appendChild(div);
-  scrollToBottom();
+  document.getElementById('chatMsgs').scrollTop=99999;
   chatHistory.push({id,role:'user',content:`${nowTimestamp()} ${text}`,timestamp:ts});
-
-  // Rileva aggiornamento peso dal messaggio utente — molto più affidabile che dal testo AI
-  // Pattern: "oggi peso 82", "stamattina 81.5kg", "mi sono pesato: 83"
-  const pesoMatch = text.match(/(?:peso|pesavo|pesato|sono a)\s*[:=]?\s*(\d{2,3}(?:[.,]\d{1,2})?)\s*kg/i)
-    || text.match(/(\d{2,3}(?:[.,]\d{1,2})?)\s*kg\b.*(?:peso|bascula|bilancia)/i);
-  if(pesoMatch){
-    const nuovoPeso = pesoMatch[1].replace(',','.');
-    const pesoNum = parseFloat(nuovoPeso);
-    if(pesoNum >= 30 && pesoNum <= 300){ // sanity check
-      appStats.lastWeight = nuovoPeso;
-      appStats.weightHistory.push({date:todayStr(), val:pesoNum});
-      console.log('[FM:Stats] Peso aggiornato da utente:', nuovoPeso+'kg');
-      refreshStats(); saveAll();
-    }
-  }
-
-  // Layer 2 — salva pasto da keyword nel testo (fallback se AI non mette il tag)
-  const tipoPasto = detectPasto(text);
-  if(tipoPasto) savePastoFromText(text);
-
+  if(isLogAlimentare(text)) savePasto(text);
   saveAll();
 }
 
 function addAiMsg(text){
   const id=genMsgId(), ts=Date.now();
-
-  // ── PARSING TAG ──
-  // Intercetta i tag invisibili inseriti dall'AI e costruisce i bottoni azione.
-  // Il testo visibile viene ripulito dai tag prima di essere mostrato.
-  const actions=[];
-  let cleanText=text;
-  dbg('AI_TAGS', {
-    hasPasto:      text.includes('[LOG_PASTO:'),
-    hasAllenamento:text.includes('[LOG_ALLENAMENTO:'),
-    hasScheda:     text.includes('[UPDATE_SCHEDA:'),
-    preview:       text.substring(text.length-120)
-  });
-
-  // LOG_PASTO — salva nel diario alimentare con conferma utente
-  const pastoMatches=[...text.matchAll(/\[LOG_PASTO:(colazione|pranzo|cena|spuntino):([^\]]+)\]/gi)];
-  pastoMatches.forEach(m=>{
-    const tipo=m[1].toLowerCase(), contenuto=m[2].trim();
-    actions.push({
-      type:'pasto', label:`✅ Registro ${tipo}`, sublabel:contenuto.substring(0,40)+(contenuto.length>40?'...':''),
-      cls:'ai-btn-pasto',
-      fn:()=>{ eseguiRegistraPasto(tipo, contenuto, id); }
-    });
-    cleanText=cleanText.replace(m[0],'');
-  });
-
-  // LOG_ALLENAMENTO — salva in allenamentiLog con conferma utente
-  const allMatches=[...text.matchAll(/\[LOG_ALLENAMENTO:([^:]+):(\d+):(\d+):(\d+(?:\.\d+)?)\]/gi)];
-  allMatches.forEach(m=>{
-    const nome=m[1].trim(), serie=parseInt(m[2]), reps=parseInt(m[3]), peso=parseFloat(m[4]);
-    actions.push({
-      type:'allenamento', label:`✅ Registro allenamento`, sublabel:`${nome} ${serie}x${reps} @${peso}kg`,
-      cls:'ai-btn-allenamento',
-      fn:()=>{ eseguiRegistraAllenamento(nome, serie, reps, peso, id); }
-    });
-    cleanText=cleanText.replace(m[0],'');
-  });
-
-  // UPDATE_SCHEDA — proposta aggiornamento peso/reps con conferma utente
-  const schedaMatches=[...text.matchAll(/\[UPDATE_SCHEDA:([^:]+):(\d+(?:\.\d+)?):(\d+)\]/gi)];
-  schedaMatches.forEach(m=>{
-    const nome=m[1].trim(), newPeso=parseFloat(m[2]), newReps=parseInt(m[3]);
-    actions.push({
-      type:'scheda', label:`✅ Aggiorna scheda`, sublabel:`${nome}: ${newPeso}kg × ${newReps}`,
-      cls:'ai-btn-scheda',
-      fn:()=>{ eseguiUpdateScheda(nome, newPeso, newReps, id); }
-    });
-    cleanText=cleanText.replace(m[0],'');
-  });
-
-  // SAVE_SCHEDA — cerca il tag con regex robusta che gestisce spazi e newline
-  const saveSchedaMatch = text.match(/\[SAVE_SCHEDA:([\s\S]*?)\](?:\s*)$/m)
-    || text.match(/\[SAVE_SCHEDA:(\{[\s\S]*?\})\]/);
-  console.log('[FM:Scheda] Cerca SAVE_SCHEDA:', !!saveSchedaMatch, '| len testo:', text.length);
-  if(saveSchedaMatch){
-    console.log('[FM:Scheda] Tag trovato, JSON len:', saveSchedaMatch[1].length);
-    try{
-      // Pulizia aggressiva JSON prima del parsing
-      let jsonStr = saveSchedaMatch[1].trim();
-      // Rimuovi newline e tab
-      jsonStr = jsonStr.replace(/[\n\r\t]/g,' ');
-      // Rimuovi spazi multipli
-      jsonStr = jsonStr.replace(/\s+/g,' ');
-      // Sostituisci virgolette tipografiche con quelle standard
-      jsonStr = jsonStr.replace(/[""]/g,'"').replace(/['']/g,"'");
-      // Rimuovi virgole finali prima di } e ]
-      jsonStr = jsonStr.replace(/,\s*}/g,'}').replace(/,\s*]/g,']');
-      // Assicura che il JSON inizi con {
-      const startIdx = jsonStr.indexOf('{');
-      if(startIdx > 0) jsonStr = jsonStr.substring(startIdx);
-
-      console.log('[FM:Scheda] JSON pulito:', jsonStr.substring(0,100)+'...');
-      const parsed = JSON.parse(jsonStr);
-      if(parsed?.sezioni?.length){
-        actions.push({
-          type:'save_scheda',
-          label:'✅ Salva questa scheda',
-          sublabel:`${parsed.sezioni.length} sezioni · ${parsed.sezioni.reduce((a,s)=>a+s.esercizi.length,0)} esercizi`,
-          cls:'ai-btn-save-scheda',
-          fn:()=>{ eseguiSalvaSchedaAI(parsed, id); }
-        });
-        console.log('[FM:Scheda] SAVE_SCHEDA tag rilevato:', parsed.sezioni.length,'sezioni');
-      }
-    } catch(e){
-      console.error('[FM:Scheda] SAVE_SCHEDA JSON parse fallito:', e.message);
-      console.error('[FM:Scheda] JSON ricevuto (primi 300 char):', saveSchedaMatch[1].substring(0,300));
-      showToast('⚠️ Errore nel salvataggio. Riprova chiedendo di generare la scheda nuovamente.');
-    }
-    cleanText=cleanText.replace(saveSchedaMatch[0],'');
-  }
-
-  cleanText=cleanText.trim();
-
-  // ── RENDER MESSAGGIO ──
   const div=document.createElement('div');
   div.className='msg'; div.dataset.msgId=id;
-
-  let actionsHtml='';
-  if(actions.length>0){
-    actionsHtml=`<div class="ai-action-row">${actions.map((a,i)=>`
-      <button class="ai-action-btn ${a.cls}" id="aiBtn_${id}_${i}" onclick="aiActionBtns['${id}_${i}'](this)">
-        ${a.label}<span style="font-size:11px;opacity:.7;margin-left:4px">${a.sublabel}</span>
-      </button>`).join('')}</div>`;
-    // Registra le funzioni (non inline per sicurezza)
-    actions.forEach((a,i)=>{ window.aiActionBtns=window.aiActionBtns||{}; window.aiActionBtns[`${id}_${i}`]=function(btn){ a.fn(); btn.disabled=true; btn.style.opacity='.4'; btn.textContent='✓ Salvato'; }; });
-  }
-
-  div.innerHTML=`<div class="av ai">FM</div><div><div class="bubble">${fmtMd(cleanText)}</div>${actionsHtml}<div class="msg-time">${nowTimeStr()}</div></div>`;
+  div.innerHTML=`<div class="av ai">FM</div><div><div class="bubble">${fmtMd(text)}</div><div class="msg-time">${nowTimeStr()}</div></div>`;
   document.getElementById('chatMsgs').appendChild(div);
-  scrollToBottom();
-
-  // Salva in history il testo COMPLETO con tag (per contesto AI futuro)
+  document.getElementById('chatMsgs').scrollTop=99999;
   chatHistory.push({id,role:'assistant',content:text,timestamp:ts});
-
-  // RIMOSSO: auto-detect peso e sessioni dal testo AI — troppo fragile, genera falsi positivi.
-  // Il peso si aggiorna SOLO quando l'utente lo dice esplicitamente in chat (rilevato in addUserMsg).
-  // Le sessioni si incrementano SOLO dal bottone "✅ Registro allenamento" (eseguiRegistraAllenamento).
-
+  // Auto-detect peso
+  const pm=text.match(/(\d{2,3}(?:[.,]\d)?)\s*kg/i);
+  if(pm&&text.toLowerCase().match(/peso|registr|aggiorn/)){ appStats.lastWeight=pm[1].replace(',','.'); appStats.weightHistory.push({date:todayStr(),val:parseFloat(appStats.lastWeight)}); refreshStats(); }
+  // Auto-detect sessione
+  if(text.toLowerCase().match(/registrat|ottima sessione|completat/)){ appStats.sessions=(appStats.sessions||0)+1; refreshStats(); }
   saveAll();
 }
 
@@ -2053,156 +1406,22 @@ function addAiMsgNoSave(text){
   document.getElementById('chatMsgs').appendChild(div);
 }
 
-// ══════════════════════════════════════════════════════════════════
-// AZIONI AI — eseguite dopo conferma utente tramite bottone
-// ══════════════════════════════════════════════════════════════════
-
-// Registra pasto nel diario alimentare
-function eseguiRegistraPasto(tipo, contenuto, msgId){
-  const g=ensureGiorno(todayStr());
-  if(!g[tipo].includes(contenuto)){
-    g[tipo].push(contenuto);
-    console.log('[FM:Alim] Registrato da tag AI —',tipo+':',contenuto);
-    saveAll(); refreshDietaUI();
-    showToast('✅ '+tipo.charAt(0).toUpperCase()+tipo.slice(1)+' registrata!');
-  }
-}
-
-// Registra sessione allenamento in allenamentiLog
-// Sistema unico — sostituisce detectEsalvaProgressioni per evitare duplicazioni
-function eseguiRegistraAllenamento(nome, serie, reps, peso, msgId){
-  const data=todayStr();
-  if(!allenamentiLog[data]) allenamentiLog[data]={ esercizi:[] };
-
-  // Evita duplicati nella stessa sessione (stesso esercizio stesso giorno)
-  const idx=allenamentiLog[data].esercizi.findIndex(e=>
-    e.id===(nome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'')) ||
-    e.nome.toLowerCase()===nome.toLowerCase()
-  );
-  const entry={ id: nome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,''), nome, serie, reps, peso, timestamp:Date.now() };
-  if(idx>=0){
-    allenamentiLog[data].esercizi[idx]=entry;
-    console.log('[FM:Allenamenti] Aggiornato (no duplicato):',nome);
-  } else {
-    allenamentiLog[data].esercizi.push(entry);
-    console.log('[FM:Allenamenti] Registrato:',nome,serie+'x'+reps,'@'+peso+'kg');
-  }
-
-  // Aggiorna storico nell'esercizio della scheda attiva — matching robusto con ID
-  const es = findEsercizioInScheda(nome);
-  if(es){
-    if(!es.storico) es.storico=[];
-    // Evita duplicati nello storico (stesso giorno stessa sessione)
-    const giaInStorico = es.storico.find(s=>s.data===data&&s.peso===peso&&s.reps===reps);
-    if(!giaInStorico){
-      es.storico.push({data, peso, reps, serie});
-      if(es.storico.length>20) es.storico=es.storico.slice(-20);
-      console.log('[FM:Storico] Aggiunto a',es.nome,'storico len:',es.storico.length);
-    } else {
-      console.log('[FM:Storico] Duplicato ignorato per',es.nome);
-    }
-  }
-
-  appStats.sessions=(appStats.sessions||0)+1;
-  refreshStats(); saveAll();
-  showToast('✅ Allenamento registrato!');
-}
-
-// Salva scheda generata dall'AI dopo conferma utente
-function eseguiSalvaSchedaAI(parsed, msgId){
-  try{
-    // Normalizza struttura — aggiunge id e storico a ogni esercizio
-    const scheda = {
-      origine: 'ai',
-      sezioni: parsed.sezioni.map(sez=>({
-        nome: sez.nome,
-        esercizi: (sez.esercizi||[]).map(es=>({
-          id:       (es.nome||'').toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,''),
-          gruppo:   es.gruppo || '',
-          nome:     es.nome || '',
-          serie:    parseInt(es.serie)||4,
-          reps:     parseInt(es.reps)||8,
-          peso:     parseFloat(es.peso)||0,
-          recupero: parseInt(es.recupero)||90,
-          storico:  []
-        }))
-      }))
-    };
-    schedaAttiva = scheda;
-    saveAll();
-    renderSchedaView();
-    // Vai alla tab scheda per mostrare il risultato
-    switchTab('scheda', document.querySelectorAll('.tab')[1]);
-    showToast('✅ Scheda salvata! Vai alla tab Scheda.');
-    console.log('[FM:Scheda] Salvata da AI:', scheda.sezioni.length,'sezioni',
-      scheda.sezioni.reduce((a,s)=>a+s.esercizi.length,0),'esercizi');
-  } catch(e){
-    console.error('[FM:Scheda] Errore salvataggio scheda AI:', e.message);
-    showToast('⚠️ Errore nel salvataggio. Riprova.');
-  }
-}
-
-// Aggiorna peso/reps di un esercizio nella scheda attiva — matching robusto con ID
-function eseguiUpdateScheda(nome, newPeso, newReps, msgId){
-  if(!schedaAttiva?.sezioni){ showToast('⚠️ Nessuna scheda attiva'); return; }
-  const es = findEsercizioInScheda(nome);
-  if(es){
-    dbg('EXERCISE_MATCH', {cercato: nome, trovato: es.nome, id: es.id});
-    const vecchioPeso = es.peso;
-    es.peso=newPeso; es.reps=newReps;
-    console.log('[FM:Scheda] Aggiornato:',es.nome,vecchioPeso+'kg →',newPeso+'kg x'+newReps);
-    saveAll(); renderSchedaView();
-    showToast('✅ Scheda aggiornata: '+es.nome+' → '+newPeso+'kg');
-  } else {
-    console.warn('[FM:Scheda] Esercizio non trovato per update:',nome);
-    showToast('⚠️ Esercizio non trovato nella scheda. Verifica il nome.');
-  }
-}
-
 function showTyping(){
   const div=document.createElement('div'); div.id='_typing'; div.className='msg';
   div.innerHTML=`<div class="av ai">FM</div><div><div class="bubble"><div class="typing-row"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div></div>`;
   document.getElementById('chatMsgs').appendChild(div);
-  scrollToBottom();
+  document.getElementById('chatMsgs').scrollTop=99999;
 }
 function removeTyping(){ const t=document.getElementById('_typing'); if(t)t.remove(); }
 
 async function callAI(messages,retries=2){
   const limited=messages.slice(-RECENT_CHAT_LIMIT);
-  // Invia all'API solo role e content — id e timestamp sono solo per uso interno
-  const clean=limited.filter(m=>m.content&&m.content.trim&&m.content.trim()!=='').map(m=>({role:m.role,content:m.content}));
-
-  // Costruisce il system prompt con gestione errori per sezione
-  let sysPrompt = 'Sei FitMind AI, un coach fitness personale. Rispondi sempre in italiano.';
-  try{
-    sysPrompt = buildSystemPrompt();
-    console.log('[FM:AI] System prompt lunghezza:',sysPrompt.length,'chars');
-  } catch(e){
-    console.error('[FM:AI] Errore buildSystemPrompt:',e.message);
-    // Fallback con memoria pasti inclusa anche in caso di errore
-    try{
-      const alim = buildAlimContesto();
-      const u = userData;
-      sysPrompt = `Sei FitMind AI, coach personale di ${u.nome||'questo utente'}. Rispondi SEMPRE in italiano.
-Profilo: ${u.peso||'?'}kg, obiettivo ${u.obiettivo||'?'}, livello ${u.livello||'?'}, ${u.giorni||'?'} gg/sett.
-MEMORIA PASTI: ${alim}
-Ricorda sempre cosa ha mangiato l'utente oggi e ieri — non chiedere di nuovo cose già dette.`;
-    } catch(e2){
-      console.error('[FM:AI] Errore anche nel fallback:',e2.message);
-    }
-  }
-
-  console.log('[FM:AI] Invio',clean.length,'messaggi al modello');
-  dbg('AI_CONTEXT', {
-    messaggi:       clean.length,
-    promptChars:    sysPrompt.length,
-    pastiOggi:      buildAlimContesto().substring(0,120),
-    schedaSezioni:  schedaAttiva?.sezioni?.length || 0
-  });
+  console.log('[FM:AI] Invio',limited.length,'messaggi al modello');
   for(let i=0;i<=retries;i++){
     try{
       const res=await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({model:AI_MODEL,max_tokens:1500,system:sysPrompt,messages:clean})});
+        body:JSON.stringify({model:AI_MODEL,max_tokens:1500,system:buildSystemPrompt(),
+          messages:limited.filter(m=>m.content&&m.content.trim&&m.content.trim()!=='')})});
       if(!res.ok) throw new Error('HTTP '+res.status);
       const data=await res.json();
       if(data.error) throw new Error(data.error.message);
@@ -2230,12 +1449,12 @@ async function sendMsg(){
 
   addUserMsg(text); showTyping();
   try{
-    const reply=await callAI(chatHistory);
+    const reply=await callAI(chatHistory.slice(0,-1));
     removeTyping();
     if(reply){
       addAiMsg(reply);
-      // Log allenamento e pasti ora gestiti dai tag AI + bottoni conferma
-      // detectEsalvaProgressioni rimossa per evitare duplicazioni con eseguiRegistraAllenamento
+      // Salva progressioni rilevate nel testo utente
+      detectEsalvaProgressioni(text, reply);
     } else {
       addAiMsg('Non ho ricevuto una risposta valida. Riprova tra un secondo.');
     }
@@ -2248,15 +1467,6 @@ async function sendMsg(){
 
 function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} }
 function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,110)+'px'; }
-
-// Scroll affidabile — usa requestAnimationFrame per aspettare il render DOM
-function scrollToBottom(){
-  const el = document.getElementById('chatMsgs');
-  if(!el) return;
-  requestAnimationFrame(()=>{
-    el.scrollTop = el.scrollHeight;
-  });
-}
 
 // ── Rileva se l'utente vuole iniziare una sessione di allenamento ──
 function detectSessioneStart(text){
@@ -2292,40 +1502,54 @@ function attivaSessione(sez){
   showToast('💪 Sessione '+sez.nome+' avviata!');
 }
 
-// ── detectEsalvaProgressioni — mantenuta solo per compatibilità sessione attiva ──
-// NON più chiamata da sendMsg. Il log ufficiale avviene tramite eseguiRegistraAllenamento.
-// Usata solo internamente da chiudiSessione per aggiornare il log di sessione.
+// ── Rileva progressioni nel testo e aggiorna storico esercizi ──
 function detectEsalvaProgressioni(text, aiReply){
-  if(!schedaAttiva?.sezioni?.length||!sessioneAttiva) return;
+  if(!schedaAttiva?.sezioni?.length) return;
   const s=text.toLowerCase();
 
+  // Pattern: "ho fatto 4x8 a 85" o "4 serie 8 reps 85 chili" o "panca 90kg" etc.
+  // Cerca prima il nome esercizio nel messaggio
   schedaAttiva.sezioni.forEach(sez=>{
     sez.esercizi.forEach(es=>{
-      // Matching robusto: nome completo o id — mai solo prima parola
-      const nomeMatch = s.includes(es.nome.toLowerCase()) ||
-                        (es.id && s.includes(es.id.replace(/_/g,' ')));
-      if(!nomeMatch) return;
+      const nomeKey=es.nome.toLowerCase().split(' ')[0]; // prima parola (es "panca")
+      if(!s.includes(nomeKey)&&!s.includes(es.nome.toLowerCase())) return;
 
+      // Cerca peso
       const pesoMatch=text.match(/(\d{1,3}(?:[.,]\d{1,2})?)\s*(?:kg|chili|kili)/i);
+      // Cerca serie x reps
       const sxrMatch=text.match(/(\d{1,2})\s*[x×]\s*(\d{1,2})/i)||text.match(/(\d)\s*serie.*?(\d{1,2})\s*rep/i);
 
       if(pesoMatch||sxrMatch){
         const newPeso=pesoMatch?parseFloat(pesoMatch[1].replace(',','.')):null;
         const newSerie=sxrMatch?parseInt(sxrMatch[1]):null;
         const newReps=sxrMatch?parseInt(sxrMatch[2]):null;
-        // Aggiorna solo log di sessione — storico reale aggiornato da eseguiRegistraAllenamento
+
+        // Aggiorna storico
+        if(!es.storico) es.storico=[];
+        const entry={
+          data: todayStr(),
+          peso: newPeso||es.peso||0,
+          reps: newReps||es.reps||0,
+          serie: newSerie||es.serie||0,
+          note: ''
+        };
+        es.storico.push(entry);
+
+        // Aggiorna peso base se in progressione
+        if(newPeso&&newPeso>=(es.peso||0)){
+          es.peso=newPeso;
+          console.log('[FM:Progressione] '+es.nome+' → '+newPeso+'kg salvato');
+        }
+
+        // Aggiorna sessione attiva log
         if(sessioneAttiva){
           const inLog=sessioneAttiva.log.find(l=>l.nome===es.nome);
-          if(!inLog) sessioneAttiva.log.push({
-            nome:es.nome, id:es.id,
-            serie:newSerie||es.serie||0,
-            reps:newReps||es.reps||0,
-            peso:newPeso||es.peso||0
-          });
+          if(!inLog) sessioneAttiva.log.push({nome:es.nome,serie:entry.serie,reps:entry.reps,peso:entry.peso});
         }
       }
     });
   });
+  saveAll();
 }
 
 // ── Fine sessione: salva in allenamentiLog ──
@@ -2347,7 +1571,6 @@ function chiudiSessione(){
 }
 
 function switchTab(tab,el){ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tc').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.getElementById('tc-'+tab).classList.add('active'); }
-function goToChat(){ switchTab('chat',document.querySelectorAll('.tab')[0]); }
 function requestDeleteMsg(msgId){
   if(!msgId) return;
   pendingDeleteId=msgId;
@@ -2391,7 +1614,7 @@ function rerenderChat(){
     }
     msgs.appendChild(div);
   });
-  scrollToBottom();
+  msgs.scrollTop=99999;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -2432,51 +1655,6 @@ function deleteScheda(){
   console.log('[FM:Scheda] Cancellata');
 }
 
-// ── Trova un esercizio nella scheda per nome o id — matching robusto ──
-// Usa l'id stabile se disponibile, fallback su nome completo normalizzato.
-// MAI usare solo la prima parola del nome.
-function findEsercizioInScheda(nomeInput){
-  if(!schedaAttiva?.sezioni) return null;
-  const nomeNorm = nomeInput.toLowerCase().trim();
-  const idNorm   = nomeNorm.replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
-  for(const sez of schedaAttiva.sezioni){
-    for(const es of sez.esercizi){
-      // Match per id (prioritario — stabile)
-      if(es.id && es.id === idNorm) return es;
-      // Match per nome completo normalizzato
-      if(es.nome.toLowerCase().trim() === nomeNorm) return es;
-      // Match parziale solo se il nome input è contenuto nel nome esercizio (non viceversa)
-      // Evita falsi positivi: "panca" matcha "panca piana" ma non "panca inclinata" se è diverso
-      if(es.nome.toLowerCase().startsWith(nomeNorm) && nomeNorm.length >= 4) return es;
-    }
-  }
-  return null;
-}
-
-// Determina tipo esercizio da nome e gruppo — usato per formattare il contesto AI
-function getTipoEs(nome, gruppo){
-  const g = (gruppo||'').toLowerCase();
-  const n = (nome||'').toLowerCase();
-  if(g==='cardio'||n.match(/tapis|cyclette|ellittica|vogatore|corsa|camminata|hiit/)) return 'cardio';
-  if(n.match(/plank|crunch|leg raise|russian|hollow|mountain/)) return 'bodyweight';
-  return 'weighted';
-}
-
-// Formatta dettagli esercizio per la visualizzazione nella scheda
-function esDettaglio(es){
-  const tipo = es.tipo || getTipoEs(es.nome||'', es.gruppo||'');
-  if(tipo==='cardio'){
-    let s='';
-    if(es.minuti) s+=es.minuti+'min';
-    if(es.km) s+=' '+es.km+'km';
-    return s||'cardio';
-  }
-  let s='';
-  if(es.serie&&es.reps) s=`${es.serie}×${es.reps}`;
-  if(es.peso) s+=` · ${es.peso}kg`;
-  return s||'—';
-}
-
 // Chiede all'AI di suggerire una scheda — non la salva automaticamente
 // L'AI suggerisce, l'utente poi usa il builder per crearla ufficialmente
 function askAiScheda(){
@@ -2487,250 +1665,311 @@ function askAiScheda(){
 }
 
 // ══════════════════════════════════════════════════════════════════
-// BUILDER — step-by-step, una schermata alla volta
-// Nessun modale sovrapposto. Focus singolo per ogni step.
+// BUILDER — sistema principale per la scheda
 // ══════════════════════════════════════════════════════════════════
 
+/*
+ * Database esercizi ampliato per gruppo muscolare.
+ * Struttura: { gruppo: [esercizi...] }
+ * "Altro esercizio" sempre in fondo per input manuale.
+ */
 const ES_DB={
-  Petto:   ['Panca piana bilanciere','Panca inclinata manubri','Panca declinata','Croci manubri','Croci ai cavi','Chest press','Pec deck','Dip petto','Pullover','Altro esercizio'],
-  Schiena: ['Lat machine presa larga','Lat machine presa stretta','Rematore bilanciere','Rematore manubrio','Pulley triangolo','Trazioni pronazione','Trazioni supinazione','Face pull','Stacco da terra','Stacco rumeno','Altro esercizio'],
-  Gambe:   ['Squat bilanciere','Leg press','Affondi camminati','Affondi bulgari','Leg extension','Leg curl sdraiato','Calf raise in piedi','Hip thrust','Romanian deadlift','Altro esercizio'],
-  Spalle:  ['Military press bilanciere','Military press manubri','Arnold press','Alzate laterali manubri','Alzate laterali cavo','Alzate frontali','Alzate posteriori','Tirate al mento','Shrug','Altro esercizio'],
-  Braccia: ['Curl bilanciere','Curl manubri alternati','Curl concentrato','Curl martello','Push-down cavo','French press','Dip tricipiti','Estensione overhead','Kickback','Altro esercizio'],
-  Addome:  ['Crunch classico','Crunch inverso','Plank','Side plank','Leg raise','Russian twist','Ab wheel','Mountain climber','Hollow body','Altro esercizio'],
-  Cardio:  ['Tapis roulant','Cyclette','Ellittica','Vogatore','Salto con la corda','HIIT intervalli','Camminata veloce','Altro esercizio']
+  Petto:['Panca piana bilanciere','Panca inclinata manubri','Panca declinata','Croci manubri','Croci ai cavi','Chest press','Pec deck','Dip petto','Pullover','Altro esercizio'],
+  Schiena:['Lat machine presa larga','Lat machine presa stretta','Rematore bilanciere','Rematore manubrio','Rematore cavo basso','Pulley triangolo','Trazioni pronazione','Trazioni supinazione','Face pull','Stacco da terra','Stacco rumeno','Altro esercizio'],
+  Gambe:['Squat bilanciere','Squat goblet','Leg press','Affondi camminati','Affondi bulgari','Leg extension','Leg curl sdraiato','Leg curl seduto','Calf raise in piedi','Calf raise seduto','Hip thrust','Good morning','Altro esercizio'],
+  Spalle:['Military press bilanciere','Military press manubri','Arnold press','Alzate laterali manubri','Alzate laterali cavo','Alzate frontali','Alzate posteriori','Face pull spalle','Tirate al mento','Shrug','Altro esercizio'],
+  Braccia:['Curl bilanciere','Curl manubri alternati','Curl concentrato','Curl cavo basso','Curl martello','Push-down cavo','French press','Dip tricipiti','Estensione overhead','Kickback','Altro esercizio'],
+  Addome:['Crunch classico','Crunch inverso','Plank','Side plank','Leg raise','Russian twist','Ab wheel','Cable crunch','Mountain climber','Hollow body','Altro esercizio'],
+  Cardio:['Tapis roulant','Cyclette','Ellittica','Vogatore','Salto con la corda','Stepper','HIIT intervalli','Camminata veloce','Altro esercizio']
 };
 
+/*
+ * Sezioni predefinite con nome leggibile e descrizione gruppi coinvolti.
+ * Rende il builder intuitivo anche per chi non conosce i termini tecnici.
+ */
 const SEZ_PRESETS=[
-  {nome:'Push',     desc:'Petto · Spalle · Tricipiti'},
-  {nome:'Pull',     desc:'Schiena · Bicipiti'},
-  {nome:'Legs',     desc:'Gambe · Glutei · Polpacci'},
-  {nome:'Upper',    desc:'Parte superiore del corpo'},
-  {nome:'Lower',    desc:'Parte inferiore del corpo'},
+  {nome:'Push',    desc:'Petto · Spalle · Tricipiti'},
+  {nome:'Pull',    desc:'Schiena · Bicipiti'},
+  {nome:'Legs',    desc:'Gambe · Glutei · Polpacci'},
+  {nome:'Upper',   desc:'Parte superiore'},
+  {nome:'Lower',   desc:'Parte inferiore'},
   {nome:'Full Body',desc:'Corpo intero'},
-  {nome:'Scheda A', desc:'Prima sessione settimanale'},
-  {nome:'Scheda B', desc:'Seconda sessione settimanale'},
-  {nome:'Scheda C', desc:'Terza sessione settimanale'},
+  {nome:'Scheda A',desc:'Prima sessione'},
+  {nome:'Scheda B',desc:'Seconda sessione'},
+  {nome:'Scheda C',desc:'Terza sessione'},
 ];
 
 const GRUPPI=[
-  {n:'Petto',  e:'🫀'},{n:'Schiena',e:'🏋️'},
-  {n:'Gambe',  e:'🦵'},{n:'Spalle', e:'🎯'},
-  {n:'Braccia',e:'💪'},{n:'Addome', e:'⬛'},
-  {n:'Cardio', e:'❤️'}
+  {n:'Petto',   e:'🫀'}, {n:'Schiena', e:'🏋️'},
+  {n:'Gambe',   e:'🦵'}, {n:'Spalle',  e:'🎯'},
+  {n:'Braccia', e:'💪'}, {n:'Addome',  e:'⬛'},
+  {n:'Cardio',  e:'❤️'}
 ];
 
-// ── Navigazione step ──
-function builderGoStep(n){
-  document.querySelectorAll('.bstep').forEach(s=>s.classList.remove('active'));
-  document.getElementById('bStep'+n).classList.add('active');
-  // Render contestuale al step
-  if(n===0) b0Render();
-  if(n===1) b1Render();
-  if(n===2) b2Render();
-  if(n===3) b3Render();
-  console.log('[FM:Builder] Step →',n);
-}
-
-// ── Step 0: panoramica scheda ──
-function b0Render(){
-  const body=document.getElementById('b0Body');
-  if(builderData.sezioni.length===0){
-    body.innerHTML=`<div class="b0-empty">
-      <div class="b0-empty-ico">📋</div>
-      <div class="b0-empty-title">NESSUNA SEZIONE</div>
-      <div class="b0-empty-sub">Tocca "+ Aggiungi sezione" per iniziare.<br>Puoi creare Push/Pull/Legs, Scheda A/B o un nome personalizzato.</div>
-    </div>`;
-    return;
-  }
-  body.innerHTML = builderData.sezioni.map((sez,si)=>{
-    const count=sez.esercizi.length;
-    const preset=SEZ_PRESETS.find(p=>p.nome===sez.nome);
-    return `<div class="bsez-card" onclick="bSezIdx=${si};builderGoStep(2)">
-      <div class="bsez-card-top">
-        <div class="bsez-card-name">${esc(sez.nome)}</div>
-        <div class="bsez-card-count">${count} esercizi ›</div>
-      </div>
-      <div class="bsez-card-desc">${preset?preset.desc:sez.esercizi.map(e=>e.nome).join(', ')||'Tocca per aggiungere esercizi'}</div>
-    </div>`;
-  }).join('');
-}
-
-// ── Step 1: scegli nome sezione ──
-function b1Render(){
-  document.getElementById('b1Custom').value='';
-  document.getElementById('b1Presets').innerHTML=SEZ_PRESETS.map(p=>`
-    <div class="bsez-preset" id="bp_${p.nome.replace(/ /g,'_')}" onclick="b1Pick('${p.nome}')">
-      <div class="bsez-preset-name">${p.nome}</div>
-      <div class="bsez-preset-desc">${p.desc}</div>
-    </div>`).join('');
-}
-
-function b1Pick(nome){
-  document.querySelectorAll('.bsez-preset').forEach(c=>c.classList.remove('sel'));
-  const el=document.getElementById('bp_'+nome.replace(/ /g,'_'));
-  if(el) el.classList.add('sel');
-  document.getElementById('b1Custom').value=nome;
-}
-
-function builderConfirmSez(){
-  const nome=(document.getElementById('b1Custom').value||'').trim();
-  if(!nome){ showToast('Inserisci un nome per la sezione'); return; }
-  builderData.sezioni.push({nome, esercizi:[]});
-  bSezIdx=builderData.sezioni.length-1;
-  console.log('[FM:Builder] Sezione aggiunta:',nome);
-  builderGoStep(2);
-}
-
-// ── Step 2: lista esercizi sezione ──
-function b2Render(){
-  const sez=builderData.sezioni[bSezIdx];
-  if(!sez) return;
-  document.getElementById('b2SezNome').textContent=sez.nome;
-  const body=document.getElementById('b2Body');
-  if(sez.esercizi.length===0){
-    body.innerHTML=`<div style="text-align:center;padding:40px 16px;color:var(--mt)">
-      <div style="font-size:36px;margin-bottom:12px">🏋️</div>
-      <div style="font-size:14px;line-height:1.7">Nessun esercizio ancora.<br>Tocca "+ Aggiungi esercizio" per iniziare.</div>
-    </div>
-    <button class="btn btn-b" style="margin-top:8px;color:var(--rd);border-color:rgba(255,59,48,.25)" onclick="b0DeleteSez()">Elimina questa sezione</button>`;
-    return;
-  }
-  body.innerHTML = sez.esercizi.map((es,ei)=>`
-    <div class="bes-row" onclick="bSezIdx=${bSezIdx};bEsIdx=${ei};builderGoStep(6)">
-      <div class="bes-row-info">
-        <div class="bes-row-name">${esc(es.nome)}</div>
-        <div class="bes-row-det">${es.serie}×${es.reps}${es.peso?' · '+es.peso+'kg':''}</div>
-      </div>
-      <div class="bes-row-arr">›</div>
-    </div>`).join('')+
-    `<button class="btn btn-b" style="margin-top:16px;color:var(--rd);border-color:rgba(255,59,48,.25)" onclick="b0DeleteSez()">Elimina sezione "${esc(sez.nome)}"</button>`;
-}
-
-function b0DeleteSez(){
-  if(!confirm('Eliminare la sezione "'+builderData.sezioni[bSezIdx].nome+'" con tutti i suoi esercizi?')) return;
-  builderData.sezioni.splice(bSezIdx,1);
-  bSezIdx=null;
-  builderGoStep(0);
-}
-
-// ── Step 3: scegli gruppo muscolare ──
-function b3Render(){
-  document.getElementById('b3Gruppi').innerHTML=GRUPPI.map(g=>`
-    <div class="bgrp-card" onclick="bGruppo='${g.n}';builderGoStep(4)">
-      <div class="bgrp-ico">${g.e}</div>
-      <div class="bgrp-name">${g.n}</div>
-    </div>`).join('');
-}
-
-// ── Step 4: scegli esercizio ──
-function builderGoStep4Render(){
-  document.getElementById('b4Gruppo').textContent=bGruppo;
-  document.getElementById('b4Lista').innerHTML=(ES_DB[bGruppo]||[]).map(es=>`
-    <div class="bes-pick" onclick="b4Pick('${esc(es)}')">
-      <span class="bes-pick-name">${esc(es)}</span>
-      <span class="bes-pick-arr">›</span>
-    </div>`).join('');
-}
-
-function b4Pick(nome){
-  if(nome==='Altro esercizio'){
-    const c=prompt('Nome esercizio personalizzato:');
-    if(!c?.trim()) return;
-    bEsNome=c.trim();
-  } else {
-    bEsNome=nome;
-  }
-  document.getElementById('b5EsNome').textContent=bEsNome;
-  document.getElementById('b5Gruppo').textContent=bGruppo;
-  document.getElementById('b5S').value='';
-  document.getElementById('b5R').value='';
-  document.getElementById('b5P').value='';
-  document.getElementById('b5Rec').value='90';
-  builderGoStep(5);
-}
-
-// ── Step 5: dettagli esercizio (aggiunta) ──
-function builderConfirmEs(){
-  const serie=parseInt(document.getElementById('b5S').value)||4;
-  const reps =parseInt(document.getElementById('b5R').value)||8;
-  const peso =parseFloat(document.getElementById('b5P').value)||0;
-  const rec  =parseInt(document.getElementById('b5Rec').value)||90;
-  const id   =bEsNome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
-  builderData.sezioni[bSezIdx].esercizi.push({id,gruppo:bGruppo,nome:bEsNome,serie,reps,peso,recupero:rec,storico:[]});
-  console.log('[FM:Builder] Aggiunto:',bEsNome,serie+'x'+reps,'@'+peso+'kg');
-  showToast('✅ '+bEsNome+' aggiunto');
-  builderGoStep(2);
-}
-
-// ── Step 6: modifica esercizio esistente ──
-function builderGoStep6Render(){
-  const es=builderData.sezioni[bSezIdx]?.esercizi[bEsIdx];
-  if(!es) return;
-  document.getElementById('b6EsNome').textContent=es.nome;
-  document.getElementById('b6Gruppo').textContent=es.gruppo||'';
-  document.getElementById('b6S').value=es.serie;
-  document.getElementById('b6R').value=es.reps;
-  document.getElementById('b6P').value=es.peso||'';
-  document.getElementById('b6Rec').value=es.recupero||90;
-}
-
-function builderConfirmEdit(){
-  const es=builderData.sezioni[bSezIdx].esercizi[bEsIdx];
-  es.serie   =parseInt(document.getElementById('b6S').value)||es.serie;
-  es.reps    =parseInt(document.getElementById('b6R').value)||es.reps;
-  es.peso    =parseFloat(document.getElementById('b6P').value)||0;
-  es.recupero=parseInt(document.getElementById('b6Rec').value)||90;
-  console.log('[FM:Builder] Modificato:',es.nome);
-  builderGoStep(2);
-}
-
-function builderDeleteEs(){
-  const es=builderData.sezioni[bSezIdx].esercizi[bEsIdx];
-  if(!confirm('Eliminare "'+es.nome+'"?')) return;
-  builderData.sezioni[bSezIdx].esercizi.splice(bEsIdx,1);
-  bEsIdx=null;
-  builderGoStep(2);
-}
-
-// Aggancio render al cambio step — Step 4 e 6 richiedono render esplicito
-const _origBuilderGoStep=builderGoStep;
-function builderGoStep(n){
-  document.querySelectorAll('.bstep').forEach(s=>s.classList.remove('active'));
-  document.getElementById('bStep'+n).classList.add('active');
-  if(n===0) b0Render();
-  else if(n===1) b1Render();
-  else if(n===2) b2Render();
-  else if(n===3) b3Render();
-  else if(n===4) builderGoStep4Render();
-  else if(n===6) builderGoStep6Render();
-  console.log('[FM:Builder] Step →',n);
-}
-
-// ── Apri / Chiudi / Salva ──
 function openBuilder(){
   closeModal('mSchedaChoice');
+  // Se scheda già esistente: vai diretto al builder per modificarla
+  if(schedaAttiva?.sezioni?.length){
+    openBuilderDiretto();
+    return;
+  }
+  // Prima volta: mostra selettore tipo scheda
+  showModal('mBuilderTipo');
+}
+
+function openBuilderDiretto(){
+  closeModal('mBuilderTipo');
+  closeModal('mBuilderPersonalizzata');
   builderData=schedaAttiva?JSON.parse(JSON.stringify(schedaAttiva)):{origine:'utente',sezioni:[]};
-  bSezIdx=null; bEsIdx=null; bGruppo=''; bEsNome='';
+  renderBuilder();
   document.getElementById('builderScreen').classList.add('active');
-  builderGoStep(0);
   console.log('[FM:Builder] Aperto. Sezioni:',builderData.sezioni.length);
 }
 
-function closeBuilder(){
-  document.getElementById('builderScreen').classList.remove('active');
+function applicaTipoScheda(tipo){
+  closeModal('mBuilderTipo');
+  const tipi={
+    ppl:[{nome:'Push',desc:'Petto · Spalle · Tricipiti'},{nome:'Pull',desc:'Schiena · Bicipiti'},{nome:'Legs',desc:'Gambe · Glutei · Polpacci'}],
+    ul:[{nome:'Upper',desc:'Parte superiore'},{nome:'Lower',desc:'Parte inferiore'}],
+    fb:[{nome:'Full Body',desc:'Corpo intero'}]
+  };
+  const sezioni=tipi[tipo];
+  builderData={origine:'utente',sezioni:sezioni.map(s=>({nome:s.nome,esercizi:[]}))};
+  renderBuilder();
+  document.getElementById('builderScreen').classList.add('active');
+  showToast('✅ Struttura creata! Aggiungi gli esercizi.');
+  console.log('[FM:Builder] Tipo',tipo,'applicato:',sezioni.length,'sezioni');
 }
+
+function applicaTipoPersonalizzata(n){
+  closeModal('mBuilderPersonalizzata');
+  const lettere=['A','B','C','D','E'];
+  builderData={origine:'utente',sezioni:Array.from({length:n},(_,i)=>({nome:'Scheda '+lettere[i],esercizi:[]}))};
+  renderBuilder();
+  document.getElementById('builderScreen').classList.add('active');
+  showToast('✅ '+n+' sezioni create! Aggiungi gli esercizi.');
+  console.log('[FM:Builder] Personalizzata:',n,'sezioni');
+}
+
+function closeBuilder(){ document.getElementById('builderScreen').classList.remove('active'); }
 
 function saveBuilder(){
   if(builderData.sezioni.length===0){ showToast('⚠️ Aggiungi almeno una sezione'); return; }
   if(builderData.sezioni.every(s=>s.esercizi.length===0)){ showToast('⚠️ Aggiungi almeno un esercizio'); return; }
-  schedaAttiva={...builderData, origine:'utente'};
+  schedaAttiva={...builderData,origine:'utente'};
   normalizeExerciseIds(schedaAttiva);
   saveAll(); closeBuilder(); renderSchedaView();
   showToast('✅ Scheda salvata!');
-  console.log('[FM:Builder] Salvato:',schedaAttiva.sezioni.length,'sezioni',
-    schedaAttiva.sezioni.reduce((a,s)=>a+s.esercizi.length,0),'esercizi');
+  console.log('[FM:Builder] Salvato:',schedaAttiva.sezioni.length,'sezioni');
 }
+
+function renderBuilder(){
+  const body=document.getElementById('builderBody');
+  if(builderData.sezioni.length===0){
+    body.innerHTML=`<div style="text-align:center;padding:44px 16px"><div style="font-size:42px;margin-bottom:14px">📋</div><div style="font-size:15px;font-weight:600;color:#ddd;margin-bottom:8px">Nessuna sezione ancora</div><div style="font-size:13px;color:var(--mt);line-height:1.6">Tocca "+ Aggiungi sezione" in basso</div></div>`;
+    return;
+  }
+  let html='';
+  builderData.sezioni.forEach((sez,si)=>{
+    const preset=SEZ_PRESETS.find(p=>p.nome===sez.nome);
+    html+=`<div class="bsez"><div class="bsez-hdr"><div><div class="bsez-name">${esc(sez.nome)}</div>${preset?`<div class="bsez-desc">${preset.desc}</div>`:''}</div><button class="btn-sm btn-sm-a" onclick="startAddEs(${si})" style="font-size:13px;padding:8px 14px">+ Esercizio</button><button class="btn-sm btn-sm-b" onclick="removeSez(${si})" style="padding:8px 12px">✕</button></div>`;
+    if(sez.esercizi.length===0) html+=`<div class="builder-empty">Tocca "+ Esercizio" per aggiungere</div>`;
+    else sez.esercizi.forEach((es,ei)=>{
+      const det=esDettaglio(es);
+      const tipo=es.tipo||getTipoEs(es.nome,es.gruppo||'');
+      const recStr=(tipo!=='cardio'&&es.recupero)?`<div class="bes-rec">rec. ${es.recupero}s</div>`:'';
+      html+=`<div class="bes-card"><div class="bes-info"><div class="bes-name">${esc(es.nome)}</div><div class="bes-det">${det}</div>${recStr}</div><div class="bes-actions"><button class="bes-btn" onclick="openEditEs(${si},${ei})">✏️</button><button class="bes-btn" onclick="removeEs(${si},${ei})">🗑️</button></div></div>`;
+    });
+    html+=`</div>`;
+  });
+  body.innerHTML=html;
+}
+
+function esDettaglio(es){
+  const tipo=es.tipo||getTipoEs(es.nome,es.gruppo||'');
+  if(tipo==='cardio'){
+    const parts=[];
+    if(es.minuti) parts.push(es.minuti+'min');
+    if(es.km) parts.push(es.km+'km');
+    if(es.velocita) parts.push(es.velocita+'km/h');
+    if(es.pendenza) parts.push('pendenza '+es.pendenza+'%');
+    return parts.length?parts.join(' · '):'nessun parametro';
+  }
+  if(tipo==='bodyweight'){
+    return `${es.serie||'?'}×${es.reps||'?'}${es.reps>=30?' sec':' reps'}`;
+  }
+  return `${es.serie||'?'}×${es.reps||'?'}${es.peso?' · '+es.peso+'kg':''}`;
+}
+function openAddSez(){
+  const el=document.getElementById('sezPresets');
+  el.innerHTML=SEZ_PRESETS.map(p=>`<div class="chip" id="sp_${p.nome.replace(/ /g,'_')}" onclick="pickSezPreset('${p.nome}','${p.desc}')">${p.nome}<br><small style="font-size:9px;opacity:.7">${p.desc}</small></div>`).join('');
+  document.getElementById('sezNameIn').value='';
+  showModal('mAddSez');
+}
+
+function pickSezPreset(nome,desc){
+  document.querySelectorAll('#sezPresets .chip').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('sp_'+nome.replace(/ /g,'_')).classList.add('sel');
+  document.getElementById('sezNameIn').value=nome;
+}
+
+function clearSezPresets(){ document.querySelectorAll('#sezPresets .chip').forEach(c=>c.classList.remove('sel')); }
+
+function confirmAddSez(){
+  const nome=document.getElementById('sezNameIn').value.trim();
+  if(!nome){ showToast('Inserisci un nome'); return; }
+  builderData.sezioni.push({nome,esercizi:[]});
+  closeModal('mAddSez'); renderBuilder();
+  console.log('[FM:Builder] Sezione aggiunta:',nome);
+}
+
+function removeSez(si){ if(!confirm(`Rimuovere "${builderData.sezioni[si].nome}"?`)) return; builderData.sezioni.splice(si,1); renderBuilder(); }
+
+function startAddEs(si){
+  builderSezIdx=si; builderGruppo=''; builderEsNome='';
+  document.getElementById('addEs1Title').textContent='AGGIUNGI — '+builderData.sezioni[si].nome.toUpperCase();
+  document.getElementById('gruppoGrid').innerHTML=GRUPPI.map(g=>`<div onclick="pickGruppo('${g.n}')" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:14px 11px;cursor:pointer;text-align:center"><div style="font-size:22px;margin-bottom:6px">${g.e}</div><div style="font-size:13px;font-weight:600;color:#ddd">${g.n}</div></div>`).join('');
+  showModal('mAddEs1');
+}
+
+function pickGruppo(g){
+  builderGruppo=g; closeModal('mAddEs1');
+  document.getElementById('addEs2Title').textContent=g.toUpperCase();
+  document.getElementById('esLista').innerHTML=(ES_DB[g]||[]).map(es=>`<div onclick="pickEsercizio('${esc(es)}')" style="background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:13px 15px;cursor:pointer;display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;font-weight:500;color:#ddd">${esc(es)}</span><span style="color:var(--mt);font-size:17px">›</span></div>`).join('');
+  showModal('mAddEs2');
+}
+
+// ── Classificazione tipo esercizio ──
+// 'cardio'    → minuti, km, velocità, pendenza
+// 'bodyweight'→ serie, reps (o secondi), no peso
+// 'weighted'  → serie, reps, kg, recupero (default)
+
+const ES_TIPO = {
+  cardio: ['Tapis roulant','Cyclette','Ellittica','Vogatore','Salto con la corda','Stepper','HIIT intervalli','Camminata veloce'],
+  bodyweight: ['Trazioni pronazione','Trazioni supinazione','Dip petto','Dip tricipiti','Plank','Side plank','Hollow body','Mountain climber','Push-up','Crunch classico','Crunch inverso','Leg raise','Russian twist','Ab wheel','Cable crunch'],
+};
+
+function getTipoEs(nome, gruppo){
+  if(gruppo==='Cardio') return 'cardio';
+  if(ES_TIPO.cardio.includes(nome)) return 'cardio';
+  if(ES_TIPO.bodyweight.includes(nome)) return 'bodyweight';
+  if(gruppo==='Addome') return 'bodyweight';
+  return 'weighted';
+}
+
+const fi='width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:13px 15px;color:var(--tx);font-family:"DM Sans",sans-serif;font-size:18px;outline:none;-webkit-appearance:none;text-align:center;';
+
+function renderEsFields(tipo, vals, prefix){
+  if(tipo==='cardio'){
+    return `
+    <div class="info-box" style="margin-bottom:14px">🏃 Esercizio cardio — inserisci i parametri che usi.</div>
+    <div class="r2" style="margin-bottom:10px">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Minuti</label><input style="${fi}" id="${prefix}Min" type="number" inputmode="numeric" placeholder="30" value="${vals.minuti||''}"></div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Km (opz.)</label><input style="${fi}" id="${prefix}Km" type="number" inputmode="decimal" step="0.1" placeholder="5" value="${vals.km||''}"></div>
+    </div>
+    <div class="r2" style="margin-bottom:20px">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Velocità (km/h)</label><input style="${fi}" id="${prefix}Vel" type="number" inputmode="decimal" step="0.5" placeholder="8" value="${vals.velocita||''}"></div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Pendenza (%)</label><input style="${fi}" id="${prefix}Pend" type="number" inputmode="decimal" step="0.5" placeholder="0" value="${vals.pendenza||''}"></div>
+    </div>`;
+  }
+  if(tipo==='bodyweight'){
+    return `
+    <div class="info-box" style="margin-bottom:14px">🤸 Corpo libero — nessun peso da inserire.</div>
+    <div class="r2" style="margin-bottom:10px">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Serie</label><input style="${fi}" id="${prefix}S" type="number" inputmode="numeric" placeholder="3" value="${vals.serie||''}"></div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Reps / Sec</label><input style="${fi}" id="${prefix}R" type="number" inputmode="numeric" placeholder="10" value="${vals.reps||''}"></div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Recupero (sec)</label><input style="${fi}" id="${prefix}Rec" type="number" inputmode="numeric" placeholder="60" value="${vals.recupero||60}"></div>
+    </div>`;
+  }
+  // weighted (default)
+  return `
+    <div class="r2" style="margin-bottom:10px">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Serie</label><input style="${fi}" id="${prefix}S" type="number" inputmode="numeric" placeholder="4" value="${vals.serie||''}"></div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Reps</label><input style="${fi}" id="${prefix}R" type="number" inputmode="numeric" placeholder="8" value="${vals.reps||''}"></div>
+    </div>
+    <div class="r2" style="margin-bottom:20px">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Peso (kg)</label><input style="${fi}" id="${prefix}P" type="number" inputmode="decimal" placeholder="0" value="${vals.peso||''}"></div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Rec. (sec)</label><input style="${fi}" id="${prefix}Rec" type="number" inputmode="numeric" placeholder="90" value="${vals.recupero||90}"></div>
+    </div>`;
+}
+
+function leggiCampiEs(tipo, prefix){
+  const g=id=>document.getElementById(id);
+  if(tipo==='cardio'){
+    return {
+      tipo:'cardio',
+      minuti: parseInt(g(prefix+'Min')?.value)||0,
+      km: parseFloat(g(prefix+'Km')?.value)||0,
+      velocita: parseFloat(g(prefix+'Vel')?.value)||0,
+      pendenza: parseFloat(g(prefix+'Pend')?.value)||0,
+      serie:1, reps:0, peso:0, recupero:0
+    };
+  }
+  if(tipo==='bodyweight'){
+    return {
+      tipo:'bodyweight',
+      serie: parseInt(g(prefix+'S')?.value)||3,
+      reps: parseInt(g(prefix+'R')?.value)||10,
+      peso:0,
+      recupero: parseInt(g(prefix+'Rec')?.value)||60
+    };
+  }
+  return {
+    tipo:'weighted',
+    serie: parseInt(g(prefix+'S')?.value)||4,
+    reps: parseInt(g(prefix+'R')?.value)||8,
+    peso: parseFloat(g(prefix+'P')?.value)||0,
+    recupero: parseInt(g(prefix+'Rec')?.value)||90
+  };
+}
+
+function pickEsercizio(nome){
+  if(nome==='Altro esercizio'){ const c=prompt('Nome esercizio:'); if(!c?.trim()) return; builderEsNome=c.trim(); }
+  else builderEsNome=nome;
+  closeModal('mAddEs2');
+  const tipo=getTipoEs(builderEsNome, builderGruppo);
+  document.getElementById('addEs3Nome').textContent=builderEsNome;
+  document.getElementById('addEs3Gruppo').textContent=builderGruppo;
+  document.getElementById('addEs3Fields').innerHTML=renderEsFields(tipo,{},'es');
+  document.getElementById('mAddEs3').dataset.tipo=tipo;
+  showModal('mAddEs3');
+}
+
+function confirmAddEs(){
+  const tipo=document.getElementById('mAddEs3').dataset.tipo||'weighted';
+  const vals=leggiCampiEs(tipo,'es');
+  const id=builderEsNome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  builderData.sezioni[builderSezIdx].esercizi.push({
+    id, gruppo:builderGruppo, nome:builderEsNome, storico:[], ...vals
+  });
+  closeModal('mAddEs3'); renderBuilder();
+  console.log('[FM:Builder] Aggiunto:',builderEsNome,'tipo:',tipo);
+}
+
+function removeEs(si,ei){ builderData.sezioni[si].esercizi.splice(ei,1); renderBuilder(); }
+
+function openEditEs(si,ei){
+  editSi=si; editEi=ei;
+  const es=builderData.sezioni[si].esercizi[ei];
+  const tipo=es.tipo||getTipoEs(es.nome,es.gruppo||'');
+  document.getElementById('editEsNome').textContent=es.nome;
+  document.getElementById('editEsGruppo').textContent=es.gruppo||'';
+  document.getElementById('editEs3Fields').innerHTML=renderEsFields(tipo,es,'edit');
+  document.getElementById('mEditEs').dataset.tipo=tipo;
+  showModal('mEditEs');
+}
+
+function confirmEditEs(){
+  const tipo=document.getElementById('mEditEs').dataset.tipo||'weighted';
+  const vals=leggiCampiEs(tipo,'edit');
+  const es=builderData.sezioni[editSi].esercizi[editEi];
+  Object.assign(es, vals);
+  closeModal('mEditEs'); renderBuilder();
+  console.log('[FM:Builder] Modificato:',es.nome,'tipo:',tipo);
+}
+
 // ══════════════════════════════════════════════════════════════════
 // DIETA
 // ══════════════════════════════════════════════════════════════════
@@ -2763,47 +2002,29 @@ function saveDietaTarget(){
 // ══════════════════════════════════════════════════════════════════
 function confirmReset(){ showModal('mReset1'); }
 function confirmReset2(){ closeModal('mReset1'); setTimeout(()=>showModal('mReset2'),200); }
-
 function execReset(){
   closeModal('mReset2');
-
-  // ⚠️ MAI usare localStorage.clear() — elimina SOLO le chiavi FitMind
-  // Questo protegge dati di altre app/estensioni sullo stesso dominio
+  // ⚠️ MAI localStorage.clear() — elimina solo le chiavi FitMind
+  // Protegge dati di altre app/estensioni sullo stesso dominio
   const FM_KEYS = [
     LS.version, LS.user, LS.chat, LS.stats,
     LS.scheda, LS.dieta, LS.alim, LS.allenamenti, LS.firstRun,
-    // Legacy — rimuovi anche queste per pulizia completa
     'fm_version','fm_scheda_attiva','fm_scheda','fm_scheda_v3',
     'fm_dieta_attiva','fm_dieta','fm_alimentazione_log',
     'fm_chat_v2','fm_messages','fm_first_run'
   ];
-
-  try{
-    FM_KEYS.forEach(k=>{ try{ localStorage.removeItem(k); } catch(e){} });
-    console.log('[FM:Reset] Rimosse', FM_KEYS.length, 'chiavi localStorage');
-  } catch(e){
-    console.error('[FM:Reset] Errore pulizia localStorage:', e);
-  }
-
-  // Reset stato in memoria
-  userData         = {};
-  chatHistory      = [];
-  appStats         = {streak:0, sessions:0, lastActive:null, lastWeight:null, weightHistory:[]};
-  schedaAttiva     = null;
-  dietaAttiva      = {origine:null, target:{kcal:null,proteine:null,carbo:null,grassi:null}};
-  alimentazioneLog = {};
-  allenamentiLog   = {};
-  builderData      = {sezioni:[]};
-  obStep           = 0;
-  pendingDeleteId  = null;
-
+  FM_KEYS.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  console.log('[FM:Reset] Rimosse chiavi FM. localStorage di altri domini intatto.');
+  userData={};chatHistory=[];appStats={streak:0,sessions:0,lastActive:null,lastWeight:null,weightHistory:[]};
+  schedaAttiva=null;dietaAttiva={origine:null,target:{kcal:null,proteine:null,carbo:null,grassi:null}};
+  alimentazioneLog={};allenamentiLog={};builderData={sezioni:[]};obStep=0;pendingDeleteId=null;
   setTimeout(()=>{
     document.getElementById('app').classList.remove('active');
     document.getElementById('builderScreen').classList.remove('active');
     document.getElementById('chatMsgs').innerHTML=`<div class="msg"><div class="av ai">FM</div><div><div class="bubble">Ciao! Sono pronto 💪</div></div></div>`;
     document.getElementById('onboarding').classList.add('active');
     renderObStep();
-    console.log('[FM:Reset] Completato');
+    console.log('[FM] Reset completato');
   },300);
 }
 
