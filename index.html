@@ -1542,7 +1542,17 @@ function detectEsalvaProgressioni(text, aiReply){
   // Pattern: "ho fatto 4x8 a 85" o "4 serie 8 reps 85 chili" o "panca 90kg" etc.
   // Cerca prima il nome esercizio nel messaggio
   schedaAttiva.sezioni.forEach(sez=>{
-    sez.esercizi.forEach(es=>{
+    // Appiattisce esercizi: entra nei superset, salta il contenitore
+    const esercizi = [];
+    (sez.esercizi||[]).forEach(item=>{
+      if(item.type==='superset'){
+        (item.exercises||[]).forEach(sub=>esercizi.push(sub));
+      } else {
+        esercizi.push(item);
+      }
+    });
+
+    esercizi.forEach(es=>{
       const nomeKey=es.nome.toLowerCase().split(' ')[0]; // prima parola (es "panca")
       if(!s.includes(nomeKey)&&!s.includes(es.nome.toLowerCase())) return;
 
@@ -1825,8 +1835,16 @@ function renderBuilder(){
     html+=`<div class="bsez"><div class="bsez-hdr"><div><div class="bsez-name">${esc(sez.nome)}</div>${preset?`<div class="bsez-desc">${preset.desc}</div>`:''}</div><button class="btn-sm btn-sm-a" onclick="startAddEs(${si})" style="font-size:13px;padding:8px 14px">+ Esercizio</button><button class="btn-sm btn-sm-b" onclick="removeSez(${si})" style="padding:8px 12px">✕</button></div>`;
     if(sez.esercizi.length===0) html+=`<div class="builder-empty">Tocca "+ Esercizio" per aggiungere</div>`;
     else sez.esercizi.forEach((es,ei)=>{
+      // Superset — rendering distinto nel builder (senza edit — usa il superset builder)
+      if(es.type==='superset'){
+        const subList=(es.exercises||[]).map((sub,si)=>
+          `<div style="font-size:12px;color:#ddd;padding:2px 0">${String.fromCharCode(65+si)}. ${esc(sub.nome)} — ${esDettaglio(sub)}</div>`
+        ).join('');
+        html+=`<div class="bes-card" style="border-color:rgba(200,241,53,.3)"><div class="bes-info"><div class="bes-name" style="color:var(--ac)">⚡ Super serie</div><div style="margin-top:4px">${subList}</div><div class="bes-rec">rec. blocco ${es.restAfterBlock||90}s</div></div><div class="bes-actions"><button class="bes-btn" onclick="removeEs(${si},${ei})">🗑️</button></div></div>`;
+        return;
+      }
       const det=esDettaglio(es);
-      const tipo=es.tipo||getTipoEs(es.nome,es.gruppo||'');
+      const tipo=resolveExerciseType(es);
       const recStr=(tipo!=='cardio'&&es.recupero)?`<div class="bes-rec">rec. ${es.recupero}s</div>`:'';
       html+=`<div class="bes-card"><div class="bes-info"><div class="bes-name">${esc(es.nome)}</div><div class="bes-det">${det}</div>${recStr}</div><div class="bes-actions"><button class="bes-btn" onclick="openEditEs(${si},${ei})">✏️</button><button class="bes-btn" onclick="removeEs(${si},${ei})">🗑️</button></div></div>`;
     });
@@ -2161,7 +2179,13 @@ function removeEs(si,ei){ builderData.sezioni[si].esercizi.splice(ei,1); renderB
 function openEditEs(si,ei){
   editSi=si; editEi=ei;
   const es=builderData.sezioni[si].esercizi[ei];
-  const tipo=es.tipo||getTipoEs(es.nome,es.gruppo||'');
+  // Guardia: il superset usa il suo builder, non il modal edit singolo
+  if(es.type==='superset'){
+    showToast('Tocca 🗑️ per rimuovere il blocco, poi ricrealo con "Super serie"');
+    return;
+  }
+  // resolveExerciseType gestisce timed, bodyweight e backward compat
+  const tipo=resolveExerciseType(es);
   document.getElementById('editEsNome').textContent=es.nome;
   document.getElementById('editEsGruppo').textContent=es.gruppo||'';
   document.getElementById('editEs3Fields').innerHTML=renderEsFields(tipo,es,'edit');
