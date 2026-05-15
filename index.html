@@ -579,7 +579,10 @@ textarea.fi{resize:none;height:76px}
 <!-- Builder: step 1 gruppo muscolare -->
 <div class="overlay" id="mAddEs1">
   <div class="sheet"><div class="handle"></div>
-    <div class="sh-title" id="addEs1Title">AGGIUNGI ESERCIZIO</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px">
+      <button onclick="closeModal('mAddEs1')" style="width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);font-size:16px;cursor:pointer;color:#ddd;outline:none">←</button>
+      <div class="sh-title" id="addEs1Title" style="margin-bottom:0">AGGIUNGI ESERCIZIO</div>
+    </div>
     <div class="sh-sub" id="addEs1Subtitle" style="margin-bottom:16px">Scegli il gruppo muscolare</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="gruppoGrid"></div>
   </div>
@@ -617,7 +620,10 @@ textarea.fi{resize:none;height:76px}
 <!-- Builder: modifica esercizio -->
 <div class="overlay" id="mEditEs">
   <div class="sheet"><div class="handle"></div>
-    <div class="sh-title">MODIFICA ESERCIZIO</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <button onclick="closeModal('mEditEs')" style="width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);font-size:16px;cursor:pointer;color:#ddd;outline:none">←</button>
+      <div class="sh-title" style="margin-bottom:0">MODIFICA ESERCIZIO</div>
+    </div>
     <div style="background:var(--s2);border-radius:10px;padding:10px 13px;margin-bottom:16px">
       <div style="font-size:15px;font-weight:600;color:#fff" id="editEsNome"></div>
       <div style="font-size:11px;color:#777;margin-top:2px" id="editEsGruppo"></div>
@@ -628,7 +634,7 @@ textarea.fi{resize:none;height:76px}
   </div>
 </div>
 
-<!-- Super serie builder -->
+<!-- Super serie builder (legacy — mantenuto per backward compat) -->
 <div class="overlay" id="mSupersetBuilder">
   <div class="sheet"><div class="handle"></div>
     <div class="sh-title">⚡ SUPER SERIE</div>
@@ -641,6 +647,51 @@ textarea.fi{resize:none;height:76px}
     </div>
     <button id="ssSaveBtn" class="btn btn-a" onclick="saveSuperset()">SALVA SUPER SERIE</button>
     <button class="btn btn-b" onclick="cancelSuperset()">Annulla</button>
+  </div>
+</div>
+
+<!-- Aggiungi esercizio secondario superserie — modal semplificato -->
+<div class="overlay" id="mAddSupersetEx">
+  <div class="sheet"><div class="handle"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px">
+      <button onclick="closeModal('mAddSupersetEx')" style="width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);font-size:16px;cursor:pointer;color:#ddd;outline:none">←</button>
+      <div class="sh-title" style="margin-bottom:0">⚡ SUPER SERIE</div>
+    </div>
+    <div class="sh-sub" id="ssExSub" style="margin-bottom:16px">Esercizio abbinato</div>
+
+    <!-- Scelta esercizio -->
+    <div class="fg" style="margin-bottom:14px">
+      <label class="fl">Nome esercizio</label>
+      <input class="fi" id="ssExNome" placeholder="Es: Push-up, Curl, Plank..." style="font-size:15px">
+    </div>
+
+    <!-- Tipo reps -->
+    <div class="fg" style="margin-bottom:14px">
+      <label class="fl">Tipo</label>
+      <div class="chips">
+        <div class="chip sel" id="ssExModeFixed" onclick="setSsExMode('fixed')">Reps fisse</div>
+        <div class="chip" id="ssExModeMax" onclick="setSsExMode('max')">MAX</div>
+        <div class="chip" id="ssExModeTimed" onclick="setSsExMode('timed')">A tempo</div>
+      </div>
+    </div>
+
+    <!-- Campi dinamici per repsMode -->
+    <div id="ssExFields" style="margin-bottom:14px"></div>
+
+    <!-- Peso opzionale -->
+    <div class="fg" style="margin-bottom:14px">
+      <label class="fl">Peso (kg) — opzionale</label>
+      <input class="fi" id="ssExPeso" type="number" inputmode="decimal" placeholder="lascia vuoto se corpo libero" style="font-size:15px">
+    </div>
+
+    <!-- Pausa breve -->
+    <div class="fg" style="margin-bottom:20px">
+      <label class="fl">Pausa breve verso prossimo (sec) — opzionale</label>
+      <input class="fi" id="ssExPausa" type="number" inputmode="numeric" placeholder="es: 20" style="font-size:15px">
+    </div>
+
+    <button class="btn btn-a" onclick="confirmAddSupersetEx()">AGGIUNGI ALLA SUPER SERIE</button>
+    <button class="btn btn-b" onclick="closeModal('mAddSupersetEx')">Annulla</button>
   </div>
 </div>
 
@@ -1045,14 +1096,21 @@ function buildSchedaCtxCompleto(){
   if(!schedaAttiva?.sezioni?.length) return 'Nessuna scheda attiva.';
   return schedaAttiva.sezioni.map(sez=>{
     const esStr = sez.esercizi.map(e=>{
-      // Superset — gruppo di esercizi
+      // Backward compat: superset vecchi con type:'superset'
       if(e.type==='superset'){
-        const blockEs = (e.exercises||[]).map(sub=>{
-          return _esCtxLine(sub) + (sub.transitionRest ? ` → ${sub.transitionRest}s` : '');
-        }).join('\n      ');
+        const blockEs=(e.exercises||[]).map(sub=>
+          _esCtxLine(sub)+(sub.transitionRest?' → '+sub.transitionRest+'s':'')
+        ).join('\n      ');
         return `[SUPER SERIE]\n      ${blockEs}\n      recupero blocco: ${e.restAfterBlock||90}s`;
       }
-      return _esCtxLine(e);
+      // Esercizio normale con eventuali secondari
+      let line = _esCtxLine(e);
+      const ssItems = e.supersetExercises||[];
+      if(ssItems.length>0){
+        const ssLines = ssItems.map(sub=>ssExCtxLine(sub)).join('\n      ↳ ');
+        line += `\n      [⚡ SUPER SERIE — ${e.serie} serie]\n      ↳ ${ssLines}`;
+      }
+      return line;
     }).join('\n    ');
     return `[${sez.nome}]\n    ${esStr}`;
   }).join('\n');
@@ -1542,13 +1600,14 @@ function detectEsalvaProgressioni(text, aiReply){
   // Pattern: "ho fatto 4x8 a 85" o "4 serie 8 reps 85 chili" o "panca 90kg" etc.
   // Cerca prima il nome esercizio nel messaggio
   schedaAttiva.sezioni.forEach(sez=>{
-    // Appiattisce esercizi: entra nei superset, salta il contenitore
+    // Appiattisce: entra nei superset legacy (type:'superset') E nei supersetExercises nuovi
     const esercizi = [];
     (sez.esercizi||[]).forEach(item=>{
       if(item.type==='superset'){
         (item.exercises||[]).forEach(sub=>esercizi.push(sub));
       } else {
         esercizi.push(item);
+        (item.supersetExercises||[]).forEach(sub=>esercizi.push(sub));
       }
     });
 
@@ -1681,25 +1740,45 @@ function renderSchedaView(){
     html+=`<div style="margin-bottom:18px"><div class="day-badge">${esc(sez.nome)}</div>${desc?`<div class="sez-sub">${desc}</div>`:''}</div>`;
     html=html.slice(0,-6); // rimessa dentro il div
     sez.esercizi.forEach((item,i)=>{
+      // Backward compat: superset vecchi con type:'superset'
       if(item.type==='superset'){
-        // Rendering blocco superset
-        const subsHtml = (item.exercises||[]).map((sub,si)=>`
-          <div class="es-card" style="margin-bottom:${si<item.exercises.length-1?'4':'0'}px;border-color:rgba(200,241,53,.2)">
-            <div class="es-num" style="font-size:13px;color:var(--ac);opacity:.7">${String.fromCharCode(65+si)}</div>
+        const subsHtml=(item.exercises||[]).map((sub,xi)=>`
+          <div class="es-card" style="margin-bottom:${xi<item.exercises.length-1?'4':'0'}px;border-color:rgba(200,241,53,.2)">
+            <div class="es-num" style="font-size:13px;color:var(--ac);opacity:.7">${String.fromCharCode(65+xi)}</div>
             <div class="es-info">
               <div class="es-name">${esc(sub.nome)}</div>
-              <div class="es-det">${esDettaglio(sub)}${sub.transitionRest?' → '+sub.transitionRest+'s':''}</div>
+              <div class="es-det">${esDettaglio(sub)}${sub.transitionRest?' \u2192 '+sub.transitionRest+'s':''}</div>
             </div>
           </div>`).join('');
         html+=`<div style="border:1.5px solid rgba(200,241,53,.3);border-radius:15px;padding:10px;margin-bottom:10px">
-          <div style="font-size:9px;letter-spacing:2px;color:var(--ac);margin-bottom:8px;font-weight:700">⚡ SUPER SERIE</div>
+          <div style="font-size:9px;letter-spacing:2px;color:var(--ac);margin-bottom:8px;font-weight:700">\u26a1 SUPER SERIE</div>
           ${subsHtml}
           <div style="font-size:11px;color:var(--mt);margin-top:8px;padding-top:8px;border-top:1px solid var(--bd)">Recupero: ${item.restAfterBlock||90}s</div>
         </div>`;
-      } else {
-        const tipo = resolveExerciseType(item);
-        const recStr = tipo!=='cardio' && item.recupero ? ' · rec '+item.recupero+'s' : '';
-        html+=`<div class="es-card"><div class="es-num">${i+1}</div><div class="es-info"><div class="es-name">${esc(item.nome)}</div><div class="es-det">${esDettaglio(item)}${recStr}</div></div></div>`;
+        return;
+      }
+      // Esercizio normale
+      const tipo=resolveExerciseType(item);
+      const recStr=tipo!=='cardio'&&item.recupero?' \u00b7 rec '+item.recupero+'s':'';
+      const ssItems=item.supersetExercises||[];
+      html+=`<div class="es-card" style="${ssItems.length>0?'border-color:rgba(200,241,53,.25);margin-bottom:4px':''}">
+        <div class="es-num">${i+1}</div>
+        <div class="es-info"><div class="es-name">${esc(item.nome)}</div><div class="es-det">${esDettaglio(item)}${recStr}</div></div>
+      </div>`;
+      if(ssItems.length>0){
+        html+=`<div style="border:1.5px solid rgba(200,241,53,.2);border-radius:13px;padding:8px 10px;margin-bottom:10px;margin-left:10px">
+          <div style="font-size:9px;letter-spacing:1.5px;color:var(--ac);margin-bottom:6px;font-weight:700">\u26a1 SUPER SERIE</div>`;
+        ssItems.forEach((sub,xi)=>{
+          const repsStr=sub.repsMode==='max'?'MAX':sub.repsMode==='timed'?(sub.duration||'?')+'sec':(sub.reps||'?')+' reps';
+          const pesoStr=sub.peso?' \u00b7 '+sub.peso+'kg':'';
+          const pausaStr=sub.pausaBreve?' | pausa '+sub.pausaBreve+'s':'';
+          html+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 0${xi<ssItems.length-1?';border-bottom:1px solid var(--bd)':''}">
+            <div style="font-size:11px;color:var(--ac)">\u21b3</div>
+            <div><div style="font-size:13px;font-weight:600">${esc(sub.nome)}</div>
+            <div class="es-det">${repsStr}${pesoStr}${pausaStr}</div></div>
+          </div>`;
+        });
+        html+=`</div>`;
       }
     });
     html+=`</div>`;
@@ -1835,18 +1914,43 @@ function renderBuilder(){
     html+=`<div class="bsez"><div class="bsez-hdr"><div><div class="bsez-name">${esc(sez.nome)}</div>${preset?`<div class="bsez-desc">${preset.desc}</div>`:''}</div><button class="btn-sm btn-sm-a" onclick="startAddEs(${si})" style="font-size:13px;padding:8px 14px">+ Esercizio</button><button class="btn-sm btn-sm-b" onclick="removeSez(${si})" style="padding:8px 12px">✕</button></div>`;
     if(sez.esercizi.length===0) html+=`<div class="builder-empty">Tocca "+ Esercizio" per aggiungere</div>`;
     else sez.esercizi.forEach((es,ei)=>{
-      // Superset — rendering distinto nel builder (senza edit — usa il superset builder)
+      // Backward compat: superset vecchi con type:'superset'
       if(es.type==='superset'){
-        const subList=(es.exercises||[]).map((sub,si)=>
-          `<div style="font-size:12px;color:#ddd;padding:2px 0">${String.fromCharCode(65+si)}. ${esc(sub.nome)} — ${esDettaglio(sub)}</div>`
+        const subList=(es.exercises||[]).map((sub,xi)=>
+          `<div style="font-size:12px;color:#ddd;padding:2px 0">↳ ${esc(sub.nome)} — ${esDettaglio(sub)}</div>`
         ).join('');
-        html+=`<div class="bes-card" style="border-color:rgba(200,241,53,.3)"><div class="bes-info"><div class="bes-name" style="color:var(--ac)">⚡ Super serie</div><div style="margin-top:4px">${subList}</div><div class="bes-rec">rec. blocco ${es.restAfterBlock||90}s</div></div><div class="bes-actions"><button class="bes-btn" onclick="removeEs(${si},${ei})">🗑️</button></div></div>`;
+        html+=`<div class="bes-card" style="border-color:rgba(200,241,53,.25)"><div class="bes-info"><div class="bes-name" style="color:var(--ac)">⚡ Super serie (legacy)</div><div style="margin-top:4px">${subList}</div><div class="bes-rec">rec. ${es.restAfterBlock||90}s</div></div><div class="bes-actions"><button class="bes-btn" onclick="removeEs(${si},${ei})">🗑️</button></div></div>`;
         return;
       }
+      // Esercizio normale
       const det=esDettaglio(es);
       const tipo=resolveExerciseType(es);
       const recStr=(tipo!=='cardio'&&es.recupero)?`<div class="bes-rec">rec. ${es.recupero}s</div>`:'';
-      html+=`<div class="bes-card"><div class="bes-info"><div class="bes-name">${esc(es.nome)}</div><div class="bes-det">${det}</div>${recStr}</div><div class="bes-actions"><button class="bes-btn" onclick="openEditEs(${si},${ei})">✏️</button><button class="bes-btn" onclick="removeEs(${si},${ei})">🗑️</button></div></div>`;
+      // Esercizi secondari superset
+      const ssItems=(es.supersetExercises||[]);
+      const ssHtml=ssItems.map((sub,xi)=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid var(--bd);margin-top:6px">
+          <div style="font-size:12px;color:#ddd">
+            <span style="color:var(--ac);margin-right:4px">↳</span>${esc(sub.nome)}
+            <span style="color:var(--mt);margin-left:6px">${formatSsEx(sub)}${sub.peso?' · '+sub.peso+'kg':''}${sub.pausaBreve?' | pausa '+sub.pausaBreve+'s':''}</span>
+          </div>
+          <button class="bes-btn" onclick="removeSupersetEx(${si},${ei},${xi})" style="padding:2px 6px;font-size:12px">×</button>
+        </div>`).join('');
+      const ssLabel=ssItems.length>0
+        ?`<div style="font-size:9px;letter-spacing:1.5px;color:var(--ac);text-transform:uppercase;margin-top:6px">⚡ Super serie (${ssItems.length})</div>`
+        :'';
+      html+=`<div class="bes-card${ssItems.length>0?' bes-card-ss':''}">
+        <div class="bes-info">
+          <div class="bes-name">${esc(es.nome)}</div>
+          <div class="bes-det">${det}</div>
+          ${recStr}${ssLabel}${ssHtml}
+          <button onclick="addSupersetExTo(${si},${ei})" style="margin-top:8px;background:transparent;border:1px dashed rgba(200,241,53,.4);border-radius:8px;padding:5px 12px;color:var(--ac);font-size:12px;cursor:pointer;width:100%;text-align:left">⚡ + Super serie</button>
+        </div>
+        <div class="bes-actions" style="align-self:flex-start">
+          <button class="bes-btn" onclick="openEditEs(${si},${ei})">✏️</button>
+          <button class="bes-btn" onclick="removeEs(${si},${ei})">🗑️</button>
+        </div>
+      </div>`;
     });
     html+=`</div>`;
   });
@@ -1897,143 +2001,130 @@ function confirmAddSez(){
   console.log('[FM:Builder] Sezione aggiunta:',nome);
 }
 
-function removeSez(si){ if(!confirm(`Rimuovere "${builderData.sezioni[si].nome}"?`)) return; builderData.sezioni.splice(si,1); renderBuilder(); }
-
-function startAddEs(si){
-  builderSezIdx=si; builderGruppo=''; builderEsNome='';
-  // Offre scelta: esercizio singolo o super serie
-  document.getElementById('addEs1Title').textContent='AGGIUNGI — '+builderData.sezioni[si].nome.toUpperCase();
-  document.getElementById('addEs1Subtitle').textContent='Scegli il tipo di elemento';
-  document.getElementById('gruppoGrid').innerHTML=`
-    <div style="grid-column:1/-1;display:flex;gap:10px;margin-bottom:14px">
-      <div onclick="startAddSingle()" style="flex:1;background:var(--s2);border:1.5px solid var(--ac);border-radius:13px;padding:14px;cursor:pointer;text-align:center">
-        <div style="font-size:20px;margin-bottom:6px">💪</div>
-        <div style="font-size:13px;font-weight:600;color:var(--ac)">Esercizio</div>
-        <div style="font-size:11px;color:var(--mt);margin-top:3px">singolo</div>
-      </div>
-      <div onclick="startAddSupersetBlock()" style="flex:1;background:var(--s2);border:1.5px solid rgba(200,241,53,.4);border-radius:13px;padding:14px;cursor:pointer;text-align:center">
-        <div style="font-size:20px;margin-bottom:6px">⚡</div>
-        <div style="font-size:13px;font-weight:600;color:var(--ac)">Super serie</div>
-        <div style="font-size:11px;color:var(--mt);margin-top:3px">2+ esercizi</div>
-      </div>
-    </div>
-    <div style="font-size:11px;color:var(--mt);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;grid-column:1/-1">Oppure scegli gruppo muscolare:</div>
-    ${GRUPPI.map(g=>`<div onclick="pickGruppo('${g.n}')" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:14px 11px;cursor:pointer;text-align:center"><div style="font-size:22px;margin-bottom:6px">${g.e}</div><div style="font-size:13px;font-weight:600;color:#ddd">${g.n}</div></div>`).join('')}`;
-  showModal('mAddEs1');
-}
-
-function startAddSingle(){
-  // Flow normale — già gestito da pickGruppo
-  document.getElementById('gruppoGrid').innerHTML=GRUPPI.map(g=>`<div onclick="pickGruppo('${g.n}')" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:14px 11px;cursor:pointer;text-align:center"><div style="font-size:22px;margin-bottom:6px">${g.e}</div><div style="font-size:13px;font-weight:600;color:#ddd">${g.n}</div></div>`).join('');
-}
-
-// Stato temporaneo superset in costruzione
-let _supersetBuilding = null;
-
-function startAddSupersetBlock(){
-  _supersetBuilding = { type:'superset', id:'ss_'+Date.now(), exercises:[], restAfterBlock:90 };
-  closeModal('mAddEs1');
-  showModal('mSupersetBuilder');
-  renderSupersetBuilder();
-}
-
-function renderSupersetBuilder(){
-  const ss = _supersetBuilding;
-  const list = ss.exercises.map((e,i)=>`
-    <div style="background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-size:14px;font-weight:600">${esc(e.nome)}</div>
-        <div style="font-size:12px;color:var(--ac)">${esDettaglio(e)}</div>
-        ${i<ss.exercises.length-1?`<div style="font-size:11px;color:var(--mt);margin-top:3px">→ pausa ${e.transitionRest||0}s</div>`:''}
-      </div>
-      <div onclick="removeSupersetEx(${i})" style="color:var(--rd);font-size:18px;cursor:pointer;padding:4px 8px">×</div>
-    </div>`).join('');
-  document.getElementById('ssBuildList').innerHTML = list || '<div style="color:var(--mt);font-size:13px;text-align:center;padding:20px">Aggiungi almeno 2 esercizi</div>';
-  document.getElementById('ssRestAfter').value = ss.restAfterBlock;
-  document.getElementById('ssSaveBtn').disabled = ss.exercises.length < 2;
-  document.getElementById('ssSaveBtn').style.opacity = ss.exercises.length < 2 ? '.4' : '1';
-}
-
-function addExToSuperset(){
-  // Apre picker gruppo per aggiungere es alla super serie
-  builderGruppo=''; builderEsNome='';
-  document.getElementById('addEs1Title').textContent='AGGIUNGI ESERCIZIO';
-  const el=document.getElementById('addEs1Subtitle'); if(el) el.textContent='alla super serie';
-  document.getElementById('gruppoGrid').innerHTML=GRUPPI.map(g=>`<div onclick="pickGruppoForSS('${g.n}')" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:14px 11px;cursor:pointer;text-align:center"><div style="font-size:22px;margin-bottom:6px">${g.e}</div><div style="font-size:13px;font-weight:600;color:#ddd">${g.n}</div></div>`).join('');
-  closeModal('mSupersetBuilder');
-  showModal('mAddEs1');
-}
-
-function pickGruppoForSS(g){
-  builderGruppo=g; closeModal('mAddEs1');
-  document.getElementById('addEs2Title').textContent=g.toUpperCase()+' (super serie)';
-  document.getElementById('esLista').innerHTML=(ES_DB[g]||[]).map(es=>`<div onclick="pickEsercizioForSS('${esc(es)}')" style="background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:13px 15px;cursor:pointer;display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;font-weight:500;color:#ddd">${esc(es)}</span><span style="color:var(--mt);font-size:17px">›</span></div>`).join('');
-  showModal('mAddEs2');
-}
-
-function pickEsercizioForSS(nome){
-  if(nome==='Altro esercizio'){ const c=prompt('Nome esercizio:'); if(!c?.trim()) return; builderEsNome=c.trim(); }
-  else builderEsNome=nome;
-  builderGruppo=builderGruppo||'';
-  const tipo=getTipoEs(builderEsNome, builderGruppo);
-  document.getElementById('addEs3Nome').textContent=builderEsNome+' (super serie)';
-  document.getElementById('addEs3Gruppo').textContent=builderGruppo;
-  document.getElementById('addEs3Fields').innerHTML=renderEsFields(tipo,{},'ss');
-  // Aggiunge campo transition rest
-  document.getElementById('addEs3Fields').innerHTML+=`
-    <div class="fg" style="margin-bottom:20px">
-      <label class="fl">Pausa verso prossimo esercizio (sec)</label>
-      <input style="${fi}" id="ssTransRest" type="number" inputmode="numeric" placeholder="20" value="20">
-    </div>`;
-  document.getElementById('mAddEs3').dataset.tipo=tipo;
-  document.getElementById('mAddEs3').dataset.forSS='1';
-  closeModal('mAddEs2');
-  showModal('mAddEs3');
-}
-
 function confirmAddEs(){
-  const forSS = document.getElementById('mAddEs3').dataset.forSS==='1';
   const tipo=document.getElementById('mAddEs3').dataset.tipo||'weighted';
   const vals=leggiCampiEs(tipo,'es');
   const id=builderEsNome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
-
-  if(forSS && _supersetBuilding){
-    // Aggiunge alla super serie in costruzione
-    document.getElementById('mAddEs3').dataset.forSS='';
-    const transRest = parseInt(document.getElementById('ssTransRest')?.value)||0;
-    _supersetBuilding.exercises.push({ id, gruppo:builderGruppo, nome:builderEsNome, storico:[], stabilita:{count:0}, transitionRest:transRest, ...vals });
-    closeModal('mAddEs3');
-    showModal('mSupersetBuilder');
-    renderSupersetBuilder();
-    return;
-  }
-
   builderData.sezioni[builderSezIdx].esercizi.push({
-    id, gruppo:builderGruppo, nome:builderEsNome, storico:[], stabilita:{count:0}, ...vals
+    id, gruppo:builderGruppo, nome:builderEsNome,
+    storico:[], stabilita:{count:0},
+    supersetExercises:[],  // nuovo campo — vuoto di default
+    ...vals
   });
   closeModal('mAddEs3'); renderBuilder();
   console.log('[FM:Builder] Aggiunto:',builderEsNome,'tipo:',tipo);
 }
 
-function removeSupersetEx(i){
-  _supersetBuilding.exercises.splice(i,1);
-  renderSupersetBuilder();
+function removeSez(si){ if(!confirm(`Rimuovere "${builderData.sezioni[si].nome}"?`)) return; builderData.sezioni.splice(si,1); renderBuilder(); }
+
+function startAddEs(si){
+  builderSezIdx=si; builderGruppo=''; builderEsNome='';
+  document.getElementById('addEs1Title').textContent='AGGIUNGI — '+builderData.sezioni[si].nome.toUpperCase();
+  document.getElementById('addEs1Subtitle').textContent='Scegli il gruppo muscolare';
+  document.getElementById('gruppoGrid').innerHTML=GRUPPI.map(g=>`<div onclick="pickGruppo('${g.n}')" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:14px 11px;cursor:pointer;text-align:center"><div style="font-size:22px;margin-bottom:6px">${g.e}</div><div style="font-size:13px;font-weight:600;color:#ddd">${g.n}</div></div>`).join('');
+  showModal('mAddEs1');
 }
 
-function saveSuperset(){
-  if(!_supersetBuilding || _supersetBuilding.exercises.length < 2){ showToast('Aggiungi almeno 2 esercizi'); return; }
-  _supersetBuilding.restAfterBlock = parseInt(document.getElementById('ssRestAfter').value)||90;
-  builderData.sezioni[builderSezIdx].esercizi.push({..._supersetBuilding});
-  _supersetBuilding = null;
-  closeModal('mSupersetBuilder');
+// startAddSingle rimossa — flow ora diretto
+function startAddSingle(){ /* legacy no-op */ }
+
+// ══════════════════════════════════════════════════════════════════
+// SUPERSERIE — nasce dall'esercizio principale, non come tipo separato
+// ══════════════════════════════════════════════════════════════════
+
+let _ssTarget = null; // { si, ei } — esercizio principale
+
+function addSupersetExTo(si, ei){
+  _ssTarget = { si, ei };
+  const es = builderData.sezioni[si].esercizi[ei];
+  document.getElementById('ssExSub').textContent =
+    'Abbinato a "'+es.nome+'" \u00b7 '+es.serie+' serie';
+  document.getElementById('ssExNome').value = '';
+  document.getElementById('ssExPeso').value = '';
+  document.getElementById('ssExPausa').value = '';
+  setSsExMode('fixed');
+  showModal('mAddSupersetEx');
+}
+
+function setSsExMode(mode){
+  ['fixed','max','timed'].forEach(function(m){
+    var el = document.getElementById('ssExMode'+m.charAt(0).toUpperCase()+m.slice(1));
+    if(el) el.classList.toggle('sel', m===mode);
+  });
+  var fields = document.getElementById('ssExFields');
+  if(mode==='fixed'){
+    fields.innerHTML='<div class="fg" style="margin-bottom:0"><label class="fl">Reps</label><input class="fi" id="ssExReps" type="number" inputmode="numeric" placeholder="12" style="font-size:18px;text-align:center"></div>';
+  } else if(mode==='timed'){
+    fields.innerHTML='<div class="fg" style="margin-bottom:0"><label class="fl">Durata (secondi)</label><input class="fi" id="ssExDuration" type="number" inputmode="numeric" placeholder="45" style="font-size:18px;text-align:center"></div>';
+  } else {
+    fields.innerHTML='<div class="info-box">\ud83c\udfc3 L\'atleta esegue il massimo numero di reps possibili.</div>';
+  }
+  fields.dataset.mode = mode;
+}
+
+function confirmAddSupersetEx(){
+  if(!_ssTarget) return;
+  var nome = document.getElementById('ssExNome').value.trim();
+  if(!nome){ showToast("Inserisci il nome dell'esercizio"); return; }
+  var mode = document.getElementById('ssExFields').dataset.mode || 'fixed';
+  var peso = parseFloat(document.getElementById('ssExPeso').value) || null;
+  var pausa = parseInt(document.getElementById('ssExPausa').value) || null;
+  var reps = mode==='fixed' ? (parseInt(document.getElementById('ssExReps')?.value)||0) : null;
+  var duration = mode==='timed' ? (parseInt(document.getElementById('ssExDuration')?.value)||0) : null;
+  var entry = {
+    id: nome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,''),
+    nome: nome,
+    repsMode: mode,
+    reps: reps,
+    duration: duration,
+    peso: peso,
+    pausaBreve: pausa,
+    storico: [],
+    stabilita: { count:0 }
+  };
+  var es = builderData.sezioni[_ssTarget.si].esercizi[_ssTarget.ei];
+  if(!es.supersetExercises) es.supersetExercises = [];
+  es.supersetExercises.push(entry);
+  closeModal('mAddSupersetEx');
+  _ssTarget = null;
   renderBuilder();
-  console.log('[FM:Builder] Super serie aggiunta');
+  console.log('[FM:SS] Aggiunto:', nome, 'mode:', mode);
 }
 
-function cancelSuperset(){
-  _supersetBuilding = null;
-  closeModal('mSupersetBuilder');
+function removeSupersetEx(si, ei, xi){
+  var es = builderData.sezioni[si].esercizi[ei];
+  if(es.supersetExercises) es.supersetExercises.splice(xi,1);
+  renderBuilder();
 }
+
+function formatSsEx(sub){
+  if(sub.repsMode==='max')   return 'MAX';
+  if(sub.repsMode==='timed') return (sub.duration||'?')+'sec';
+  return (sub.reps||'?')+' reps';
+}
+
+function ssExCtxLine(sub){
+  var s = sub.nome||'?';
+  if(sub.repsMode==='max')        s += ' \u00d7 MAX';
+  else if(sub.repsMode==='timed') s += ' \u00d7 '+(sub.duration||'?')+'sec';
+  else                            s += ' \u00d7 '+(sub.reps||'?');
+  if(sub.peso)       s += ' @'+sub.peso+'kg';
+  if(sub.pausaBreve) s += ' | pausa breve '+sub.pausaBreve+'s';
+  return s;
+}
+
+// Legacy backward compat — superset vecchi con type:'superset'
+var _supersetBuilding = null;
+function startAddSupersetBlock(){ showToast('Usa il pulsante \u26a1 + Super serie nella card esercizio'); }
+function renderSupersetBuilder(){}
+function addExToSuperset(){}
+function pickGruppoForSS(g){}
+function pickEsercizioForSS(nome){}
+function removeLegacySsEx(i){}
+function saveSuperset(){}
+function cancelSuperset(){ closeModal('mSupersetBuilder'); }
+
+
 
 function pickGruppo(g){
   builderGruppo=g; closeModal('mAddEs1');
