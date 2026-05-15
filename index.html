@@ -580,7 +580,7 @@ textarea.fi{resize:none;height:76px}
 <div class="overlay" id="mAddEs1">
   <div class="sheet"><div class="handle"></div>
     <div class="sh-title" id="addEs1Title">AGGIUNGI ESERCIZIO</div>
-    <div class="sh-sub" style="margin-bottom:16px">Scegli il gruppo muscolare</div>
+    <div class="sh-sub" id="addEs1Subtitle" style="margin-bottom:16px">Scegli il gruppo muscolare</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="gruppoGrid"></div>
   </div>
 </div>
@@ -625,6 +625,22 @@ textarea.fi{resize:none;height:76px}
     <div id="editEs3Fields"></div>
     <button class="btn btn-a" onclick="confirmEditEs()">SALVA MODIFICHE</button>
     <button class="btn btn-b" onclick="closeModal('mEditEs')">Annulla</button>
+  </div>
+</div>
+
+<!-- Super serie builder -->
+<div class="overlay" id="mSupersetBuilder">
+  <div class="sheet"><div class="handle"></div>
+    <div class="sh-title">⚡ SUPER SERIE</div>
+    <div class="sh-sub">Aggiungi almeno 2 esercizi. Il recupero è solo alla fine del blocco.</div>
+    <div id="ssBuildList" style="margin-bottom:14px"></div>
+    <button class="btn btn-b" onclick="addExToSuperset()" style="margin-bottom:16px">+ Aggiungi esercizio</button>
+    <div class="fg" style="margin-bottom:18px">
+      <label class="fl">Recupero finale blocco (sec)</label>
+      <input class="fi" id="ssRestAfter" type="number" inputmode="numeric" placeholder="90" value="90" style="font-size:18px;text-align:center">
+    </div>
+    <button id="ssSaveBtn" class="btn btn-a" onclick="saveSuperset()">SALVA SUPER SERIE</button>
+    <button class="btn btn-b" onclick="cancelSuperset()">Annulla</button>
   </div>
 </div>
 
@@ -1029,28 +1045,44 @@ function buildSchedaCtxCompleto(){
   if(!schedaAttiva?.sezioni?.length) return 'Nessuna scheda attiva.';
   return schedaAttiva.sezioni.map(sez=>{
     const esStr = sez.esercizi.map(e=>{
-      let s = `${e.nome}`;
-      const tipo=e.tipo||getTipoEs(e.nome,e.gruppo||'');
-      if(tipo==='cardio'){
-        if(e.minuti) s+=` ${e.minuti}min`;
-        if(e.km) s+=` ${e.km}km`;
-        if(e.velocita) s+=` @${e.velocita}km/h`;
-        if(e.pendenza) s+=` pendenza${e.pendenza}%`;
-      } else if(tipo==='bodyweight'){
-        s+=` ${e.serie}x${e.reps}`;
-      } else {
-        s+=` ${e.serie}x${e.reps}`;
-        if(e.peso) s+=` @${e.peso}kg`;
-        if(e.recupero) s+=` rec${e.recupero}s`;
+      // Superset — gruppo di esercizi
+      if(e.type==='superset'){
+        const blockEs = (e.exercises||[]).map(sub=>{
+          return _esCtxLine(sub) + (sub.transitionRest ? ` → ${sub.transitionRest}s` : '');
+        }).join('\n      ');
+        return `[SUPER SERIE]\n      ${blockEs}\n      recupero blocco: ${e.restAfterBlock||90}s`;
       }
-      if(e.storico?.length){
-        const ult = e.storico.slice(-3);
-        s += ` | storico: ${ult.map(h=>`${h.data||'?'} ${h.peso||'?'}kg×${h.reps||'?'}`).join(', ')}`;
-      }
-      return s;
+      return _esCtxLine(e);
     }).join('\n    ');
     return `[${sez.nome}]\n    ${esStr}`;
   }).join('\n');
+}
+
+// Helper: formatta una riga esercizio per il prompt AI
+function _esCtxLine(e){
+  const tipo = resolveExerciseType(e);
+  let s = e.nome||'?';
+  if(tipo==='cardio'){
+    if(e.minuti)   s+=` ${e.minuti}min`;
+    if(e.km)       s+=` ${e.km}km`;
+    if(e.velocita) s+=` @${e.velocita}km/h`;
+  } else if(tipo==='timed'){
+    const dur = e.duration || e.reps || 0;
+    s+=` ${e.serie}x${dur}sec`;
+    if(e.recupero) s+=` rec${e.recupero}s`;
+  } else if(tipo==='bodyweight'){
+    s+=` ${e.serie}x${e.reps}`;
+    if(e.recupero) s+=` rec${e.recupero}s`;
+  } else {
+    s+=` ${e.serie}x${e.reps}`;
+    if(e.peso)     s+=` @${e.peso}kg`;
+    if(e.recupero) s+=` rec${e.recupero}s`;
+  }
+  if(e.storico?.length){
+    const ult = e.storico.slice(-3);
+    s += ` | storico: ${ult.map(h=>`${h.data||'?'} ${h.peso||'?'}kg×${h.reps||'?'}`).join(', ')}`;
+  }
+  return s;
 }
 
 function buildSystemPrompt(){
@@ -1637,10 +1669,28 @@ function renderSchedaView(){
   schedaAttiva.sezioni.forEach(sez=>{
     const desc=SEZ_PRESETS.find(p=>p.nome===sez.nome)?.desc||'';
     html+=`<div style="margin-bottom:18px"><div class="day-badge">${esc(sez.nome)}</div>${desc?`<div class="sez-sub">${desc}</div>`:''}</div>`;
-    // rimessa dentro il div
-    html=html.slice(0,-6); // toglie l'ultimo </div>
-    sez.esercizi.forEach((es,i)=>{
-      html+=`<div class="es-card"><div class="es-num">${i+1}</div><div class="es-info"><div class="es-name">${esc(es.nome)}</div><div class="es-det">${esDettaglio(es)}${(es.tipo!=='cardio'&&es.recupero)?' · rec '+es.recupero+'s':''}</div></div></div>`;
+    html=html.slice(0,-6); // rimessa dentro il div
+    sez.esercizi.forEach((item,i)=>{
+      if(item.type==='superset'){
+        // Rendering blocco superset
+        const subsHtml = (item.exercises||[]).map((sub,si)=>`
+          <div class="es-card" style="margin-bottom:${si<item.exercises.length-1?'4':'0'}px;border-color:rgba(200,241,53,.2)">
+            <div class="es-num" style="font-size:13px;color:var(--ac);opacity:.7">${String.fromCharCode(65+si)}</div>
+            <div class="es-info">
+              <div class="es-name">${esc(sub.nome)}</div>
+              <div class="es-det">${esDettaglio(sub)}${sub.transitionRest?' → '+sub.transitionRest+'s':''}</div>
+            </div>
+          </div>`).join('');
+        html+=`<div style="border:1.5px solid rgba(200,241,53,.3);border-radius:15px;padding:10px;margin-bottom:10px">
+          <div style="font-size:9px;letter-spacing:2px;color:var(--ac);margin-bottom:8px;font-weight:700">⚡ SUPER SERIE</div>
+          ${subsHtml}
+          <div style="font-size:11px;color:var(--mt);margin-top:8px;padding-top:8px;border-top:1px solid var(--bd)">Recupero: ${item.restAfterBlock||90}s</div>
+        </div>`;
+      } else {
+        const tipo = resolveExerciseType(item);
+        const recStr = tipo!=='cardio' && item.recupero ? ' · rec '+item.recupero+'s' : '';
+        html+=`<div class="es-card"><div class="es-num">${i+1}</div><div class="es-info"><div class="es-name">${esc(item.nome)}</div><div class="es-det">${esDettaglio(item)}${recStr}</div></div></div>`;
+      }
     });
     html+=`</div>`;
   });
@@ -1786,18 +1836,24 @@ function renderBuilder(){
 }
 
 function esDettaglio(es){
-  const tipo=es.tipo||getTipoEs(es.nome,es.gruppo||'');
+  const tipo = resolveExerciseType(es);
   if(tipo==='cardio'){
     const parts=[];
-    if(es.minuti) parts.push(es.minuti+'min');
-    if(es.km) parts.push(es.km+'km');
-    if(es.velocita) parts.push(es.velocita+'km/h');
-    if(es.pendenza) parts.push('pendenza '+es.pendenza+'%');
+    if(es.minuti)    parts.push(es.minuti+'min');
+    if(es.km)        parts.push(es.km+'km');
+    if(es.velocita)  parts.push(es.velocita+'km/h');
+    if(es.pendenza)  parts.push('pendenza '+es.pendenza+'%');
     return parts.length?parts.join(' · '):'nessun parametro';
   }
-  if(tipo==='bodyweight'){
-    return `${es.serie||'?'}×${es.reps||'?'}${es.reps>=30?' sec':' reps'}`;
+  if(tipo==='timed'){
+    // duration è il campo canonico; reps come fallback legacy
+    const dur = es.duration || es.reps || 0;
+    return `${es.serie||'?'}×${dur}sec`;
   }
+  if(tipo==='bodyweight'){
+    return `${es.serie||'?'}×${es.reps||'?'}`;
+  }
+  // weighted (default)
   return `${es.serie||'?'}×${es.reps||'?'}${es.peso?' · '+es.peso+'kg':''}`;
 }
 function openAddSez(){
@@ -1827,9 +1883,138 @@ function removeSez(si){ if(!confirm(`Rimuovere "${builderData.sezioni[si].nome}"
 
 function startAddEs(si){
   builderSezIdx=si; builderGruppo=''; builderEsNome='';
+  // Offre scelta: esercizio singolo o super serie
   document.getElementById('addEs1Title').textContent='AGGIUNGI — '+builderData.sezioni[si].nome.toUpperCase();
-  document.getElementById('gruppoGrid').innerHTML=GRUPPI.map(g=>`<div onclick="pickGruppo('${g.n}')" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:14px 11px;cursor:pointer;text-align:center"><div style="font-size:22px;margin-bottom:6px">${g.e}</div><div style="font-size:13px;font-weight:600;color:#ddd">${g.n}</div></div>`).join('');
+  document.getElementById('addEs1Subtitle').textContent='Scegli il tipo di elemento';
+  document.getElementById('gruppoGrid').innerHTML=`
+    <div style="grid-column:1/-1;display:flex;gap:10px;margin-bottom:14px">
+      <div onclick="startAddSingle()" style="flex:1;background:var(--s2);border:1.5px solid var(--ac);border-radius:13px;padding:14px;cursor:pointer;text-align:center">
+        <div style="font-size:20px;margin-bottom:6px">💪</div>
+        <div style="font-size:13px;font-weight:600;color:var(--ac)">Esercizio</div>
+        <div style="font-size:11px;color:var(--mt);margin-top:3px">singolo</div>
+      </div>
+      <div onclick="startAddSupersetBlock()" style="flex:1;background:var(--s2);border:1.5px solid rgba(200,241,53,.4);border-radius:13px;padding:14px;cursor:pointer;text-align:center">
+        <div style="font-size:20px;margin-bottom:6px">⚡</div>
+        <div style="font-size:13px;font-weight:600;color:var(--ac)">Super serie</div>
+        <div style="font-size:11px;color:var(--mt);margin-top:3px">2+ esercizi</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--mt);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;grid-column:1/-1">Oppure scegli gruppo muscolare:</div>
+    ${GRUPPI.map(g=>`<div onclick="pickGruppo('${g.n}')" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:14px 11px;cursor:pointer;text-align:center"><div style="font-size:22px;margin-bottom:6px">${g.e}</div><div style="font-size:13px;font-weight:600;color:#ddd">${g.n}</div></div>`).join('')}`;
   showModal('mAddEs1');
+}
+
+function startAddSingle(){
+  // Flow normale — già gestito da pickGruppo
+  document.getElementById('gruppoGrid').innerHTML=GRUPPI.map(g=>`<div onclick="pickGruppo('${g.n}')" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:14px 11px;cursor:pointer;text-align:center"><div style="font-size:22px;margin-bottom:6px">${g.e}</div><div style="font-size:13px;font-weight:600;color:#ddd">${g.n}</div></div>`).join('');
+}
+
+// Stato temporaneo superset in costruzione
+let _supersetBuilding = null;
+
+function startAddSupersetBlock(){
+  _supersetBuilding = { type:'superset', id:'ss_'+Date.now(), exercises:[], restAfterBlock:90 };
+  closeModal('mAddEs1');
+  showModal('mSupersetBuilder');
+  renderSupersetBuilder();
+}
+
+function renderSupersetBuilder(){
+  const ss = _supersetBuilding;
+  const list = ss.exercises.map((e,i)=>`
+    <div style="background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:14px;font-weight:600">${esc(e.nome)}</div>
+        <div style="font-size:12px;color:var(--ac)">${esDettaglio(e)}</div>
+        ${i<ss.exercises.length-1?`<div style="font-size:11px;color:var(--mt);margin-top:3px">→ pausa ${e.transitionRest||0}s</div>`:''}
+      </div>
+      <div onclick="removeSupersetEx(${i})" style="color:var(--rd);font-size:18px;cursor:pointer;padding:4px 8px">×</div>
+    </div>`).join('');
+  document.getElementById('ssBuildList').innerHTML = list || '<div style="color:var(--mt);font-size:13px;text-align:center;padding:20px">Aggiungi almeno 2 esercizi</div>';
+  document.getElementById('ssRestAfter').value = ss.restAfterBlock;
+  document.getElementById('ssSaveBtn').disabled = ss.exercises.length < 2;
+  document.getElementById('ssSaveBtn').style.opacity = ss.exercises.length < 2 ? '.4' : '1';
+}
+
+function addExToSuperset(){
+  // Apre picker gruppo per aggiungere es alla super serie
+  builderGruppo=''; builderEsNome='';
+  document.getElementById('addEs1Title').textContent='AGGIUNGI ESERCIZIO';
+  const el=document.getElementById('addEs1Subtitle'); if(el) el.textContent='alla super serie';
+  document.getElementById('gruppoGrid').innerHTML=GRUPPI.map(g=>`<div onclick="pickGruppoForSS('${g.n}')" style="background:var(--s2);border:1.5px solid var(--bd);border-radius:13px;padding:14px 11px;cursor:pointer;text-align:center"><div style="font-size:22px;margin-bottom:6px">${g.e}</div><div style="font-size:13px;font-weight:600;color:#ddd">${g.n}</div></div>`).join('');
+  closeModal('mSupersetBuilder');
+  showModal('mAddEs1');
+}
+
+function pickGruppoForSS(g){
+  builderGruppo=g; closeModal('mAddEs1');
+  document.getElementById('addEs2Title').textContent=g.toUpperCase()+' (super serie)';
+  document.getElementById('esLista').innerHTML=(ES_DB[g]||[]).map(es=>`<div onclick="pickEsercizioForSS('${esc(es)}')" style="background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:13px 15px;cursor:pointer;display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;font-weight:500;color:#ddd">${esc(es)}</span><span style="color:var(--mt);font-size:17px">›</span></div>`).join('');
+  showModal('mAddEs2');
+}
+
+function pickEsercizioForSS(nome){
+  if(nome==='Altro esercizio'){ const c=prompt('Nome esercizio:'); if(!c?.trim()) return; builderEsNome=c.trim(); }
+  else builderEsNome=nome;
+  builderGruppo=builderGruppo||'';
+  const tipo=getTipoEs(builderEsNome, builderGruppo);
+  document.getElementById('addEs3Nome').textContent=builderEsNome+' (super serie)';
+  document.getElementById('addEs3Gruppo').textContent=builderGruppo;
+  document.getElementById('addEs3Fields').innerHTML=renderEsFields(tipo,{},'ss');
+  // Aggiunge campo transition rest
+  document.getElementById('addEs3Fields').innerHTML+=`
+    <div class="fg" style="margin-bottom:20px">
+      <label class="fl">Pausa verso prossimo esercizio (sec)</label>
+      <input style="${fi}" id="ssTransRest" type="number" inputmode="numeric" placeholder="20" value="20">
+    </div>`;
+  document.getElementById('mAddEs3').dataset.tipo=tipo;
+  document.getElementById('mAddEs3').dataset.forSS='1';
+  closeModal('mAddEs2');
+  showModal('mAddEs3');
+}
+
+function confirmAddEs(){
+  const forSS = document.getElementById('mAddEs3').dataset.forSS==='1';
+  const tipo=document.getElementById('mAddEs3').dataset.tipo||'weighted';
+  const vals=leggiCampiEs(tipo,'es');
+  const id=builderEsNome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+
+  if(forSS && _supersetBuilding){
+    // Aggiunge alla super serie in costruzione
+    document.getElementById('mAddEs3').dataset.forSS='';
+    const transRest = parseInt(document.getElementById('ssTransRest')?.value)||0;
+    _supersetBuilding.exercises.push({ id, gruppo:builderGruppo, nome:builderEsNome, storico:[], stabilita:{count:0}, transitionRest:transRest, ...vals });
+    closeModal('mAddEs3');
+    showModal('mSupersetBuilder');
+    renderSupersetBuilder();
+    return;
+  }
+
+  builderData.sezioni[builderSezIdx].esercizi.push({
+    id, gruppo:builderGruppo, nome:builderEsNome, storico:[], stabilita:{count:0}, ...vals
+  });
+  closeModal('mAddEs3'); renderBuilder();
+  console.log('[FM:Builder] Aggiunto:',builderEsNome,'tipo:',tipo);
+}
+
+function removeSupersetEx(i){
+  _supersetBuilding.exercises.splice(i,1);
+  renderSupersetBuilder();
+}
+
+function saveSuperset(){
+  if(!_supersetBuilding || _supersetBuilding.exercises.length < 2){ showToast('Aggiungi almeno 2 esercizi'); return; }
+  _supersetBuilding.restAfterBlock = parseInt(document.getElementById('ssRestAfter').value)||90;
+  builderData.sezioni[builderSezIdx].esercizi.push({..._supersetBuilding});
+  _supersetBuilding = null;
+  closeModal('mSupersetBuilder');
+  renderBuilder();
+  console.log('[FM:Builder] Super serie aggiunta');
+}
+
+function cancelSuperset(){
+  _supersetBuilding = null;
+  closeModal('mSupersetBuilder');
 }
 
 function pickGruppo(g){
@@ -1839,22 +2024,34 @@ function pickGruppo(g){
   showModal('mAddEs2');
 }
 
-// ── Classificazione tipo esercizio ──
-// 'cardio'    → minuti, km, velocità, pendenza
-// 'bodyweight'→ serie, reps (o secondi), no peso
-// 'weighted'  → serie, reps, kg, recupero (default)
+// ── Classificazione exerciseType ──
+// 'weighted'   → serie, reps, peso, recupero (default)
+// 'bodyweight' → serie, reps, recupero (no peso)
+// 'timed'      → serie, duration, recupero (no reps)
+// 'cardio'     → minuti, km, velocità, pendenza (legacy, mantenuto)
+//
+// BACKWARD COMPAT: campo legacy 'tipo' viene letto se 'exerciseType' assente.
 
 const ES_TIPO = {
-  cardio: ['Tapis roulant','Cyclette','Ellittica','Vogatore','Salto con la corda','Stepper','HIIT intervalli','Camminata veloce'],
-  bodyweight: ['Trazioni pronazione','Trazioni supinazione','Dip petto','Dip tricipiti','Plank','Side plank','Hollow body','Mountain climber','Push-up','Crunch classico','Crunch inverso','Leg raise','Russian twist','Ab wheel','Cable crunch'],
+  cardio:     ['Tapis roulant','Cyclette','Ellittica','Vogatore','Salto con la corda','Stepper','HIIT intervalli','Camminata veloce'],
+  bodyweight: ['Trazioni pronazione','Trazioni supinazione','Dip petto','Dip tricipiti','Push-up','Crunch classico','Crunch inverso','Leg raise','Russian twist','Ab wheel','Cable crunch','Mountain climber'],
+  timed:      ['Plank','Side plank','Hollow body','Hollow hold','Dead hang','Wall sit','Farmer walk','Carry'],
 };
 
+// Restituisce l'exerciseType canonico — legge prima 'exerciseType' esplicito,
+// poi 'tipo' legacy, poi inferisce da nome/gruppo.
 function getTipoEs(nome, gruppo){
   if(gruppo==='Cardio') return 'cardio';
-  if(ES_TIPO.cardio.includes(nome)) return 'cardio';
+  if(ES_TIPO.cardio.includes(nome))     return 'cardio';
+  if(ES_TIPO.timed.includes(nome))      return 'timed';
   if(ES_TIPO.bodyweight.includes(nome)) return 'bodyweight';
   if(gruppo==='Addome') return 'bodyweight';
   return 'weighted';
+}
+
+// Risolve exerciseType con fallback backward compatible
+function resolveExerciseType(es){
+  return es.exerciseType || es.tipo || getTipoEs(es.nome||'', es.gruppo||'');
 }
 
 const fi='width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:13px 15px;color:var(--tx);font-family:"DM Sans",sans-serif;font-size:18px;outline:none;-webkit-appearance:none;text-align:center;';
@@ -1872,12 +2069,23 @@ function renderEsFields(tipo, vals, prefix){
       <div class="fg" style="margin-bottom:0"><label class="fl">Pendenza (%)</label><input style="${fi}" id="${prefix}Pend" type="number" inputmode="decimal" step="0.5" placeholder="0" value="${vals.pendenza||''}"></div>
     </div>`;
   }
+  if(tipo==='timed'){
+    return `
+    <div class="info-box" style="margin-bottom:14px">⏱ Esercizio a tempo — inserisci durata in secondi.</div>
+    <div class="r2" style="margin-bottom:10px">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Serie</label><input style="${fi}" id="${prefix}S" type="number" inputmode="numeric" placeholder="3" value="${vals.serie||''}"></div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Durata (sec)</label><input style="${fi}" id="${prefix}Dur" type="number" inputmode="numeric" placeholder="30" value="${vals.duration||''}"></div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Recupero (sec)</label><input style="${fi}" id="${prefix}Rec" type="number" inputmode="numeric" placeholder="60" value="${vals.recupero||60}"></div>
+    </div>`;
+  }
   if(tipo==='bodyweight'){
     return `
     <div class="info-box" style="margin-bottom:14px">🤸 Corpo libero — nessun peso da inserire.</div>
     <div class="r2" style="margin-bottom:10px">
       <div class="fg" style="margin-bottom:0"><label class="fl">Serie</label><input style="${fi}" id="${prefix}S" type="number" inputmode="numeric" placeholder="3" value="${vals.serie||''}"></div>
-      <div class="fg" style="margin-bottom:0"><label class="fl">Reps / Sec</label><input style="${fi}" id="${prefix}R" type="number" inputmode="numeric" placeholder="10" value="${vals.reps||''}"></div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Reps</label><input style="${fi}" id="${prefix}R" type="number" inputmode="numeric" placeholder="10" value="${vals.reps||''}"></div>
     </div>
     <div style="margin-bottom:20px">
       <div class="fg" style="margin-bottom:0"><label class="fl">Recupero (sec)</label><input style="${fi}" id="${prefix}Rec" type="number" inputmode="numeric" placeholder="60" value="${vals.recupero||60}"></div>
@@ -1899,7 +2107,7 @@ function leggiCampiEs(tipo, prefix){
   const g=id=>document.getElementById(id);
   if(tipo==='cardio'){
     return {
-      tipo:'cardio',
+      exerciseType:'cardio', tipo:'cardio', // tipo=legacy compat
       minuti: parseInt(g(prefix+'Min')?.value)||0,
       km: parseFloat(g(prefix+'Km')?.value)||0,
       velocita: parseFloat(g(prefix+'Vel')?.value)||0,
@@ -1907,20 +2115,31 @@ function leggiCampiEs(tipo, prefix){
       serie:1, reps:0, peso:0, recupero:0
     };
   }
-  if(tipo==='bodyweight'){
+  if(tipo==='timed'){
     return {
-      tipo:'bodyweight',
-      serie: parseInt(g(prefix+'S')?.value)||3,
-      reps: parseInt(g(prefix+'R')?.value)||10,
-      peso:0,
+      exerciseType:'timed', tipo:'timed',
+      serie:    parseInt(g(prefix+'S')?.value)||3,
+      duration: parseInt(g(prefix+'Dur')?.value)||30, // campo esplicito — NON overloadare reps
+      reps:     0,
+      peso:     0,
       recupero: parseInt(g(prefix+'Rec')?.value)||60
     };
   }
+  if(tipo==='bodyweight'){
+    return {
+      exerciseType:'bodyweight', tipo:'bodyweight',
+      serie:    parseInt(g(prefix+'S')?.value)||3,
+      reps:     parseInt(g(prefix+'R')?.value)||10,
+      peso:     0,
+      recupero: parseInt(g(prefix+'Rec')?.value)||60
+    };
+  }
+  // weighted (default)
   return {
-    tipo:'weighted',
-    serie: parseInt(g(prefix+'S')?.value)||4,
-    reps: parseInt(g(prefix+'R')?.value)||8,
-    peso: parseFloat(g(prefix+'P')?.value)||0,
+    exerciseType:'weighted', tipo:'weighted',
+    serie:    parseInt(g(prefix+'S')?.value)||4,
+    reps:     parseInt(g(prefix+'R')?.value)||8,
+    peso:     parseFloat(g(prefix+'P')?.value)||0,
     recupero: parseInt(g(prefix+'Rec')?.value)||90
   };
 }
@@ -1935,17 +2154,6 @@ function pickEsercizio(nome){
   document.getElementById('addEs3Fields').innerHTML=renderEsFields(tipo,{},'es');
   document.getElementById('mAddEs3').dataset.tipo=tipo;
   showModal('mAddEs3');
-}
-
-function confirmAddEs(){
-  const tipo=document.getElementById('mAddEs3').dataset.tipo||'weighted';
-  const vals=leggiCampiEs(tipo,'es');
-  const id=builderEsNome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
-  builderData.sezioni[builderSezIdx].esercizi.push({
-    id, gruppo:builderGruppo, nome:builderEsNome, storico:[], ...vals
-  });
-  closeModal('mAddEs3'); renderBuilder();
-  console.log('[FM:Builder] Aggiunto:',builderEsNome,'tipo:',tipo);
 }
 
 function removeEs(si,ei){ builderData.sezioni[si].esercizi.splice(ei,1); renderBuilder(); }
