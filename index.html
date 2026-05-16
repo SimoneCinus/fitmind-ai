@@ -1926,7 +1926,6 @@ function renderBuilder(){
       const det=esDettaglio(es);
       const tipo=resolveExerciseType(es);
       const recStr=(tipo!=='cardio'&&es.recupero)?`<div class="bes-rec">rec. ${es.recupero}s</div>`:'';
-      // Esercizi secondari superset
       const ssItems=(es.supersetExercises||[]);
       const ssHtml=ssItems.map((sub,xi)=>`
         <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid var(--bd);margin-top:6px">
@@ -1939,6 +1938,7 @@ function renderBuilder(){
       const ssLabel=ssItems.length>0
         ?`<div style="font-size:9px;letter-spacing:1.5px;color:var(--ac);text-transform:uppercase;margin-top:6px">⚡ Super serie (${ssItems.length})</div>`
         :'';
+      const isFirst=(ei===0), isLast=(ei===sez.esercizi.length-1);
       html+=`<div class="bes-card${ssItems.length>0?' bes-card-ss':''}">
         <div class="bes-info">
           <div class="bes-name">${esc(es.nome)}</div>
@@ -1946,7 +1946,9 @@ function renderBuilder(){
           ${recStr}${ssLabel}${ssHtml}
           <button onclick="addSupersetExTo(${si},${ei})" style="margin-top:8px;background:transparent;border:1px dashed rgba(200,241,53,.4);border-radius:8px;padding:5px 12px;color:var(--ac);font-size:12px;cursor:pointer;width:100%;text-align:left">⚡ + Super serie</button>
         </div>
-        <div class="bes-actions" style="align-self:flex-start">
+        <div class="bes-actions" style="align-self:flex-start;display:flex;flex-direction:column;gap:4px">
+          <button class="bes-btn" onclick="moveEs(${si},${ei},-1)" ${isFirst?'disabled style="opacity:.25"':''}>⬆️</button>
+          <button class="bes-btn" onclick="moveEs(${si},${ei},1)" ${isLast?'disabled style="opacity:.25"':''}>⬇️</button>
           <button class="bes-btn" onclick="openEditEs(${si},${ei})">✏️</button>
           <button class="bes-btn" onclick="removeEs(${si},${ei})">🗑️</button>
         </div>
@@ -2263,6 +2265,16 @@ function pickEsercizio(nome){
   document.getElementById('addEs3Fields').innerHTML=renderEsFields(tipo,{},'es');
   document.getElementById('mAddEs3').dataset.tipo=tipo;
   showModal('mAddEs3');
+}
+
+function moveEs(si, ei, dir){
+  const esercizi = builderData.sezioni[si].esercizi;
+  const newIdx = ei + dir;
+  if(newIdx < 0 || newIdx >= esercizi.length) return;
+  const tmp = esercizi[ei];
+  esercizi[ei] = esercizi[newIdx];
+  esercizi[newIdx] = tmp;
+  renderBuilder();
 }
 
 function removeEs(si,ei){ builderData.sezioni[si].esercizi.splice(ei,1); renderBuilder(); }
