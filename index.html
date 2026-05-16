@@ -1526,13 +1526,13 @@ async function callAI(messages,retries=2){
     try{
       // Timeout esplicito 25s — evita hang su mobile
       const controller=new AbortController();
-      const timeoutId=setTimeout(()=>controller.abort(),25000);
+      const timeoutId=setTimeout(()=>controller.abort(),40000);
 
       const res=await fetch(PROXY_URL,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         signal:controller.signal,
-        body:JSON.stringify({model:AI_MODEL,max_tokens:1500,system:sysPrompt,messages:cleanMessages})
+        body:JSON.stringify({model:AI_MODEL,max_tokens:800,system:sysPrompt,messages:cleanMessages})
       });
       clearTimeout(timeoutId);
 
