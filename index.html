@@ -1862,6 +1862,7 @@ function openBuilderDiretto(){
   builderData=schedaAttiva?JSON.parse(JSON.stringify(schedaAttiva)):{origine:'utente',sezioni:[]};
   renderBuilder();
   document.getElementById('builderScreen').classList.add('active');
+  document.getElementById('tc-scheda').style.display='none'; // VIEW MODE → EDIT MODE
   console.log('[FM:Builder] Aperto. Sezioni:',builderData.sezioni.length);
 }
 
@@ -1876,6 +1877,7 @@ function applicaTipoScheda(tipo){
   builderData={origine:'utente',sezioni:sezioni.map(s=>({nome:s.nome,esercizi:[]}))};
   renderBuilder();
   document.getElementById('builderScreen').classList.add('active');
+  document.getElementById('tc-scheda').style.display='none'; // VIEW MODE → EDIT MODE
   showToast('✅ Struttura creata! Aggiungi gli esercizi.');
   console.log('[FM:Builder] Tipo',tipo,'applicato:',sezioni.length,'sezioni');
 }
@@ -1886,11 +1888,15 @@ function applicaTipoPersonalizzata(n){
   builderData={origine:'utente',sezioni:Array.from({length:n},(_,i)=>({nome:'Scheda '+lettere[i],esercizi:[]}))};
   renderBuilder();
   document.getElementById('builderScreen').classList.add('active');
+  document.getElementById('tc-scheda').style.display='none'; // VIEW MODE → EDIT MODE
   showToast('✅ '+n+' sezioni create! Aggiungi gli esercizi.');
   console.log('[FM:Builder] Personalizzata:',n,'sezioni');
 }
 
-function closeBuilder(){ document.getElementById('builderScreen').classList.remove('active'); }
+function closeBuilder(){
+  document.getElementById('builderScreen').classList.remove('active');
+  document.getElementById('tc-scheda').style.display=''; // EDIT MODE → VIEW MODE
+}
 
 function saveBuilder(){
   if(builderData.sezioni.length===0){ showToast('⚠️ Aggiungi almeno una sezione'); return; }
