@@ -720,7 +720,7 @@ textarea.fi{resize:none;height:76px}
 // CONFIG
 // ══════════════════════════════════════════════════════════════════
 const PROXY_URL         = 'https://fitmind-proxy.simo-simone.workers.dev/';
-const AI_MODEL          = 'claude-sonnet-4-5';
+const AI_MODEL          = 'claude-sonnet-4-20250514';
 const STORAGE_VERSION   = 3;    // v3 = architettura consolidata, scheda unica
 const RECENT_CHAT_LIMIT = 10;   // ridotto da 20: memoria vive nei dati strutturati
 
@@ -1542,7 +1542,9 @@ async function callAI(messages,retries=2){
       }
       const data=await res.json();
       if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
-      return data.content?.[0]?.text||null;
+      const text=data.content?.[0]?.text||null;
+      if(!text) console.warn('[FM:AI] Risposta vuota. data:', JSON.stringify(data).slice(0,200));
+      return text;
     } catch(e){
       const isTimeout=e.name==='AbortError';
       console.warn('[FM:AI] Tentativo '+(i+1)+' fallito:',isTimeout?'TIMEOUT':e.message);
@@ -1567,7 +1569,8 @@ async function sendMsg(){
 
   addUserMsg(text); showTyping();
   try{
-    const reply=await callAI(chatHistory.slice(0,-1));
+    // Passa tutta la history — addUserMsg ha già aggiunto il messaggio corrente
+    const reply=await callAI(chatHistory);
     removeTyping();
     if(reply){
       addAiMsg(reply);
