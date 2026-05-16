@@ -1861,8 +1861,9 @@ function openBuilderDiretto(){
   closeModal('mBuilderPersonalizzata');
   builderData=schedaAttiva?JSON.parse(JSON.stringify(schedaAttiva)):{origine:'utente',sezioni:[]};
   renderBuilder();
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('tc-scheda').style.display='';
   document.getElementById('builderScreen').classList.add('active');
-  document.getElementById('tc-scheda').style.display='none'; // VIEW MODE → EDIT MODE
   console.log('[FM:Builder] Aperto. Sezioni:',builderData.sezioni.length);
 }
 
@@ -1876,8 +1877,8 @@ function applicaTipoScheda(tipo){
   const sezioni=tipi[tipo];
   builderData={origine:'utente',sezioni:sezioni.map(s=>({nome:s.nome,esercizi:[]}))};
   renderBuilder();
+  document.getElementById('app').classList.remove('active');
   document.getElementById('builderScreen').classList.add('active');
-  document.getElementById('tc-scheda').style.display='none'; // VIEW MODE → EDIT MODE
   showToast('✅ Struttura creata! Aggiungi gli esercizi.');
   console.log('[FM:Builder] Tipo',tipo,'applicato:',sezioni.length,'sezioni');
 }
@@ -1887,15 +1888,16 @@ function applicaTipoPersonalizzata(n){
   const lettere=['A','B','C','D','E'];
   builderData={origine:'utente',sezioni:Array.from({length:n},(_,i)=>({nome:'Scheda '+lettere[i],esercizi:[]}))};
   renderBuilder();
+  document.getElementById('app').classList.remove('active');
   document.getElementById('builderScreen').classList.add('active');
-  document.getElementById('tc-scheda').style.display='none'; // VIEW MODE → EDIT MODE
   showToast('✅ '+n+' sezioni create! Aggiungi gli esercizi.');
   console.log('[FM:Builder] Personalizzata:',n,'sezioni');
 }
 
 function closeBuilder(){
   document.getElementById('builderScreen').classList.remove('active');
-  document.getElementById('tc-scheda').style.display=''; // EDIT MODE → VIEW MODE
+  document.getElementById('app').classList.add('active');
+  document.getElementById('tc-scheda').style.display='';
 }
 
 function saveBuilder(){
