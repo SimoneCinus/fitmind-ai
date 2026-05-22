@@ -1576,16 +1576,21 @@ function addAiMsg(text){
     : '';
 
   // Bottone registra pasto
+  // Bottone registra pasto — usa registro globale per evitare problemi con JSON inline
+  window._pastoRegistry = window._pastoRegistry || {};
   const btnHtml = pastoAction
-    ? `<div style="margin-top:10px">
-        <button onclick="eseguiRegistraPasto('${pastoAction.tipo}','${pastoAction.contenuto.replace(/'/g,"\\'")}','${id}',${JSON.stringify(pastoAction.macro)})"
-          style="background:rgba(200,241,53,.15);border:1px solid rgba(200,241,53,.4);color:var(--ac);
-          border-radius:100px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"
-          id="btnPasto_${id}">
-          ✅ Registra ${pastoAction.tipo}
-          <span style="font-size:11px;opacity:.7">${pastoAction.contenuto.substring(0,35)}${pastoAction.contenuto.length>35?'...':''}</span>
-        </button>
-      </div>`
+    ? (()=>{
+        window._pastoRegistry[id] = pastoAction;
+        return `<div style="margin-top:10px">
+          <button onclick="eseguiRegistraPastoById('${id}')"
+            style="background:rgba(200,241,53,.15);border:1px solid rgba(200,241,53,.4);color:var(--ac);
+            border-radius:100px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"
+            id="btnPasto_${id}">
+            ✅ Registra ${pastoAction.tipo}
+            <span style="font-size:11px;opacity:.7">${pastoAction.contenuto.substring(0,35)}${pastoAction.contenuto.length>35?'...':''}</span>
+          </button>
+        </div>`;
+      })()
     : '';
 
   const div=document.createElement('div');
@@ -1652,6 +1657,14 @@ function eseguiUpdateScheda(nome, newPeso, newReps, msgId){
   const btn = document.getElementById('btnScheda_'+msgId);
   if(btn){ btn.disabled=true; btn.style.opacity='.4'; btn.textContent='✓ Scheda aggiornata'; }
   console.log('[FM:Scheda] Aggiornato:', nome, vecchioPeso+'kg →', newPeso+'kg ×'+newReps);
+}
+
+// Wrapper per bottone pasto — legge dal registro globale
+function eseguiRegistraPastoById(msgId){
+  const pa = window._pastoRegistry && window._pastoRegistry[msgId];
+  if(!pa){ showToast('Dati pasto non trovati'); return; }
+  eseguiRegistraPasto(pa.tipo, pa.contenuto, msgId, pa.macro);
+  delete window._pastoRegistry[msgId];
 }
 
 // Registra pasto nel log dopo conferma utente
