@@ -1217,11 +1217,17 @@ Quando l'utente menziona qualcosa che ha mangiato o bevuto, aggiungi SEMPRE in f
 [LOG_PASTO:tipo:contenuto]
 dove tipo = colazione | pranzo | cena | spuntino
 Esempi:
-[LOG_PASTO:colazione:yogurt greco, caffè]
-[LOG_PASTO:spuntino:cracker]
-[LOG_PASTO:pranzo:pasta al pomodoro, acqua]
+[LOG_PASTO:colazione:yogurt greco, caffè:p15:c20:g3:k160]
+[LOG_PASTO:spuntino:cracker:p2:c18:g3:k100]
+[LOG_PASTO:pranzo:pasta al pomodoro:p12:c65:g8:k380]
+Aggiungi SEMPRE p(proteine) c(carboidrati) g(grassi) k(kcal) stimati in grammi interi.
 Il tag è invisibile all'utente. Aggiungilo sempre, anche se parli d'altro nella risposta.
 NON aggiungerlo se l'utente parla di cibo in futuro ("domani mangerò...") o in modo ipotetico.
+
+Quando l'utente conferma una progressione (ha fatto più peso o più reps rispetto alla scheda), aggiungi in fondo:
+[UPDATE_SCHEDA:nome_esercizio:nuovo_peso:nuove_reps]
+Esempio: [UPDATE_SCHEDA:panca piana:85:8]
+SOLO se l'utente dice esplicitamente che ha fatto più di quanto in scheda. Mai su supposizioni.
 
 ━━━ DIARIO ALIMENTARE OGGI ━━━
 ${buildAlimContesto()}
@@ -1336,12 +1342,35 @@ function refreshDietaUI(){
   };
   if(stratEl) stratEl.textContent=stratMap[u.obiettivo]||'Imposta obiettivo nel profilo';
 
-  // ── Barre progresso oggi ──
-  document.getElementById('mvProt').textContent=`— / ${t.proteine||'?'}g`;
-  document.getElementById('mvCarb').textContent=`— / ${t.carbo||'?'}g`;
-  document.getElementById('mvFat').textContent=`— / ${t.grassi||'?'}g`;
-
+  // ── Barre progresso oggi con macro reali ──
   const oggi=alimentazioneLog[todayStr()];
+
+  // Calcola macro totali dai pasti registrati
+  let totP=0, totC=0, totG=0, totK=0;
+  if(oggi){
+    ['colazione','pranzo','cena','spuntini'].forEach(k=>{
+      (oggi[k]||[]).forEach(entry=>{
+        if(typeof entry==='object' && entry.p!=null){
+          totP+=entry.p||0; totC+=entry.c||0; totG+=entry.g||0; totK+=entry.k||0;
+        }
+      });
+    });
+  }
+
+  const hasMacro = totP>0 || totC>0 || totG>0;
+  const tP=t.proteine||0, tC=t.carbo||0, tG=t.grassi||0;
+
+  document.getElementById('mvProt').textContent = hasMacro ? `${totP} / ${tP}g` : `— / ${tP||'?'}g`;
+  document.getElementById('mvCarb').textContent = hasMacro ? `${totC} / ${tC}g` : `— / ${tC||'?'}g`;
+  document.getElementById('mvFat').textContent  = hasMacro ? `${totG} / ${tG}g` : `— / ${tG||'?'}g`;
+
+  // Aggiorna barre di progressione
+  if(hasMacro && tP>0){
+    document.getElementById('mfProt').style.width = Math.min(100, Math.round(totP/tP*100))+'%';
+    document.getElementById('mfCarb').style.width = Math.min(100, Math.round(totC/tC*100))+'%';
+    document.getElementById('mfFat').style.width  = Math.min(100, Math.round(totG/tG*100))+'%';
+  }
+
   const logEl=document.getElementById('dietaOggi');
   const logTab=document.getElementById('dietaLog');
   if(!oggi||Object.values(oggi).every(a=>!a.length)){
@@ -1351,7 +1380,12 @@ function refreshDietaUI(){
   }
   let html='';
   [['Colazione','colazione'],['Pranzo','pranzo'],['Cena','cena'],['Spuntini','spuntini']].forEach(([lbl,k])=>{
-    if(oggi[k]?.length) html+=`<div class="info-box" style="margin-bottom:8px"><strong style="color:var(--tx);font-size:12px">${lbl}</strong><div style="margin-top:4px;font-size:13px">${oggi[k].join(', ')}</div></div>`;
+    if(oggi[k]?.length){
+      const voci = oggi[k].map(e=>typeof e==='string'?e:e.testo).join(', ');
+      const macroEntry = oggi[k].find(e=>typeof e==='object'&&e.p!=null);
+      const macroStr = macroEntry ? ` <span style="color:var(--ac);font-size:11px">P${macroEntry.p}g C${macroEntry.c}g G${macroEntry.g}g</span>` : '';
+      html+=`<div class="info-box" style="margin-bottom:8px"><strong style="color:var(--tx);font-size:12px">${lbl}${macroStr}</strong><div style="margin-top:4px;font-size:13px">${voci}</div></div>`;
+    }
   });
   if(logEl) logEl.innerHTML=html;
   if(logTab) logTab.innerHTML=html;
@@ -1491,7 +1525,7 @@ function addUserMsg(text){
   div.addEventListener('touchend',()=>clearTimeout(pt),{passive:true});
   div.addEventListener('touchmove',()=>clearTimeout(pt),{passive:true});
   document.getElementById('chatMsgs').appendChild(div);
-  document.getElementById('chatMsgs').scrollTop=99999;
+  scrollToBottom();
   chatHistory.push({id,role:'user',content:`${nowTimestamp()} ${text}`,timestamp:ts});
   if(isLogAlimentare(text)) savePasto(text);
   saveAll();
@@ -1500,21 +1534,51 @@ function addUserMsg(text){
 function addAiMsg(text){
   const id=genMsgId(), ts=Date.now();
 
-  // Intercetta tag [LOG_PASTO:tipo:contenuto]
+  // Intercetta tag [LOG_PASTO:tipo:contenuto:p15:c20:g3:k160]
   let cleanText = text;
   let pastoAction = null;
-  const pastoMatch = text.match(/\[LOG_PASTO:(colazione|pranzo|cena|spuntino):([^\]]+)\]/i);
+  const pastoMatch = text.match(/\[LOG_PASTO:(colazione|pranzo|cena|spuntino):([^:\]]+)(?::p(\d+))?(?::c(\d+))?(?::g(\d+))?(?::k(\d+))?\]/i);
   if(pastoMatch){
     const tipo = pastoMatch[1].toLowerCase();
     const contenuto = pastoMatch[2].trim();
+    const macro = {
+      p: pastoMatch[3] ? parseInt(pastoMatch[3]) : null,
+      c: pastoMatch[4] ? parseInt(pastoMatch[4]) : null,
+      g: pastoMatch[5] ? parseInt(pastoMatch[5]) : null,
+      k: pastoMatch[6] ? parseInt(pastoMatch[6]) : null
+    };
     cleanText = text.replace(pastoMatch[0], '').trim();
-    pastoAction = {tipo, contenuto};
+    pastoAction = {tipo, contenuto, macro};
   }
+
+  // Intercetta tag [UPDATE_SCHEDA:nome:peso:reps]
+  const schedaMatch = cleanText.match(/\[UPDATE_SCHEDA:([^:]+):(\d+(?:\.\d+)?):(\d+)\]/i);
+  let schedaAction = null;
+  if(schedaMatch){
+    schedaAction = {
+      nome: schedaMatch[1].trim(),
+      peso: parseFloat(schedaMatch[2]),
+      reps: parseInt(schedaMatch[3])
+    };
+    cleanText = cleanText.replace(schedaMatch[0], '').trim();
+  }
+
+  // Bottone aggiorna scheda
+  const btnSchedaHtml = schedaAction
+    ? `<div style="margin-top:8px">
+        <button onclick="eseguiUpdateScheda('${schedaAction.nome.replace(/'/g,"\\'")}',${schedaAction.peso},${schedaAction.reps},'${id}')"
+          style="background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.4);color:var(--ac2);
+          border-radius:100px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"
+          id="btnScheda_${id}">
+          ✅ Aggiorna scheda — ${schedaAction.nome} ${schedaAction.peso}kg × ${schedaAction.reps}
+        </button>
+      </div>`
+    : '';
 
   // Bottone registra pasto
   const btnHtml = pastoAction
     ? `<div style="margin-top:10px">
-        <button onclick="eseguiRegistraPasto('${pastoAction.tipo}','${pastoAction.contenuto.replace(/'/g,"\\'")}','${id}')"
+        <button onclick="eseguiRegistraPasto('${pastoAction.tipo}','${pastoAction.contenuto.replace(/'/g,"\\'")}','${id}',${JSON.stringify(pastoAction.macro)})"
           style="background:rgba(200,241,53,.15);border:1px solid rgba(200,241,53,.4);color:var(--ac);
           border-radius:100px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"
           id="btnPasto_${id}">
@@ -1526,14 +1590,20 @@ function addAiMsg(text){
 
   const div=document.createElement('div');
   div.className='msg'; div.dataset.msgId=id;
-  div.innerHTML=`<div class="av ai">FM</div><div><div class="bubble">${fmtMd(cleanText)}</div>${btnHtml}<div class="msg-time">${nowTimeStr()}</div></div>`;
+  div.innerHTML=`<div class="av ai">FM</div><div><div class="bubble">${fmtMd(cleanText)}</div>${btnSchedaHtml}${btnHtml}<div class="msg-time">${nowTimeStr()}</div></div>`;
   document.getElementById('chatMsgs').appendChild(div);
-  document.getElementById('chatMsgs').scrollTop=99999;
+  scrollToBottom();
   chatHistory.push({id,role:'assistant',content:text,timestamp:ts});
   saveAll();
 }
 
 // Aggiunge messaggio AI senza salvare nella history (solo per benvenuto)
+function scrollToBottom(){
+  const el = document.getElementById('chatMsgs');
+  if(!el) return;
+  requestAnimationFrame(()=>{ el.scrollTop = el.scrollHeight; });
+}
+
 function addAiMsgNoSave(text){
   const div=document.createElement('div');
   div.className='msg';
@@ -1541,17 +1611,64 @@ function addAiMsgNoSave(text){
   document.getElementById('chatMsgs').appendChild(div);
 }
 
+// Trova esercizio nella scheda per nome — matching robusto
+function findEsercizioInScheda(nomeInput){
+  if(!schedaAttiva?.sezioni) return null;
+  const nomeNorm = nomeInput.toLowerCase().trim();
+  for(const sez of schedaAttiva.sezioni){
+    for(const es of (sez.esercizi||[])){
+      if(es.type==='superset'){
+        for(const sub of (es.exercises||[])){
+          if(sub.nome.toLowerCase().trim()===nomeNorm) return sub;
+        }
+      } else {
+        if(es.nome.toLowerCase().trim()===nomeNorm) return es;
+        if(es.nome.toLowerCase().startsWith(nomeNorm) && nomeNorm.length>=4) return es;
+        // Controlla anche supersetExercises
+        for(const sub of (es.supersetExercises||[])){
+          if(sub.nome.toLowerCase().trim()===nomeNorm) return sub;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// Aggiorna peso/reps esercizio in scheda dopo conferma utente
+function eseguiUpdateScheda(nome, newPeso, newReps, msgId){
+  const es = findEsercizioInScheda(nome);
+  if(!es){ showToast('⚠️ Esercizio non trovato nella scheda'); return; }
+  const vecchioPeso = es.peso;
+  es.peso = newPeso;
+  es.reps = newReps;
+  // Salva in storico
+  if(!es.storico) es.storico = [];
+  es.storico.push({ data: todayStr(), peso: newPeso, reps: newReps, serie: es.serie||0 });
+  if(es.storico.length > 20) es.storico = es.storico.slice(-20);
+  saveAll();
+  renderSchedaView();
+  showToast('✅ Scheda aggiornata: '+es.nome+' → '+newPeso+'kg');
+  // Disabilita bottone
+  const btn = document.getElementById('btnScheda_'+msgId);
+  if(btn){ btn.disabled=true; btn.style.opacity='.4'; btn.textContent='✓ Scheda aggiornata'; }
+  console.log('[FM:Scheda] Aggiornato:', nome, vecchioPeso+'kg →', newPeso+'kg ×'+newReps);
+}
+
 // Registra pasto nel log dopo conferma utente
-function eseguiRegistraPasto(tipo, contenuto, msgId){
+function eseguiRegistraPasto(tipo, contenuto, msgId, macro){
   const tipoKey = tipo==='spuntino'?'spuntini':tipo;
   const g = ensureGiorno(todayStr());
-  if(!g[tipoKey].includes(contenuto)){
-    g[tipoKey].push(contenuto);
-    console.log('[FM:Alim] Registrato (tag AI):', tipoKey+':', contenuto);
+  // Salva come oggetto con macro se disponibili, altrimenti stringa semplice
+  const entry = macro && macro.p !== null
+    ? { testo: contenuto, p: macro.p||0, c: macro.c||0, g: macro.g||0, k: macro.k||0 }
+    : contenuto;
+  const esistente = g[tipoKey].find(x=>(typeof x==='string'?x:x.testo)===contenuto);
+  if(!esistente){
+    g[tipoKey].push(entry);
+    console.log('[FM:Alim] Registrato:', tipoKey+':', contenuto, macro||'');
     saveAll(); refreshDietaUI();
     showToast('✅ '+tipoKey.charAt(0).toUpperCase()+tipoKey.slice(1)+' registrata!');
   }
-  // Disabilita bottone dopo conferma
   const btn = document.getElementById('btnPasto_'+msgId);
   if(btn){ btn.disabled=true; btn.style.opacity='.4'; btn.textContent='✓ Registrato'; }
 }
@@ -1560,7 +1677,7 @@ function showTyping(){
   const div=document.createElement('div'); div.id='_typing'; div.className='msg';
   div.innerHTML=`<div class="av ai">FM</div><div><div class="bubble"><div class="typing-row"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div></div>`;
   document.getElementById('chatMsgs').appendChild(div);
-  document.getElementById('chatMsgs').scrollTop=99999;
+  scrollToBottom();
 }
 function removeTyping(){ const t=document.getElementById('_typing'); if(t)t.remove(); }
 
@@ -1806,7 +1923,7 @@ function rerenderChat(){
     }
     msgs.appendChild(div);
   });
-  msgs.scrollTop=99999;
+  scrollToBottom();
 }
 
 // ══════════════════════════════════════════════════════════════════
