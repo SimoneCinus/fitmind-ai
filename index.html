@@ -1212,6 +1212,17 @@ TARGET GIORNALIERO: ~${t.kcal||'?'} kcal | Proteine: ~${t.proteine||'?'}g | Carb
 ${u.obiettivo==='massa'?'STRATEGIA: Surplus +200/300 kcal. Priorità: proteine primo, carbo timing intorno workout, grassi saturi moderati.':u.obiettivo==='dimagrimento'?'STRATEGIA: Deficit -400/500 kcal. Priorità: proteine alte (protezione massa magra), deficit progressivo, refeed settimanale se streak >10gg.':u.obiettivo==='ricomposizione'?'STRATEGIA: Kcal mantenimento. Cycling carbo: più nei giorni workout, meno nei rest day. Proteine costantemente alte.':u.obiettivo==='forza'?'STRATEGIA: Lieve surplus +150/200 kcal. Carbo alti per performance, proteine moderate-alte, creatina consigliata.':'STRATEGIA: Mantenimento. Qualità > quantità. Focus micronutrienti e idratazione.'}
 Acqua target: ~${Math.round(p*0.033*10)/10}L/die (basale) + 0.5/0.7L per ogni ora di allenamento intenso
 
+━━━ SISTEMA TAG PASTI — OBBLIGATORIO ━━━
+Quando l'utente menziona qualcosa che ha mangiato o bevuto, aggiungi SEMPRE in fondo alla risposta:
+[LOG_PASTO:tipo:contenuto]
+dove tipo = colazione | pranzo | cena | spuntino
+Esempi:
+[LOG_PASTO:colazione:yogurt greco, caffè]
+[LOG_PASTO:spuntino:cracker]
+[LOG_PASTO:pranzo:pasta al pomodoro, acqua]
+Il tag è invisibile all'utente. Aggiungilo sempre, anche se parli d'altro nella risposta.
+NON aggiungerlo se l'utente parla di cibo in futuro ("domani mangerò...") o in modo ipotetico.
+
 ━━━ DIARIO ALIMENTARE OGGI ━━━
 ${buildAlimContesto()}
 
@@ -1488,17 +1499,37 @@ function addUserMsg(text){
 
 function addAiMsg(text){
   const id=genMsgId(), ts=Date.now();
+
+  // Intercetta tag [LOG_PASTO:tipo:contenuto]
+  let cleanText = text;
+  let pastoAction = null;
+  const pastoMatch = text.match(/\[LOG_PASTO:(colazione|pranzo|cena|spuntino):([^\]]+)\]/i);
+  if(pastoMatch){
+    const tipo = pastoMatch[1].toLowerCase();
+    const contenuto = pastoMatch[2].trim();
+    cleanText = text.replace(pastoMatch[0], '').trim();
+    pastoAction = {tipo, contenuto};
+  }
+
+  // Bottone registra pasto
+  const btnHtml = pastoAction
+    ? `<div style="margin-top:10px">
+        <button onclick="eseguiRegistraPasto('${pastoAction.tipo}','${pastoAction.contenuto.replace(/'/g,"\\'")}','${id}')"
+          style="background:rgba(200,241,53,.15);border:1px solid rgba(200,241,53,.4);color:var(--ac);
+          border-radius:100px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"
+          id="btnPasto_${id}">
+          ✅ Registra ${pastoAction.tipo}
+          <span style="font-size:11px;opacity:.7">${pastoAction.contenuto.substring(0,35)}${pastoAction.contenuto.length>35?'...':''}</span>
+        </button>
+      </div>`
+    : '';
+
   const div=document.createElement('div');
   div.className='msg'; div.dataset.msgId=id;
-  div.innerHTML=`<div class="av ai">FM</div><div><div class="bubble">${fmtMd(text)}</div><div class="msg-time">${nowTimeStr()}</div></div>`;
+  div.innerHTML=`<div class="av ai">FM</div><div><div class="bubble">${fmtMd(cleanText)}</div>${btnHtml}<div class="msg-time">${nowTimeStr()}</div></div>`;
   document.getElementById('chatMsgs').appendChild(div);
   document.getElementById('chatMsgs').scrollTop=99999;
   chatHistory.push({id,role:'assistant',content:text,timestamp:ts});
-  // Auto-detect peso
-  const pm=text.match(/(\d{2,3}(?:[.,]\d)?)\s*kg/i);
-  if(pm&&text.toLowerCase().match(/peso|registr|aggiorn/)){ appStats.lastWeight=pm[1].replace(',','.'); appStats.weightHistory.push({date:todayStr(),val:parseFloat(appStats.lastWeight)}); refreshStats(); }
-  // Auto-detect sessione
-  if(text.toLowerCase().match(/registrat|ottima sessione|completat/)){ appStats.sessions=(appStats.sessions||0)+1; refreshStats(); }
   saveAll();
 }
 
@@ -1508,6 +1539,21 @@ function addAiMsgNoSave(text){
   div.className='msg';
   div.innerHTML=`<div class="av ai">FM</div><div><div class="bubble">${fmtMd(text)}</div></div>`;
   document.getElementById('chatMsgs').appendChild(div);
+}
+
+// Registra pasto nel log dopo conferma utente
+function eseguiRegistraPasto(tipo, contenuto, msgId){
+  const tipoKey = tipo==='spuntino'?'spuntini':tipo;
+  const g = ensureGiorno(todayStr());
+  if(!g[tipoKey].includes(contenuto)){
+    g[tipoKey].push(contenuto);
+    console.log('[FM:Alim] Registrato (tag AI):', tipoKey+':', contenuto);
+    saveAll(); refreshDietaUI();
+    showToast('✅ '+tipoKey.charAt(0).toUpperCase()+tipoKey.slice(1)+' registrata!');
+  }
+  // Disabilita bottone dopo conferma
+  const btn = document.getElementById('btnPasto_'+msgId);
+  if(btn){ btn.disabled=true; btn.style.opacity='.4'; btn.textContent='✓ Registrato'; }
 }
 
 function showTyping(){
