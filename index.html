@@ -1348,23 +1348,32 @@ function refreshDietaUI(){
   const oggi=alimentazioneLog[todayStr()];
 
   // Calcola macro totali dai pasti registrati
-  let totP=0, totC=0, totG=0, totK=0;
+  let totP=0, totC=0, totG=0;
   if(oggi){
     ['colazione','pranzo','cena','spuntini'].forEach(k=>{
       (oggi[k]||[]).forEach(entry=>{
         if(typeof entry==='object' && entry.p!=null){
-          totP+=entry.p||0; totC+=entry.c||0; totG+=entry.g||0; totK+=entry.k||0;
+          totP+=entry.p||0; totC+=entry.c||0; totG+=entry.g||0;
         }
       });
     });
   }
+  // Kcal calcolate dai macro con formula scientifica (P×4 + C×4 + G×9)
+  // Garantisce coerenza: se i macro sono raggiunti, le kcal lo sono per definizione
+  const totK = Math.round((totP*4) + (totC*4) + (totG*9));
 
   const hasMacro = totP>0 || totC>0 || totG>0;
-  const tP=t.proteine||0, tC=t.carbo||0, tG=t.grassi||0;
+  const tP=t.proteine||0, tC=t.carbo||0, tG=t.grassi||0, tK=t.kcal||0;
 
   document.getElementById('mvProt').textContent = hasMacro ? `${totP} / ${tP}g` : `— / ${tP||'?'}g`;
   document.getElementById('mvCarb').textContent = hasMacro ? `${totC} / ${tC}g` : `— / ${tC||'?'}g`;
   document.getElementById('mvFat').textContent  = hasMacro ? `${totG} / ${tG}g` : `— / ${tG||'?'}g`;
+
+  // Aggiorna kcal consumate nel pannello target (mostra progressione giornaliera)
+  if(hasMacro && kcalEl){
+    kcalEl.textContent = `${totK} / ${tK} kcal`;
+    if(kcalSubEl) kcalSubEl.textContent = totK>=tK ? '✅ Target raggiunto' : `ancora ${tK-totK} kcal`;
+  }
 
   // Aggiorna barre di progressione
   if(hasMacro && tP>0){
