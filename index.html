@@ -126,9 +126,9 @@ textarea.fi{resize:none;height:76px}
 .av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
 .av.ai{background:var(--ac);color:#000;font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:1px}
 .av.me{background:var(--s2);border:1px solid var(--bd)}
-.bubble{max-width:calc(100% - 76px);padding:10px 13px;border-radius:17px;font-size:14px;line-height:1.6}
+.bubble{max-width:calc(100% - 76px);padding:10px 13px;border-radius:17px;font-size:14px;line-height:1.6;word-break:break-word;overflow-wrap:break-word}
 .msg:not(.u) .bubble{background:var(--s1);border:1px solid var(--bd);border-top-left-radius:4px}
-.msg.u .bubble{background:var(--ac);color:#000;border-top-right-radius:4px;font-weight:500}
+.msg.u .bubble{background:var(--ac);color:#000;border-top-right-radius:4px;font-weight:500;min-width:64px;text-align:right}
 .bubble strong{color:var(--ac)}.msg.u .bubble strong{color:#000}
 .msg-time{font-size:9px;color:var(--mt);margin-top:3px}
 .msg:not(.u) .msg-time{text-align:left}.msg.u .msg-time{text-align:right}
@@ -711,27 +711,27 @@ textarea.fi{resize:none;height:76px}
     <div class="fg" style="margin-bottom:14px">
       <label class="fl">Obiettivo attuale</label>
       <div class="chips" id="percorsoObChips">
-        <div class="chip" onclick="selPercorsoChip(this,'pOb','massa')">💪 Massa</div>
-        <div class="chip" onclick="selPercorsoChip(this,'pOb','dimagrimento')">🔥 Dimagrimento</div>
-        <div class="chip" onclick="selPercorsoChip(this,'pOb','ricomposizione')">⚖️ Ricomposizione</div>
-        <div class="chip" onclick="selPercorsoChip(this,'pOb','forza')">🏋️ Forza</div>
-        <div class="chip" onclick="selPercorsoChip(this,'pOb','mantenimento')">✅ Mantenimento</div>
+        <div class="chip" data-value="massa" onclick="selPercorsoChip(this,'pOb','massa')">💪 Massa</div>
+        <div class="chip" data-value="dimagrimento" onclick="selPercorsoChip(this,'pOb','dimagrimento')">🔥 Dimagrimento</div>
+        <div class="chip" data-value="ricomposizione" onclick="selPercorsoChip(this,'pOb','ricomposizione')">⚖️ Ricomposizione</div>
+        <div class="chip" data-value="forza" onclick="selPercorsoChip(this,'pOb','forza')">🏋️ Forza</div>
+        <div class="chip" data-value="mantenimento" onclick="selPercorsoChip(this,'pOb','mantenimento')">✅ Mantenimento</div>
       </div>
     </div>
 
     <div class="fg" style="margin-bottom:14px">
       <label class="fl">Dove ti alleni</label>
       <div class="chips" id="percorsoCtxChips">
-        <div class="chip" onclick="selPercorsoChip(this,'pCtx','gym')">🏋️ Palestra</div>
-        <div class="chip" onclick="selPercorsoChip(this,'pCtx','home')">🏠 Casa</div>
-        <div class="chip" onclick="selPercorsoChip(this,'pCtx','swim')">🏊 Nuoto</div>
-        <div class="chip" onclick="selPercorsoChip(this,'pCtx','run')">🏃 Corsa</div>
-        <div class="chip" onclick="selPercorsoChip(this,'pCtx','bike')">🚴 Bici</div>
-        <div class="chip" onclick="selPercorsoChip(this,'pCtx','padel')">🎾 Padel</div>
-        <div class="chip" onclick="selPercorsoChip(this,'pCtx','yoga')">🧘 Yoga</div>
-        <div class="chip" onclick="selPercorsoChip(this,'pCtx','pilates')">🤸 Pilates</div>
-        <div class="chip" onclick="selPercorsoChip(this,'pCtx','outdoor')">🚶 Outdoor</div>
-        <div class="chip" onclick="selPercorsoChip(this,'pCtx','mixed')">🔄 Misto</div>
+        <div class="chip" data-value="gym" onclick="selPercorsoChip(this,'pCtx','gym')">🏋️ Palestra</div>
+        <div class="chip" data-value="home" onclick="selPercorsoChip(this,'pCtx','home')">🏠 Casa</div>
+        <div class="chip" data-value="swim" onclick="selPercorsoChip(this,'pCtx','swim')">🏊 Nuoto</div>
+        <div class="chip" data-value="run" onclick="selPercorsoChip(this,'pCtx','run')">🏃 Corsa</div>
+        <div class="chip" data-value="bike" onclick="selPercorsoChip(this,'pCtx','bike')">🚴 Bici</div>
+        <div class="chip" data-value="padel" onclick="selPercorsoChip(this,'pCtx','padel')">🎾 Padel</div>
+        <div class="chip" data-value="yoga" onclick="selPercorsoChip(this,'pCtx','yoga')">🧘 Yoga</div>
+        <div class="chip" data-value="pilates" onclick="selPercorsoChip(this,'pCtx','pilates')">🤸 Pilates</div>
+        <div class="chip" data-value="outdoor" onclick="selPercorsoChip(this,'pCtx','outdoor')">🚶 Outdoor</div>
+        <div class="chip" data-value="mixed" onclick="selPercorsoChip(this,'pCtx','mixed')">🔄 Misto</div>
       </div>
     </div>
 
@@ -930,10 +930,12 @@ function calcTransitionUntil(motivoCambio, contesto, limitazioni){
   const m = (motivoCambio||'').toLowerCase();
   const l = (limitazioni||'').toLowerCase();
   // Intervento / chirurgia / operazione → 45 giorni
-  if(m.match(/intervento|chirurgia|operazione|post.op/) || l.match(/intervento|chirurgia|operazione/))
+  if(m.match(/intervento|chirurgia|operazione|post.op|artroscopia|protesi|ricostruzione|rimozione|operato|crociato|menisco|ernia/) ||
+     l.match(/intervento|chirurgia|operazione|artroscopia|protesi|ricostruzione|operato|crociato|menisco|ernia/))
     return new Date(oggi.getTime() + 45*24*60*60*1000).toISOString().split('T')[0];
   // Infortunio / dolore / recupero → 21 giorni
-  if(m.match(/infortun|dolore|recupero|lesione/) || l.match(/infortun|dolore|lesione/))
+  if(m.match(/infortun|dolore|recupero|lesione|strappo|distorsione|frattura|tendin|borsite|mal di|stiramento/) ||
+     l.match(/infortun|dolore|lesione|strappo|distorsione|frattura|tendin|borsite|stiramento/))
     return new Date(oggi.getTime() + 21*24*60*60*1000).toISOString().split('T')[0];
   // Cambio contesto (es. casa, outdoor) → 10 giorni
   if(m.match(/casa|home|poco tempo|lavoro|trasferta/))
@@ -1593,7 +1595,7 @@ const OB_STEPS=[
       <div class="fg"><label class="fl">Patologie o condizioni mediche</label><input class="fi" id="f_patologie" placeholder="Es: ipertensione, nessuna..." value="${userData.patologie||''}"></div>
       <div class="fg"><label class="fl">Infortuni o limitazioni fisiche</label><input class="fi" id="f_infortuni" placeholder="Es: spalla destra, intervento ginocchio, nessuno..." value="${userData.infortuni||''}"></div>
       <div class="fg"><label class="fl">Livello di esperienza</label><div class="chips"><div class="chip ${userData.livello==='principiante'?'sel':''}" onclick="selChip(this,'livello','principiante')">Principiante &lt;1 anno</div><div class="chip ${userData.livello==='intermedio'?'sel':''}" onclick="selChip(this,'livello','intermedio')">Intermedio 1-3 anni</div><div class="chip ${userData.livello==='avanzato'?'sel':''}" onclick="selChip(this,'livello','avanzato')">Avanzato &gt;3 anni</div></div></div>
-      <div class="r2"><div class="fg"><label class="fl">Giorni/settimana</label><select class="fi" id="f_giorni"><option value="">--</option>${[2,3,4,5,6].map(n=>`<option value="${n}" ${userData.giorni==n?'selected':''}>${n} giorni</option>`).join('')}</select></div><div class="fg"><label class="fl">Durata sessione</label><select class="fi" id="f_durata"><option value="">--</option><option value="45" ${userData.durata==='45'?'selected':''}>~45 min</option><option value="60" ${userData.durata==='60'?'selected':''}>~60 min</option><option value="90" ${userData.durata==='90'?'selected':''}>~90 min</option><option value="120" ${userData.durata==='120'?'selected':''}>~2 ore</option></select></div></div>
+      <div class="r2"><div class="fg"><label class="fl">Giorni/settimana</label><select class="fi" id="f_giorni"><option value="">--</option>${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${userData.giorni==n?'selected':''}>${n} giorni</option>`).join('')}</select></div><div class="fg"><label class="fl">Durata sessione</label><select class="fi" id="f_durata"><option value="">--</option><option value="45" ${userData.durata==='45'?'selected':''}>~45 min</option><option value="60" ${userData.durata==='60'?'selected':''}>~60 min</option><option value="90" ${userData.durata==='90'?'selected':''}>~90 min</option><option value="120" ${userData.durata==='120'?'selected':''}>~2 ore</option></select></div></div>
       <div class="fg"><label class="fl">Preferenze alimentari</label><div class="chips"><div class="chip ${userData.dieta==='onnivoro'?'sel':''}" onclick="selChip(this,'dieta','onnivoro')">Onnivoro</div><div class="chip ${userData.dieta==='vegetariano'?'sel':''}" onclick="selChip(this,'dieta','vegetariano')">Vegetariano</div><div class="chip ${userData.dieta==='vegano'?'sel':''}" onclick="selChip(this,'dieta','vegano')">Vegano</div></div></div>
       <div class="fg"><label class="fl">Esercizi da escludere</label><input class="fi" id="f_escludiex" placeholder="Es: squat (ginocchia), nessuno..." value="${userData.escludiex||''}"></div>` },
   { title:'IL TUO OBIETTIVO', sub:"L'AI costruisce tutto su questo", time:'~1 min',
@@ -2788,15 +2790,13 @@ function openPercorsoModal(){
   // Pre-seleziona valori correnti
   _pOb  = userData.obiettivo  || null;
   _pCtx = userData.contesto   || null;
-  // Pre-seleziona chip obiettivo
+  // Pre-seleziona chip obiettivo usando data-value — robusto
   document.querySelectorAll('#percorsoObChips .chip').forEach(c=>{
-    if(c.getAttribute('onclick')?.includes(`'${_pOb}'`)) c.classList.add('sel');
-    else c.classList.remove('sel');
+    c.classList.toggle('sel', c.dataset.value === _pOb);
   });
-  // Pre-seleziona chip contesto
+  // Pre-seleziona chip contesto usando data-value
   document.querySelectorAll('#percorsoCtxChips .chip').forEach(c=>{
-    if(c.getAttribute('onclick')?.includes(`'${_pCtx}'`)) c.classList.add('sel');
-    else c.classList.remove('sel');
+    c.classList.toggle('sel', c.dataset.value === _pCtx);
   });
   // Pre-valorizza campi
   const gg = document.getElementById('pGiorni');
@@ -2854,7 +2854,7 @@ function salvaPercorso(){
   // 5. Messaggio contestuale — l'app "ha capito il cambiamento"
   const msg = buildPercorsoUpdateMsg(nuovoRecord);
   goToChat();
-  setTimeout(()=>{ addAiMsgNoSave(msg); scrollToBottom(); }, 300);
+  setTimeout(()=>{ addAiMsg(msg); scrollToBottom(); }, 300);
 
   console.log('[FM:Percorso] Aggiornato:', nuovoOb, nuovoCtx, '| transitionUntil:', transitionUntil);
 }
@@ -2881,10 +2881,10 @@ function renderPercorsoCard(){
     : '';
 
   el.innerHTML = `
-    <div style="display:flex;align-items:center"><span style="color:var(--mt);width:90px;font-size:11px">Obiettivo</span><span style="color:#fff;font-weight:600">${obLabel}${transBadge}</span></div>
-    <div style="display:flex;align-items:center"><span style="color:var(--mt);width:90px;font-size:11px">Contesto</span><span>${contestoLabel}</span></div>
-    <div style="display:flex;align-items:center"><span style="color:var(--mt);width:90px;font-size:11px">Disponibilità</span><span>${u.giorni||'—'} gg/sett · ${u.durata||'—'} min</span></div>
-    <div style="display:flex;align-items:center"><span style="color:var(--mt);width:90px;font-size:11px">Limitazioni</span><span>${u.infortuni||'nessuna'}</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--mt);width:90px;font-size:11px;flex-shrink:0">Obiettivo</span><span style="color:#fff;font-weight:600">${obLabel}${transBadge}</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--mt);width:90px;font-size:11px;flex-shrink:0">Contesto</span><span>${contestoLabel}</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--mt);width:90px;font-size:11px;flex-shrink:0">Disponibilità</span><span>${u.giorni||'—'} gg/sett · ${u.durata||'—'} min</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--mt);width:90px;font-size:11px;flex-shrink:0">Limitazioni</span><span>${u.infortuni||'nessuna'}</span></div>
   `;
 }
 
