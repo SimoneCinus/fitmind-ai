@@ -288,7 +288,7 @@ textarea.fi{resize:none;height:76px}
     <div class="tab active" onclick="switchTab('chat',this)">Chat</div>
     <div class="tab" onclick="switchTab('scheda',this)">Scheda</div>
     <div class="tab" onclick="switchTab('dieta',this)">Dieta</div>
-    <div class="tab" onclick="switchTab('progressi',this)">Progressi</div>
+    <div class="tab" onclick="switchTab('progressi',this)">Percorso</div>
   </div>
 
   <!-- TAB CHAT -->
@@ -388,7 +388,14 @@ textarea.fi{resize:none;height:76px}
   <!-- TAB PROGRESSI -->
   <div class="tc" id="tc-progressi">
     <div class="tab-scroll">
-      <div class="stat-grid">
+      <!-- Card percorso attuale -->
+      <div id="percorsoCard" style="background:linear-gradient(135deg,rgba(200,241,53,.09),rgba(200,241,53,.04));border:1px solid rgba(200,241,53,.22);border-radius:16px;padding:16px;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--ac)">🎯 IL TUO PERCORSO</div>
+          <button onclick="openPercorsoModal()" style="background:var(--ac);color:#000;border:none;border-radius:10px;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer">✏️ Aggiorna</button>
+        </div>
+        <div id="percorsoInfo" style="display:flex;flex-direction:column;gap:7px;font-size:13px;color:#ccc"></div>
+      </div>
         <div class="stat-card hl">
           <div class="stat-lbl">Peso</div>
           <div class="stat-val" id="spPeso">—<span class="stat-unit">kg</span></div>
@@ -695,6 +702,75 @@ textarea.fi{resize:none;height:76px}
   </div>
 </div>
 
+<!-- Aggiorna percorso -->
+<div class="overlay" id="mPercorso">
+  <div class="sheet"><div class="handle"></div>
+    <div class="sh-title">🎯 AGGIORNA PERCORSO</div>
+    <div class="sh-sub">Lo storico e le progressioni restano intatti.</div>
+
+    <div class="fg" style="margin-bottom:14px">
+      <label class="fl">Obiettivo attuale</label>
+      <div class="chips" id="percorsoObChips">
+        <div class="chip" onclick="selPercorsoChip(this,'pOb','massa')">💪 Massa</div>
+        <div class="chip" onclick="selPercorsoChip(this,'pOb','dimagrimento')">🔥 Dimagrimento</div>
+        <div class="chip" onclick="selPercorsoChip(this,'pOb','ricomposizione')">⚖️ Ricomposizione</div>
+        <div class="chip" onclick="selPercorsoChip(this,'pOb','forza')">🏋️ Forza</div>
+        <div class="chip" onclick="selPercorsoChip(this,'pOb','mantenimento')">✅ Mantenimento</div>
+      </div>
+    </div>
+
+    <div class="fg" style="margin-bottom:14px">
+      <label class="fl">Dove ti alleni</label>
+      <div class="chips" id="percorsoCtxChips">
+        <div class="chip" onclick="selPercorsoChip(this,'pCtx','gym')">🏋️ Palestra</div>
+        <div class="chip" onclick="selPercorsoChip(this,'pCtx','home')">🏠 Casa</div>
+        <div class="chip" onclick="selPercorsoChip(this,'pCtx','swim')">🏊 Nuoto</div>
+        <div class="chip" onclick="selPercorsoChip(this,'pCtx','run')">🏃 Corsa</div>
+        <div class="chip" onclick="selPercorsoChip(this,'pCtx','bike')">🚴 Bici</div>
+        <div class="chip" onclick="selPercorsoChip(this,'pCtx','padel')">🎾 Padel</div>
+        <div class="chip" onclick="selPercorsoChip(this,'pCtx','yoga')">🧘 Yoga</div>
+        <div class="chip" onclick="selPercorsoChip(this,'pCtx','pilates')">🤸 Pilates</div>
+        <div class="chip" onclick="selPercorsoChip(this,'pCtx','outdoor')">🚶 Outdoor</div>
+        <div class="chip" onclick="selPercorsoChip(this,'pCtx','mixed')">🔄 Misto</div>
+      </div>
+    </div>
+
+    <div class="r2" style="margin-bottom:14px">
+      <div class="fg" style="margin-bottom:0">
+        <label class="fl">Giorni/settimana</label>
+        <select class="fi" id="pGiorni">
+          <option value="">--</option>
+          ${[1,2,3,4,5,6].map(n=>`<option value="${n}">${n} giorni</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label class="fl">Durata sessione</label>
+        <select class="fi" id="pDurata">
+          <option value="">--</option>
+          <option value="30">~30 min</option>
+          <option value="45">~45 min</option>
+          <option value="60">~60 min</option>
+          <option value="90">~90 min</option>
+          <option value="120">~2 ore</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="fg" style="margin-bottom:14px">
+      <label class="fl">Limitazioni fisiche attuali</label>
+      <input class="fi" id="pLimitazioni" placeholder="Es: intervento ginocchio, nessuna...">
+    </div>
+
+    <div class="fg" style="margin-bottom:20px">
+      <label class="fl">Motivo del cambiamento (opzionale ma utile)</label>
+      <input class="fi" id="pMotivo" placeholder="Es: ho poco tempo, intervento spalla, voglio cambiare obiettivo...">
+    </div>
+
+    <button class="btn btn-a" onclick="salvaPercorso()">AGGIORNA PERCORSO</button>
+    <button class="btn btn-b" onclick="closeModal('mPercorso')">Annulla</button>
+  </div>
+</div>
+
 <!-- Eliminazione messaggio -->
 <div class="overlay" id="mDeleteMsg">
   <div class="sheet"><div class="handle"></div>
@@ -842,6 +918,72 @@ let pendingDeleteId = null;
 
 // Onboarding
 let obStep = 0;
+
+// ── percorsoHistory helpers ──
+// Source of truth storica del percorso utente.
+// userData.obiettivo / contesto / giorni / limitazioni = cache attiva (per calcoli veloci)
+// percorsoHistory = storia immutabile append-only
+
+// Calcola transitionUntil in base al tipo di cambiamento
+function calcTransitionUntil(motivoCambio, contesto, limitazioni){
+  const oggi = new Date();
+  const m = (motivoCambio||'').toLowerCase();
+  const l = (limitazioni||'').toLowerCase();
+  // Intervento / chirurgia / operazione → 45 giorni
+  if(m.match(/intervento|chirurgia|operazione|post.op/) || l.match(/intervento|chirurgia|operazione/))
+    return new Date(oggi.getTime() + 45*24*60*60*1000).toISOString().split('T')[0];
+  // Infortunio / dolore / recupero → 21 giorni
+  if(m.match(/infortun|dolore|recupero|lesione/) || l.match(/infortun|dolore|lesione/))
+    return new Date(oggi.getTime() + 21*24*60*60*1000).toISOString().split('T')[0];
+  // Cambio contesto (es. casa, outdoor) → 10 giorni
+  if(m.match(/casa|home|poco tempo|lavoro|trasferta/))
+    return new Date(oggi.getTime() + 10*24*60*60*1000).toISOString().split('T')[0];
+  // Cambio obiettivo (es. massa→cut) → 14 giorni default
+  return new Date(oggi.getTime() + 14*24*60*60*1000).toISOString().split('T')[0];
+}
+
+// Sync esplicito: percorsoHistory → userData (cache attiva)
+// REGOLA: ogni aggiornamento percorso chiama questa funzione
+// Garantisce zero drift tra storia e stato attivo
+function syncCurrentUserStateFromPercorso(){
+  if(!userData.percorsoHistory?.length) return;
+  const last = userData.percorsoHistory.at(-1);
+  if(!last) return;
+  // Aggiorna solo se il record corrente ha al:null (è la fase attiva)
+  if(last.al !== null) return;
+  if(last.obiettivo)   userData.obiettivo   = last.obiettivo;
+  if(last.contesto)    userData.contesto    = last.contesto;
+  if(last.giorni)      userData.giorni      = last.giorni;
+  if(last.durata)      userData.durata      = last.durata;
+  if(last.limitazioni && last.limitazioni !== 'nessuno') userData.infortuni = last.limitazioni;
+}
+
+// Genera messaggio contestuale post-aggiornamento percorso
+function buildPercorsoUpdateMsg(record){
+  const nome = userData.nome || '';
+  const contestoLabel = {
+    gym:'palestra', home:'casa', swim:'nuoto/piscina',
+    run:'corsa', bike:'bici', padel:'padel',
+    yoga:'yoga', pilates:'pilates', outdoor:'attività all\'aperto', mixed:'attività mista'
+  }[record.contesto] || record.contesto;
+  const obLabel = {
+    massa:'massa muscolare', dimagrimento:'dimagrimento', ricomposizione:'ricomposizione',
+    forza:'forza', mantenimento:'mantenimento'
+  }[record.obiettivo] || record.obiettivo;
+
+  let adattamenti = [];
+  if(record.motivoCambio){
+    const m = record.motivoCambio.toLowerCase();
+    if(m.match(/intervento|chirurgia|operazione/)) adattamenti.push('modalità recupero post-operatorio');
+    if(m.match(/infortun|dolore|lesione/)) adattamenti.push('massima cautela sull\'area interessata');
+    if(m.match(/poco tempo|lavoro/)) adattamenti.push('sessioni ottimizzate per il tempo disponibile');
+  }
+  adattamenti.push(`contesto ${contestoLabel}`);
+  adattamenti.push(`obiettivo ${obLabel}`);
+  if(record.giorni) adattamenti.push(`${record.giorni} giorni/settimana`);
+
+  return `Perfetto${nome?' '+nome:''}. Ho aggiornato il tuo percorso. Adatterò consigli e tono considerando:\n${adattamenti.map(a=>`• ${a}`).join('\n')}`;
+}
 
 // ══════════════════════════════════════════════════════════════════
 // STORAGE — chiavi unificate
@@ -1147,6 +1289,15 @@ function buildSystemPrompt(){
   const u=userData;
   const t=calcTargets();
 
+  // Legge stato percorso — source of truth per transizione e motivoCambio
+  const percorsoLast = userData.percorsoHistory?.at(-1) || null;
+  const inTransizione = percorsoLast?.transitionUntil && new Date(percorsoLast.transitionUntil) > new Date();
+  const transizioneCtx = inTransizione
+    ? `\n⚡ TRANSIZIONE IN CORSO (fino al ${percorsoLast.transitionUntil}):
+Motivo: ${percorsoLast.motivoCambio||'cambio percorso'}
+Sii GRADUALE nei consigli. Non cambiare tutto di colpo. Accompagna l'utente nella transizione.`
+    : '';
+
   // Mapping contesto: ID interno → label italiana + comportamento AI
   const contestoMap = {
     gym:     { label:'palestra con attrezzatura', note:'Suggerisci esercizi con pesi, macchine, bilancieri. Split muscolare intelligente.' },
@@ -1214,7 +1365,7 @@ Usa tono probabilistico quando stimi — mai false certezze cliniche.
 NON sovrascrivere mai scheda o target automaticamente: suggerisci, l'utente conferma.
 
 CONTESTO ATTIVITÀ: ${contesto.label}
-${contesto.note}${sicurezzaCtx}
+${contesto.note}${transizioneCtx}${sicurezzaCtx}
 
 LIVELLO ESIGENZA: ${u.esigenza||'3'}/5 — ${tono}
 VOCABOLARIO: ${vocab}${fragile}${sessCtx}
@@ -1495,6 +1646,7 @@ function launchApp(){
   if(userData.peso) appStats.lastWeight=userData.peso;
   updateStreak();
   if(schedaAttiva) renderSchedaView();
+  renderPercorsoCard();
   refreshDietaUI();
   const firstRun=!StorageAdapter.get(LS.firstRun);
   if(firstRun&&!schedaAttiva){ StorageAdapter.set(LS.firstRun,'1'); setTimeout(()=>showModal('mSchedaChoice'),1200); }
@@ -2615,6 +2767,125 @@ function execReset(){
     renderObStep();
     console.log('[FM] Reset completato');
   },300);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PERCORSO — gestione evoluzione utente nel tempo
+// ══════════════════════════════════════════════════════════════════
+
+let _pOb  = null; // selezione temporanea obiettivo nel modal
+let _pCtx = null; // selezione temporanea contesto nel modal
+
+function selPercorsoChip(el, field, val){
+  const container = el.parentElement;
+  container.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  if(field==='pOb')  _pOb  = val;
+  if(field==='pCtx') _pCtx = val;
+}
+
+function openPercorsoModal(){
+  // Pre-seleziona valori correnti
+  _pOb  = userData.obiettivo  || null;
+  _pCtx = userData.contesto   || null;
+  // Pre-seleziona chip obiettivo
+  document.querySelectorAll('#percorsoObChips .chip').forEach(c=>{
+    if(c.getAttribute('onclick')?.includes(`'${_pOb}'`)) c.classList.add('sel');
+    else c.classList.remove('sel');
+  });
+  // Pre-seleziona chip contesto
+  document.querySelectorAll('#percorsoCtxChips .chip').forEach(c=>{
+    if(c.getAttribute('onclick')?.includes(`'${_pCtx}'`)) c.classList.add('sel');
+    else c.classList.remove('sel');
+  });
+  // Pre-valorizza campi
+  const gg = document.getElementById('pGiorni');
+  if(gg) gg.value = userData.giorni || '';
+  const dur = document.getElementById('pDurata');
+  if(dur) dur.value = userData.durata || '';
+  const lim = document.getElementById('pLimitazioni');
+  if(lim) lim.value = userData.infortuni || '';
+  const mot = document.getElementById('pMotivo');
+  if(mot) mot.value = '';
+  showModal('mPercorso');
+}
+
+function salvaPercorso(){
+  const nuovoOb  = _pOb  || userData.obiettivo;
+  const nuovoCtx = _pCtx || userData.contesto;
+  const nuovoGg  = document.getElementById('pGiorni')?.value     || userData.giorni;
+  const nuovoDur = document.getElementById('pDurata')?.value     || userData.durata;
+  const nuovoLim = document.getElementById('pLimitazioni')?.value?.trim() || '';
+  const motivo   = document.getElementById('pMotivo')?.value?.trim()      || null;
+
+  const oggi = new Date().toISOString().split('T')[0];
+
+  // 1. Chiudi record corrente se esiste
+  if(!userData.percorsoHistory) userData.percorsoHistory = [];
+  const last = userData.percorsoHistory.at(-1);
+  if(last && last.al === null) last.al = oggi;
+
+  // 2. Calcola transitionUntil contestuale (non hardcoded)
+  const transitionUntil = calcTransitionUntil(motivo, nuovoCtx, nuovoLim);
+
+  // 3. Appende nuovo record — source of truth storica
+  const nuovoRecord = {
+    obiettivo:       nuovoOb    || null,
+    contesto:        nuovoCtx   || null,
+    giorni:          nuovoGg    || null,
+    durata:          nuovoDur   || null,
+    limitazioni:     nuovoLim   || 'nessuno',
+    motivoCambio:    motivo,
+    dal:             oggi,
+    al:              null,
+    transitionUntil: transitionUntil
+  };
+  userData.percorsoHistory.push(nuovoRecord);
+
+  // 4. Sync esplicito: aggiorna cache attiva da percorsoHistory
+  // REGOLA: sempre dopo append — garantisce zero drift
+  syncCurrentUserStateFromPercorso();
+
+  saveAll();
+  closeModal('mPercorso');
+  renderPercorsoCard();
+  refreshStats();
+
+  // 5. Messaggio contestuale — l'app "ha capito il cambiamento"
+  const msg = buildPercorsoUpdateMsg(nuovoRecord);
+  goToChat();
+  setTimeout(()=>{ addAiMsgNoSave(msg); scrollToBottom(); }, 300);
+
+  console.log('[FM:Percorso] Aggiornato:', nuovoOb, nuovoCtx, '| transitionUntil:', transitionUntil);
+}
+
+function renderPercorsoCard(){
+  const el = document.getElementById('percorsoInfo');
+  if(!el) return;
+  const u = userData;
+  const contestoLabel = {
+    gym:'🏋️ Palestra', home:'🏠 Casa', swim:'🏊 Nuoto/Piscina',
+    run:'🏃 Corsa', bike:'🚴 Bici', padel:'🎾 Padel',
+    yoga:'🧘 Yoga', pilates:'🤸 Pilates', outdoor:'🚶 Attività all\'aperto', mixed:'🔄 Misto'
+  }[u.contesto] || '—';
+  const obLabel = {
+    massa:'💪 Massa muscolare', dimagrimento:'🔥 Dimagrimento',
+    ricomposizione:'⚖️ Ricomposizione', forza:'🏋️ Forza', mantenimento:'✅ Mantenimento'
+  }[u.obiettivo] || '—';
+
+  // Verifica transizione attiva
+  const last = userData.percorsoHistory?.at(-1);
+  const inTransizione = last?.transitionUntil && new Date(last.transitionUntil) > new Date();
+  const transBadge = inTransizione
+    ? `<span style="background:rgba(255,107,53,.2);color:var(--ac2);border-radius:6px;padding:2px 8px;font-size:10px;margin-left:6px">in transizione</span>`
+    : '';
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center"><span style="color:var(--mt);width:90px;font-size:11px">Obiettivo</span><span style="color:#fff;font-weight:600">${obLabel}${transBadge}</span></div>
+    <div style="display:flex;align-items:center"><span style="color:var(--mt);width:90px;font-size:11px">Contesto</span><span>${contestoLabel}</span></div>
+    <div style="display:flex;align-items:center"><span style="color:var(--mt);width:90px;font-size:11px">Disponibilità</span><span>${u.giorni||'—'} gg/sett · ${u.durata||'—'} min</span></div>
+    <div style="display:flex;align-items:center"><span style="color:var(--mt);width:90px;font-size:11px">Limitazioni</span><span>${u.infortuni||'nessuna'}</span></div>
+  `;
 }
 
 // ══════════════════════════════════════════════════════════════════
