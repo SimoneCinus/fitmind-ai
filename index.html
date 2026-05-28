@@ -1210,20 +1210,28 @@ function savePasto(testo){
 function buildAlimContesto(){
   const oggi=alimentazioneLog[todayStr()];
   const ieri=alimentazioneLog[yesterdayStr()];
+
+  // Formatta entry con orario reale — backward compat con stringhe semplici
+  const fmtEntry = e => {
+    if(typeof e==='string') return e;
+    const ora = e.oraPasto ? `[${e.oraPasto}] ` : '';
+    return ora + (e.testo||e);
+  };
+
   let ctx='';
   if(oggi){
     const ps=[];
-    if(oggi.colazione.length) ps.push('Col: '+oggi.colazione.join(', '));
-    if(oggi.pranzo.length)    ps.push('Pran: '+oggi.pranzo.join(', '));
-    if(oggi.cena.length)      ps.push('Cena: '+oggi.cena.join(', '));
-    if(oggi.spuntini.length)  ps.push('Spunt: '+oggi.spuntini.join(', '));
+    if(oggi.colazione?.length) ps.push('Col: '+oggi.colazione.map(fmtEntry).join(', '));
+    if(oggi.pranzo?.length)    ps.push('Pran: '+oggi.pranzo.map(fmtEntry).join(', '));
+    if(oggi.cena?.length)      ps.push('Cena: '+oggi.cena.map(fmtEntry).join(', '));
+    if(oggi.spuntini?.length)  ps.push('Spunt: '+oggi.spuntini.map(fmtEntry).join(', '));
     ctx='OGGI: '+(ps.length?ps.join(' | '):'nessun pasto registrato');
   } else { ctx='OGGI: nessun pasto registrato'; }
   if(ieri){
     const ps=[];
-    if(ieri.colazione.length) ps.push('Col: '+ieri.colazione.join(', '));
-    if(ieri.pranzo.length)    ps.push('Pran: '+ieri.pranzo.join(', '));
-    if(ieri.cena.length)      ps.push('Cena: '+ieri.cena.join(', '));
+    if(ieri.colazione?.length) ps.push('Col: '+ieri.colazione.map(fmtEntry).join(', '));
+    if(ieri.pranzo?.length)    ps.push('Pran: '+ieri.pranzo.map(fmtEntry).join(', '));
+    if(ieri.cena?.length)      ps.push('Cena: '+ieri.cena.map(fmtEntry).join(', '));
     if(ps.length) ctx+='\nIERI: '+ps.join(' | ');
   }
   return ctx;
@@ -1395,6 +1403,9 @@ Esempi:
 [LOG_PASTO:spuntino:cracker:p2:c18:g3:k100]
 [LOG_PASTO:pranzo:pasta al pomodoro:p12:c65:g8:k380]
 Aggiungi SEMPRE p(proteine) c(carboidrati) g(grassi) k(kcal) stimati in grammi interi.
+Se l'utente specifica un orario del pasto (es. "colazione alle 7:30"), aggiungilo con :oreHH:MM
+Esempio: [LOG_PASTO:colazione:pancake:p12:c40:g8:k280:ore07:30]
+Se NON specifica l'orario, ometti il campo ore — verrà usato l'orario corrente.
 Il tag è invisibile all'utente. Aggiungilo sempre, anche se parli d'altro nella risposta.
 NON aggiungerlo se l'utente parla di cibo in futuro ("domani mangerò...") o in modo ipotetico.
 
@@ -1425,12 +1436,18 @@ NUTRIZIONE: Proteine 1.6-2.2g/kg. Pre-workout: carbo 90min prima. Post-workout: 
 
 ━━━ REGOLE COMPORTAMENTALI ━━━
 1. SEMPRE specifico per questo utente e il suo contesto (${contesto.label}) — mai generici
-2. DOLORE/INFORTUNIO → STOP immediato, alternativa sicura, niente consigli aggressivi
-3. PROGRESSIONE → commenta, suggerisci prossimo target
-4. PASTO LIBERO → normalizza, MAI colpevolizzare
-5. STOP >5gg → ripresa graduale -30% volume
-6. DISAGIO EMOTIVO → empatia prima, tecnica dopo
-7. GENERAZIONE PIANO → adatta al contesto: ${contesto.note}`;
+2. RAGIONAMENTO TEMPORALE — quando l'utente menziona allenamento imminente o palestra:
+   • Leggi il diario pasti con orari reali
+   • Se dall'ultimo pasto sono passate più di 3-4 ore → suggerisci snack pre-workout leggero
+   • Se non ci sono pasti registrati → chiedi se mangerà qualcosa prima
+   • NON essere ossessivo: intervieni solo quando il timing conta davvero per l'energia
+   • Esempio corretto: "Sono passate molte ore dalla colazione — valuta uno snack prima di iniziare."
+3. DOLORE/INFORTUNIO → STOP immediato, alternativa sicura, niente consigli aggressivi
+4. PROGRESSIONE → commenta, suggerisci prossimo target
+5. PASTO LIBERO → normalizza, MAI colpevolizzare
+6. STOP >5gg → ripresa graduale -30% volume
+7. DISAGIO EMOTIVO → empatia prima, tecnica dopo
+8. GENERAZIONE PIANO → adatta al contesto: ${contesto.note}`;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1713,10 +1730,10 @@ function addUserMsg(text){
 function addAiMsg(text){
   const id=genMsgId(), ts=Date.now();
 
-  // Intercetta tag [LOG_PASTO:tipo:contenuto:p15:c20:g3:k160]
+  // Intercetta tag [LOG_PASTO:tipo:contenuto:p15:c20:g3:k160:ore07:30]
   let cleanText = text;
   let pastoAction = null;
-  const pastoMatch = text.match(/\[LOG_PASTO:(colazione|pranzo|cena|spuntino):([^:\]]+)(?::p(\d+))?(?::c(\d+))?(?::g(\d+))?(?::k(\d+))?\]/i);
+  const pastoMatch = text.match(/\[LOG_PASTO:(colazione|pranzo|cena|spuntino):([^:\]]+)(?::p(\d+))?(?::c(\d+))?(?::g(\d+))?(?::k(\d+))?(?::ore(\d{1,2}:\d{2}))?\]/i);
   if(pastoMatch){
     const tipo = pastoMatch[1].toLowerCase();
     const contenuto = pastoMatch[2].trim();
@@ -1726,8 +1743,9 @@ function addAiMsg(text){
       g: pastoMatch[5] ? parseInt(pastoMatch[5]) : null,
       k: pastoMatch[6] ? parseInt(pastoMatch[6]) : null
     };
+    const oraPasto = pastoMatch[7] || nowTimeStr(); // orario reale pasto, fallback ora corrente
     cleanText = text.replace(pastoMatch[0], '').trim();
-    pastoAction = {tipo, contenuto, macro};
+    pastoAction = {tipo, contenuto, macro, oraPasto};
   }
 
   // Intercetta tag [UPDATE_SCHEDA:nome:peso:reps]
@@ -1842,22 +1860,22 @@ function eseguiUpdateScheda(nome, newPeso, newReps, msgId){
 function eseguiRegistraPastoById(msgId){
   const pa = window._pastoRegistry && window._pastoRegistry[msgId];
   if(!pa){ showToast('Dati pasto non trovati'); return; }
-  eseguiRegistraPasto(pa.tipo, pa.contenuto, msgId, pa.macro);
+  eseguiRegistraPasto(pa.tipo, pa.contenuto, msgId, pa.macro, pa.oraPasto);
   delete window._pastoRegistry[msgId];
 }
 
 // Registra pasto nel log dopo conferma utente
-function eseguiRegistraPasto(tipo, contenuto, msgId, macro){
+function eseguiRegistraPasto(tipo, contenuto, msgId, macro, oraPasto){
   const tipoKey = tipo==='spuntino'?'spuntini':tipo;
   const g = ensureGiorno(todayStr());
-  // Salva come oggetto con macro se disponibili, altrimenti stringa semplice
+  // Salva con oraPasto reale — permette ragionamento temporale all'AI
   const entry = macro && macro.p !== null
-    ? { testo: contenuto, p: macro.p||0, c: macro.c||0, g: macro.g||0, k: macro.k||0 }
-    : contenuto;
-  const esistente = g[tipoKey].find(x=>(typeof x==='string'?x:x.testo)===contenuto);
+    ? { testo: contenuto, p: macro.p||0, c: macro.c||0, g: macro.g||0, k: macro.k||0, oraPasto: oraPasto||nowTimeStr() }
+    : { testo: contenuto, oraPasto: oraPasto||nowTimeStr() };
+  const esistente = g[tipoKey].find(x=>(typeof x==='string'?x:(x.testo||x))===contenuto);
   if(!esistente){
     g[tipoKey].push(entry);
-    console.log('[FM:Alim] Registrato:', tipoKey+':', contenuto, macro||'');
+    console.log('[FM:Alim] Registrato:', tipoKey+':', contenuto, 'ore:', oraPasto||'?', macro||'');
     saveAll(); refreshDietaUI();
     showToast('✅ '+tipoKey.charAt(0).toUpperCase()+tipoKey.slice(1)+' registrata!');
   }
