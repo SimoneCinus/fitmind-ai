@@ -392,7 +392,10 @@ textarea.fi{resize:none;height:76px}
       <div id="percorsoCard" style="background:linear-gradient(135deg,rgba(200,241,53,.09),rgba(200,241,53,.04));border:1px solid rgba(200,241,53,.22);border-radius:16px;padding:16px;margin-bottom:14px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--ac)">🎯 IL TUO PERCORSO</div>
-          <button onclick="openPercorsoModal()" style="background:var(--ac);color:#000;border:none;border-radius:10px;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer">✏️ Aggiorna</button>
+          <div style="display:flex;gap:8px">
+            <button onclick="apriCheckin()" style="background:var(--s2);color:#ddd;border:1px solid var(--bd);border-radius:10px;padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer">📊 Check-in</button>
+            <button onclick="openPercorsoModal()" style="background:var(--ac);color:#000;border:none;border-radius:10px;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer">✏️ Aggiorna</button>
+          </div>
         </div>
         <div id="percorsoInfo" style="display:flex;flex-direction:column;gap:7px;font-size:13px;color:#ccc"></div>
       </div>
@@ -771,6 +774,63 @@ textarea.fi{resize:none;height:76px}
   </div>
 </div>
 
+<!-- Check-in progressi -->
+<div class="overlay" id="mCheckin">
+  <div class="sheet"><div class="handle"></div>
+    <div class="sh-title">📊 CHECK-IN</div>
+    <div class="sh-sub" id="checkinSub">Aggiorna i tuoi dati. Lo storico viene mantenuto per il confronto.</div>
+
+    <div class="r2" style="margin-bottom:14px">
+      <div class="fg" style="margin-bottom:0">
+        <label class="fl">Peso (kg)</label>
+        <input class="fi" id="ckPeso" type="number" inputmode="decimal" placeholder="es: 82.5" style="font-size:18px;text-align:center">
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label class="fl">Vita (cm)</label>
+        <input class="fi" id="ckVita" type="number" inputmode="numeric" placeholder="es: 88" style="font-size:18px;text-align:center">
+      </div>
+    </div>
+
+    <div class="r2" style="margin-bottom:14px">
+      <div class="fg" style="margin-bottom:0">
+        <label class="fl">Braccio (cm)</label>
+        <input class="fi" id="ckBraccio" type="number" inputmode="numeric" placeholder="es: 39" style="font-size:18px;text-align:center">
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label class="fl">Cosce (cm)</label>
+        <input class="fi" id="ckCosce" type="number" inputmode="numeric" placeholder="es: 58" style="font-size:18px;text-align:center">
+      </div>
+    </div>
+
+    <div class="fg" style="margin-bottom:14px">
+      <label class="fl">Energia</label>
+      <div class="chips" id="ckEnergiaChips">
+        <div class="chip" data-value="bassa" onclick="selCkChip(this,'energia','bassa')">😴 Bassa</div>
+        <div class="chip" data-value="media" onclick="selCkChip(this,'energia','media')">😐 Media</div>
+        <div class="chip" data-value="buona" onclick="selCkChip(this,'energia','buona')">😊 Buona</div>
+        <div class="chip" data-value="ottima" onclick="selCkChip(this,'energia','ottima')">🔥 Ottima</div>
+      </div>
+    </div>
+
+    <div class="fg" style="margin-bottom:14px">
+      <label class="fl">Recupero</label>
+      <div class="chips" id="ckRecuperoChips">
+        <div class="chip" data-value="lento" onclick="selCkChip(this,'recupero','lento')">🐢 Lento</div>
+        <div class="chip" data-value="normale" onclick="selCkChip(this,'recupero','normale')">👍 Normale</div>
+        <div class="chip" data-value="ottimo" onclick="selCkChip(this,'recupero','ottimo')">⚡ Ottimo</div>
+      </div>
+    </div>
+
+    <div class="fg" style="margin-bottom:20px">
+      <label class="fl">Note libere (opzionale)</label>
+      <input class="fi" id="ckNote" placeholder="Es: più forza in squat, meno stanchezza...">
+    </div>
+
+    <button class="btn btn-a" onclick="salvaCheckin()">SALVA CHECK-IN</button>
+    <button class="btn btn-b" onclick="closeModal('mCheckin')">Più tardi</button>
+  </div>
+</div>
+
 <!-- Eliminazione messaggio -->
 <div class="overlay" id="mDeleteMsg">
   <div class="sheet"><div class="handle"></div>
@@ -792,6 +852,8 @@ textarea.fi{resize:none;height:76px}
 <script>
 'use strict';
 
+// === ISLAND: config ===
+// CONTRATTO: costanti globali readonly. NON mutare stato, NON toccare UI.
 // ══════════════════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════════════════
@@ -837,6 +899,8 @@ const Validator = {
   confidence(v){ return v===null||v===undefined||(typeof v==='number'&&v>=0&&v<=1); }
 };
 
+// === ISLAND: state ===
+// CONTRATTO: dichiarazione variabili globali. NON inizializzare con logica, NON chiamare funzioni.
 // ══════════════════════════════════════════════════════════════════
 // STRUTTURE DATI — documentate per evoluzione futura
 // ══════════════════════════════════════════════════════════════════
@@ -987,6 +1051,8 @@ function buildPercorsoUpdateMsg(record){
   return `Perfetto${nome?' '+nome:''}. Ho aggiornato il tuo percorso. Adatterò consigli e tono considerando:\n${adattamenti.map(a=>`• ${a}`).join('\n')}`;
 }
 
+// === ISLAND: storage ===
+// CONTRATTO: solo saveAll/loadAll/migrazioni. NON toccare UI, NON chiamare AI.
 // ══════════════════════════════════════════════════════════════════
 // STORAGE — chiavi unificate
 // ══════════════════════════════════════════════════════════════════
@@ -1237,6 +1303,8 @@ function buildAlimContesto(){
   return ctx;
 }
 
+// === ISLAND: prompt ===
+// CONTRATTO: costruisce contesto AI. Legge stato, restituisce stringa. NON muta stato, NON tocca UI.
 // ══════════════════════════════════════════════════════════════════
 // AI CONTEXT
 // ══════════════════════════════════════════════════════════════════
@@ -1420,8 +1488,19 @@ ${buildAlimContesto()}
 ━━━ SCHEDA ATTIVA (con storico progressioni) ━━━
 ${buildSchedaCtxCompleto()}
 
-━━━ STATISTICHE ━━━
-Sessioni totali: ${appStats.sessions||0} | Streak: ${appStats.streak||0} gg | Peso attuale: ${appStats.lastWeight||p||'?'}kg
+━━━ CHECK-IN E PROGRESSI ━━━
+${(()=>{
+  const storia = userData.checkinHistory||[];
+  if(!storia.length) return 'Nessun check-in ancora.';
+  const ultimi = storia.slice(-2);
+  return ultimi.map((c,i)=>{
+    const label = i===ultimi.length-1 ? 'ULTIMO' : 'PRECEDENTE';
+    const misure = [c.misure?.vita&&`vita ${c.misure.vita}cm`, c.misure?.braccio&&`braccio ${c.misure.braccio}cm`].filter(Boolean).join(', ');
+    const sens = [c.sensazioni?.energia&&`energia ${c.sensazioni.energia}`, c.sensazioni?.recupero&&`recupero ${c.sensazioni.recupero}`].filter(Boolean).join(', ');
+    return `${label} (${c.data}): ${c.peso?c.peso+'kg':'?'} ${misure?'· '+misure:''} ${sens?'· '+sens:''} ${c.note?'· note: '+c.note:''}`.trim();
+  }).join('\n');
+})()}
+Usa questi dati per ragionare su tendenze, miglioramenti e adattamenti del percorso.
 
 ━━━ CONTESTO TEMPORALE ━━━
 I messaggi utente includono [Giorno Data - Ora]. Usalo per contestualizzare: pasti mattutini, allenamenti, recupero notturno.
@@ -1693,6 +1772,17 @@ function buildAlertMsg(){
 
 function buildProactiveMsg(){
   const name=userData.nome||''; const h=new Date().getHours(); const s=appStats.streak||0; const sonno=parseFloat(userData.sonno)||7;
+
+  // Check-in prioritario — coach che segue nel tempo
+  if(shouldTriggerCheckin()){
+    const storia = userData.checkinHistory||[];
+    if(storia.length === 0){
+      return `${name}, è passato un po' di tempo dall'inizio. Ti va di fare il primo check-in? Peso, misure e sensazioni mi aiutano a seguirti meglio nel percorso.`;
+    }
+    const giorniDa = Math.floor((new Date() - new Date(storia.at(-1).data)) / (1000*60*60*24));
+    return `${name}, sono passati ${giorniDa} giorni dall'ultimo check-in. Ti va di aggiornarmi su peso, misure o sensazioni così posso adattare meglio il percorso?`;
+  }
+
   if(s===7) return `🔥 ${name}, una settimana di fila. Questo è il livello. Avanti.`;
   if(s===14) return `💪 ${name}, 14 giorni consecutivi. La costanza è già un risultato.`;
   if(s===30) return `⚡ ${name}, UN MESE. Pochi ci arrivano.`;
@@ -1707,8 +1797,45 @@ function buildProactiveMsg(){
 // ══════════════════════════════════════════════════════════════════
 // CHAT
 // ══════════════════════════════════════════════════════════════════
+// ── Estrazione orario pasto lato client ──
+// NON NLP avanzato — regex robuste con fallback null.
+// NON inventa mai orari: se ambiguo → null.
+function estraiOraPasto(testo){
+  if(!testo) return null;
+  const t = testo.toLowerCase();
+
+  // Pattern supportati (esempi reali utenti):
+  // "alle 7:30" / "alle 7.30" / "alle 7" / "ore 13:00" / "verso le 14" / "stamattina alle 8"
+  const patterns = [
+    /alle\s+(\d{1,2})[:.](\d{2})/,   // "alle 7:30" o "alle 7.30"
+    /alle\s+(\d{1,2})\b(?![:.])/,    // "alle 7" (solo ora intera)
+    /ore\s+(\d{1,2})[:.](\d{2})/,    // "ore 13:00"
+    /ore\s+(\d{1,2})\b(?![:.])/,     // "ore 13"
+    /verso\s+le\s+(\d{1,2})[:.]?(\d{2})?/, // "verso le 14" o "verso le 14:30"
+    /(\d{1,2})[:.](\d{2})\s*(?:di\s+(?:stamattina|mattina|sera|pomeriggio))?/, // "7:30 di mattina"
+  ];
+
+  for(const pattern of patterns){
+    const m = t.match(pattern);
+    if(m){
+      const ore  = parseInt(m[1]);
+      const min  = m[2] ? parseInt(m[2]) : 0;
+      // Validazione: ore 0-23, minuti 0-59
+      if(ore >= 0 && ore <= 23 && min >= 0 && min <= 59){
+        return `${String(ore).padStart(2,'0')}:${String(min).padStart(2,'0')}`;
+      }
+    }
+  }
+  return null; // NON inventare orari
+}
+
 function addUserMsg(text){
   const id=genMsgId(), ts=Date.now();
+
+  // Estrae orario reale pasto lato client — salvato come hint globale
+  // L'AI lo usa come fallback se non specifica :ore nel tag LOG_PASTO
+  window._oraPastoHint = estraiOraPasto(text);
+
   const div=document.createElement('div');
   div.className='msg u'; div.dataset.msgId=id;
   div.innerHTML=`<div class="av me">👤</div>
@@ -1730,34 +1857,49 @@ function addUserMsg(text){
 function addAiMsg(text){
   const id=genMsgId(), ts=Date.now();
 
-  // Intercetta tag [LOG_PASTO:tipo:contenuto:p15:c20:g3:k160:ore07:30]
+  // ── Parser tag — robusto con fallback silenzioso ──
+  // Se il tag è malformato non crasha addAiMsg — logga e ignora.
+
+  // Intercetta [LOG_PASTO:tipo:contenuto:p15:c20:g3:k160:ore07:30]
   let cleanText = text;
   let pastoAction = null;
-  const pastoMatch = text.match(/\[LOG_PASTO:(colazione|pranzo|cena|spuntino):([^:\]]+)(?::p(\d+))?(?::c(\d+))?(?::g(\d+))?(?::k(\d+))?(?::ore(\d{1,2}:\d{2}))?\]/i);
-  if(pastoMatch){
-    const tipo = pastoMatch[1].toLowerCase();
-    const contenuto = pastoMatch[2].trim();
-    const macro = {
-      p: pastoMatch[3] ? parseInt(pastoMatch[3]) : null,
-      c: pastoMatch[4] ? parseInt(pastoMatch[4]) : null,
-      g: pastoMatch[5] ? parseInt(pastoMatch[5]) : null,
-      k: pastoMatch[6] ? parseInt(pastoMatch[6]) : null
-    };
-    const oraPasto = pastoMatch[7] || nowTimeStr(); // orario reale pasto, fallback ora corrente
-    cleanText = text.replace(pastoMatch[0], '').trim();
-    pastoAction = {tipo, contenuto, macro, oraPasto};
+  try{
+    const pastoMatch = text.match(/\[LOG_PASTO:(colazione|pranzo|cena|spuntino):([^:\]]{1,120})(?::p(\d+))?(?::c(\d+))?(?::g(\d+))?(?::k(\d+))?(?::ore(\d{1,2}:\d{2}))?\]/i);
+    if(pastoMatch){
+      const tipo = pastoMatch[1].toLowerCase();
+      const contenuto = pastoMatch[2].trim();
+      if(tipo && contenuto.length > 0){ // validazione minima
+        const macro = {
+          p: pastoMatch[3] ? parseInt(pastoMatch[3]) : null,
+          c: pastoMatch[4] ? parseInt(pastoMatch[4]) : null,
+          g: pastoMatch[5] ? parseInt(pastoMatch[5]) : null,
+          k: pastoMatch[6] ? parseInt(pastoMatch[6]) : null
+        };
+        const oraPasto = pastoMatch[7] || window._oraPastoHint || nowTimeStr();
+        window._oraPastoHint = null;
+        cleanText = text.replace(pastoMatch[0], '').trim();
+        pastoAction = {tipo, contenuto, macro, oraPasto};
+      }
+    }
+  } catch(e){
+    console.warn('[FM:Parser] LOG_PASTO malformato, ignorato:', e.message);
   }
 
-  // Intercetta tag [UPDATE_SCHEDA:nome:peso:reps]
-  const schedaMatch = cleanText.match(/\[UPDATE_SCHEDA:([^:]+):(\d+(?:\.\d+)?):(\d+)\]/i);
+  // Intercetta [UPDATE_SCHEDA:nome:peso:reps] — robusto con fallback silenzioso
   let schedaAction = null;
-  if(schedaMatch){
-    schedaAction = {
-      nome: schedaMatch[1].trim(),
-      peso: parseFloat(schedaMatch[2]),
-      reps: parseInt(schedaMatch[3])
-    };
-    cleanText = cleanText.replace(schedaMatch[0], '').trim();
+  try{
+    const schedaMatch = cleanText.match(/\[UPDATE_SCHEDA:([^:]+):(\d+(?:\.\d+)?):(\d+)\]/i);
+    if(schedaMatch){
+      const nome = schedaMatch[1].trim();
+      const peso = parseFloat(schedaMatch[2]);
+      const reps = parseInt(schedaMatch[3]);
+      if(nome && peso > 0 && reps > 0){ // validazione minima
+        schedaAction = { nome, peso, reps };
+        cleanText = cleanText.replace(schedaMatch[0], '').trim();
+      }
+    }
+  } catch(e){
+    console.warn('[FM:Parser] UPDATE_SCHEDA malformato, ignorato:', e.message);
   }
 
   // Bottone aggiorna scheda
@@ -1899,8 +2041,10 @@ async function callAI(messages,retries=2){
   let sysPrompt='Sei FitMind AI, un coach fitness personale. Rispondi sempre in italiano.';
   try{
     sysPrompt=buildSystemPrompt();
-    console.log('[FM:AI] Prompt:',sysPrompt.length,'chars (~'+Math.round(sysPrompt.length/4)+' tokens)');
-    if(sysPrompt.length>12000) console.warn('[FM:AI] ⚠️ Prompt molto lungo — rischio timeout');
+    const tokenStimati = Math.round(sysPrompt.length/4);
+    console.log('[FM:AI] Prompt:',sysPrompt.length,'chars (~'+tokenStimati+' tokens)');
+    if(tokenStimati > 2000) console.warn('[FM:AI] ⚠️ Prompt >2000 tokens — valutare ContextCompressor');
+    if(tokenStimati > 2500) console.error('[FM:AI] 🚨 Prompt >2500 tokens — rischio timeout elevato');
   } catch(e){
     console.error('[FM:AI] buildSystemPrompt crash:',e.message);
   }
@@ -1941,11 +2085,18 @@ async function callAI(messages,retries=2){
   }
 }
 
+// ── AiQueue — una sola richiesta AI alla volta ──
+// Previene race condition da doppio tap o invii rapidi.
+let _aiPending = false;
+
 async function sendMsg(){
   const inp=document.getElementById('chatIn');
   const text=inp.value.trim();
   if(!text) return;
+  if(_aiPending){ showToast('Attendi la risposta...'); return; }
+
   inp.value=''; inp.style.height='auto';
+  _aiPending = true;
 
   // Rileva avvio sessione allenamento
   detectSessioneStart(text);
@@ -1956,12 +2107,10 @@ async function sendMsg(){
 
   addUserMsg(text); showTyping();
   try{
-    // Passa tutta la history — addUserMsg ha già aggiunto il messaggio corrente
     const reply=await callAI(chatHistory);
     removeTyping();
     if(reply){
       addAiMsg(reply);
-      // Salva progressioni rilevate nel testo utente
       detectEsalvaProgressioni(text, reply);
     } else {
       addAiMsg('Non ho ricevuto una risposta valida. Riprova tra un secondo.');
@@ -1970,6 +2119,8 @@ async function sendMsg(){
     removeTyping();
     console.error('[FM:AI] Errore finale:',e.message);
     addAiMsg(navigator.onLine?'⚡ Connessione momentanea assente. Riprova.':'📵 Sei offline. I tuoi dati sono al sicuro.');
+  } finally {
+    _aiPending = false; // sempre resettato — anche in caso di errore
   }
 }
 
@@ -2456,6 +2607,8 @@ function startAddEs(si){
 // startAddSingle rimossa — flow ora diretto
 function startAddSingle(){ /* legacy no-op */ }
 
+// === ISLAND: superserie ===
+// CONTRATTO: gestione supersetExercises nel builder. NON tocca storage diretto (usa renderBuilder).
 // ══════════════════════════════════════════════════════════════════
 // SUPERSERIE — nasce dall'esercizio principale, non come tipo separato
 // ══════════════════════════════════════════════════════════════════
@@ -2789,6 +2942,8 @@ function execReset(){
   },300);
 }
 
+// === ISLAND: percorso ===
+// CONTRATTO: tocca userData.percorsoHistory, obiettivo, contesto. UI via renderPercorsoCard(). Storage via saveAll().
 // ══════════════════════════════════════════════════════════════════
 // PERCORSO — gestione evoluzione utente nel tempo
 // ══════════════════════════════════════════════════════════════════
@@ -2904,6 +3059,155 @@ function renderPercorsoCard(){
     <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--mt);width:90px;font-size:11px;flex-shrink:0">Disponibilità</span><span>${u.giorni||'—'} gg/sett · ${u.durata||'—'} min</span></div>
     <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--mt);width:90px;font-size:11px;flex-shrink:0">Limitazioni</span><span>${u.infortuni||'nessuna'}</span></div>
   `;
+}
+
+// === ISLAND: checkin ===
+// CONTRATTO: tocca userData.checkinHistory, appStats.lastWeight. UI via modal. Storage via saveAll().
+// ══════════════════════════════════════════════════════════════════
+// CHECK-IN — memoria evolutiva progressi utente
+// ══════════════════════════════════════════════════════════════════
+
+// Stato temporaneo selezioni modal
+let _ckSensazioni = { energia: null, recupero: null };
+
+function selCkChip(el, field, val){
+  el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  _ckSensazioni[field] = val;
+}
+
+// Decide se proporre un check-in — NON aggressivo
+// Triggera max 1 volta al giorno, con soglie ragionevoli
+function shouldTriggerCheckin(){
+  if(!userData.nome) return false; // onboarding non completato
+
+  const storia = userData.checkinHistory||[];
+  const oggi = todayStr();
+
+  // Mai triggerare più di una volta al giorno
+  if(storia.length && storia.at(-1).data === oggi) return false;
+
+  // Primo check-in: dopo 7 giorni dall'onboarding
+  if(storia.length === 0){
+    const firstRun = StorageAdapter.get(LS.firstRun);
+    if(!firstRun) return false;
+    // Calcola giorni dal primo avvio
+    const sessions = appStats.sessions||0;
+    return sessions >= 3; // almeno 3 sessioni registrate
+  }
+
+  // Check-in successivi: ogni 14 giorni
+  const ultimoData = new Date(storia.at(-1).data);
+  const oggi2 = new Date(oggi);
+  const giorniPassati = Math.floor((oggi2 - ultimoData) / (1000*60*60*24));
+  return giorniPassati >= 14;
+}
+
+function apriCheckin(){
+  // Pre-valorizza con dati correnti
+  const ultimo = userData.checkinHistory?.at(-1);
+  document.getElementById('ckPeso').value    = appStats.lastWeight || userData.peso || '';
+  document.getElementById('ckVita').value    = ultimo?.misure?.vita    || userData.vita    || '';
+  document.getElementById('ckBraccio').value = ultimo?.misure?.braccio || userData.braccia || '';
+  document.getElementById('ckCosce').value   = ultimo?.misure?.cosce   || userData.cosce   || '';
+  document.getElementById('ckNote').value    = '';
+  _ckSensazioni = { energia: null, recupero: null };
+
+  // Aggiorna sottotitolo se è il primo check-in
+  const storia = userData.checkinHistory||[];
+  const sub = document.getElementById('checkinSub');
+  if(sub) sub.textContent = storia.length === 0
+    ? 'Primo check-in — punto di partenza per seguire la tua evoluzione.'
+    : `Ultimo: ${storia.at(-1).data} · ${storia.length} check-in totali`;
+
+  // Reset chips
+  document.querySelectorAll('#ckEnergiaChips .chip, #ckRecuperoChips .chip')
+    .forEach(c=>c.classList.remove('sel'));
+
+  showModal('mCheckin');
+}
+
+function salvaCheckin(){
+  const peso    = parseFloat(document.getElementById('ckPeso').value)    || null;
+  const vita    = parseFloat(document.getElementById('ckVita').value)    || null;
+  const braccio = parseFloat(document.getElementById('ckBraccio').value) || null;
+  const cosce   = parseFloat(document.getElementById('ckCosce').value)   || null;
+  const note    = document.getElementById('ckNote').value?.trim()        || null;
+
+  if(!peso && !vita && !braccio && !cosce){
+    showToast('Inserisci almeno un dato'); return;
+  }
+
+  const record = {
+    data:     todayStr(),
+    peso:     peso,
+    misure:   { vita, braccio, cosce },
+    sensazioni: {
+      energia:  _ckSensazioni.energia  || null,
+      recupero: _ckSensazioni.recupero || null
+    },
+    note: note
+  };
+
+  if(!userData.checkinHistory) userData.checkinHistory = [];
+  userData.checkinHistory.push(record);
+
+  // Aggiorna peso attivo se inserito
+  if(peso){
+    appStats.lastWeight = String(peso);
+    appStats.weightHistory = appStats.weightHistory||[];
+    appStats.weightHistory.push({ date: todayStr(), val: peso });
+    refreshStats();
+  }
+
+  saveAll();
+  closeModal('mCheckin');
+
+  // Messaggio contestuale confronto con precedente
+  const msg = buildCheckinMsg(record);
+  setTimeout(()=>{ addAiMsg(msg); scrollToBottom(); }, 300);
+  console.log('[FM:Checkin] Salvato:', peso+'kg', note||'');
+}
+
+function buildCheckinMsg(record){
+  const nome = userData.nome||'';
+  const storia = userData.checkinHistory||[];
+  const precedente = storia.length >= 2 ? storia.at(-2) : null;
+
+  let confronto = '';
+  if(precedente){
+    const diffPeso = record.peso && precedente.peso
+      ? (record.peso - precedente.peso).toFixed(1)
+      : null;
+    const giorniDa = Math.floor(
+      (new Date(record.data) - new Date(precedente.data)) / (1000*60*60*24)
+    );
+    if(diffPeso !== null){
+      const trend = parseFloat(diffPeso) < 0
+        ? `Il peso è sceso di ${Math.abs(diffPeso)}kg`
+        : parseFloat(diffPeso) > 0
+        ? `Il peso è salito di ${diffPeso}kg`
+        : 'Il peso è stabile';
+      confronto = `${trend} rispetto a ${giorniDa} giorni fa.`;
+    }
+    if(record.sensazioni?.energia && precedente.sensazioni?.energia){
+      const livelli = ['bassa','media','buona','ottima'];
+      const ora  = livelli.indexOf(record.sensazioni.energia);
+      const prima = livelli.indexOf(precedente.sensazioni.energia);
+      if(ora > prima) confronto += ' Energia in miglioramento.';
+      else if(ora < prima) confronto += ' Energia in calo — tienimi aggiornato.';
+    }
+  }
+
+  const intro = storia.length === 1
+    ? `Perfetto${nome?' '+nome:''}, punto di partenza registrato.`
+    : `Check-in salvato${nome?', '+nome:''}.`;
+
+  const body = confronto
+    ? `${confronto} Analizzerò i dati per adattare il percorso.`
+    : 'Ho aggiornato il tuo profilo. Continua così.';
+
+  return `${intro} ${body}`;
 }
 
 // ══════════════════════════════════════════════════════════════════
