@@ -743,7 +743,12 @@ textarea.fi{resize:none;height:76px}
         <label class="fl">Giorni/settimana</label>
         <select class="fi" id="pGiorni">
           <option value="">--</option>
-          ${[1,2,3,4,5,6].map(n=>`<option value="${n}">${n} giorni</option>`).join('')}
+          <option value="1">1 giorno</option>
+          <option value="2">2 giorni</option>
+          <option value="3">3 giorni</option>
+          <option value="4">4 giorni</option>
+          <option value="5">5 giorni</option>
+          <option value="6">6 giorni</option>
         </select>
       </div>
       <div class="fg" style="margin-bottom:0">
