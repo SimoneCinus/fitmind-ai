@@ -1864,7 +1864,7 @@ function addAiMsg(text){
   let cleanText = text;
   let pastoAction = null;
   try{
-    const pastoMatch = text.match(/\[LOG_PASTO:(colazione|pranzo|cena|spuntino):([^:\]]{1,120})(?::p(\d+))?(?::c(\d+))?(?::g(\d+))?(?::k(\d+))?(?::ore(\d{1,2}:\d{2}))?\]/i);
+    const pastoMatch = text.match(/\[LOG_PASTO:(colazione|pranzo|cena|spuntino):([^:\]]{1,300})(?::p(\d+))?(?::c(\d+))?(?::g(\d+))?(?::k(\d+))?(?::ore(\d{1,2}:\d{2}))?\]/i);
     if(pastoMatch){
       const tipo = pastoMatch[1].toLowerCase();
       const contenuto = pastoMatch[2].trim();
